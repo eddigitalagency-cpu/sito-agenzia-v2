@@ -16,48 +16,109 @@ const {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
-      rel="stylesheet"
-    />
     <title>{title} — ED Digital Agency</title>
+
+    <style is:global>
+      /* ── Custom Fonts ────────────────────────────────── */
+      @font-face {
+        font-family: 'CalSans';
+        src: url('/fonts/CalSans-Regular.ttf') format('truetype');
+        font-weight: 400;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'GraphikLCG';
+        src: url('/fonts/GraphikLCG-Extralight.woff2') format('woff2');
+        font-weight: 200;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'GraphikLCG';
+        src: url('/fonts/GraphikLCG-Light.woff2') format('woff2');
+        font-weight: 300;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'GraphikLCG';
+        src: url('/fonts/GraphikLCG-Regular.woff2') format('woff2');
+        font-weight: 400;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'GraphikLCG';
+        src: url('/fonts/GraphikLCG-Medium.woff2') format('woff2');
+        font-weight: 500;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'GraphikLCG';
+        src: url('/fonts/GraphikLCG-Semibold.woff2') format('woff2');
+        font-weight: 600;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'GraphikLCG';
+        src: url('/fonts/GraphikLCG-Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-display: swap;
+      }
+
+      /* ── Base ────────────────────────────────────────── */
+      *, *::before, *::after { box-sizing: border-box; }
+
+      html { -webkit-font-smoothing: antialiased; }
+
+      /* ── Scrollbar ────────────────────────────────────── */
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
   </head>
 
   <body class="bg-white text-black font-sans antialiased overflow-x-hidden selection:bg-black/10">
 
-    <!-- Minimal Navbar -->
-    <header class="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-sm border-b border-black/[0.06]">
-      <nav class="max-w-6xl mx-auto px-6 md:px-10 h-16 flex items-center justify-between">
+    <!-- ── Minimal Navbar ─────────────────────────────── -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm">
+      <nav class="max-w-[1400px] mx-auto px-8 md:px-12 h-[70px] flex items-center justify-between">
 
-        <a href="/" class="font-bold text-sm tracking-tight">ED Digital</a>
+        <!-- Logo -->
+        <a href="/" class="shrink-0">
+          <img
+            src="/images/ED-Digital-logo-black.svg"
+            alt="ED Digital Agency"
+            class="h-7"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='block'"
+          />
+          <span style="display:none" class="font-bold text-sm tracking-tight">ED Digital</span>
+        </a>
 
-        <ul class="hidden md:flex items-center gap-8 text-sm">
+        <!-- Nav links -->
+        <ul class="hidden md:flex items-center gap-8 text-[13px] font-medium">
           <li>
-            <a href="#services" class="text-black/50 hover:text-black transition-colors duration-200">
+            <a href="#services" class="text-black/50 hover:text-black transition-colors">
               Servizi
             </a>
           </li>
           <li>
-            <a href="#work" class="text-black/50 hover:text-black transition-colors duration-200">
+            <a href="#casistudio" class="text-black/50 hover:text-black transition-colors">
               Progetti
             </a>
           </li>
           <li>
-            <a href="#about" class="text-black/50 hover:text-black transition-colors duration-200">
+            <a href="#about" class="text-black/50 hover:text-black transition-colors">
               Chi Siamo
             </a>
           </li>
+          <li>
+            <a
+              href="#contatti"
+              class="border border-black text-black text-[13px] font-medium
+                     px-5 py-2 rounded-full hover:bg-black hover:text-white
+                     active:scale-95 transition-all duration-200"
+            >
+              Contattaci
+            </a>
+          </li>
         </ul>
-
-        <a
-          href="#contacts"
-          class="text-sm font-medium border border-black px-5 py-2 rounded-full
-                 hover:bg-black hover:text-white active:scale-95 transition-all duration-200"
-        >
-          Contattaci
-        </a>
 
       </nav>
     </header>
@@ -66,18 +127,22 @@ const {
       <slot />
     </main>
 
-    <!-- Footer -->
-    <footer id="contacts" class="border-t border-black/[0.08] py-16 px-6 md:px-10 mt-40">
-      <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-10">
-        <div>
-          <p class="font-bold text-sm">ED Digital Agency</p>
-          <p class="text-xs text-black/35 mt-1.5">© 2026 Tutti i diritti riservati.</p>
-        </div>
-        <div class="flex flex-col md:flex-row gap-5 text-xs text-black/40">
+    <!-- ── Footer ─────────────────────────────────────── -->
+    <footer id="contatti" class="border-t border-black/[0.07] py-16 px-8 md:px-12 mt-32">
+      <div class="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+        <img
+          src="/images/ED-Digital-logo-black.svg"
+          alt="ED Digital Agency"
+          class="h-6"
+          onerror="this.style.display='none'; this.nextElementSibling.style.display='block'"
+        />
+        <span style="display:none" class="font-bold text-sm">ED Digital Agency</span>
+        <p class="text-xs text-black/35">© 2026 ED Digital Agency. Tutti i diritti riservati.</p>
+        <div class="flex gap-6 text-xs text-black/40">
           <a href="mailto:ed.digitalagency@gmail.com" class="hover:text-black transition-colors">
             ed.digitalagency@gmail.com
           </a>
-          <span class="hidden md:inline text-black/20">·</span>
+          <span class="text-black/20">·</span>
           <a href="https://eddigitalagency.it" class="hover:text-black transition-colors">
             eddigitalagency.it
           </a>

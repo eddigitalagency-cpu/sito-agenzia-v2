@@ -4,7 +4,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['GraphikLCG', 'Inter', 'system-ui', 'sans-serif'],
+        cal: ['CalSans', 'system-ui', 'sans-serif'],
       },
     },
   },

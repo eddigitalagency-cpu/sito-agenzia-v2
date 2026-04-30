@@ -2,164 +2,606 @@
 import Layout from '../layouts/Layout.astro';
 
 const services = [
-  { num: '01', name: 'Social Media Management', desc: 'Strategia, contenuti e community building.' },
-  { num: '02', name: 'Advertising',             desc: 'Google Ads e Meta Ads ad alto ROI.' },
-  { num: '03', name: 'Website',                 desc: 'Siti veloci, moderni e orientati alla conversione.' },
-  { num: '04', name: 'E-Commerce',              desc: 'Shopify Partner. Negozi online che vendono.' },
-  { num: '05', name: 'Photo & Video',           desc: 'Produzione visiva professionale per il tuo brand.' },
-  { num: '06', name: 'Visual Identity',         desc: 'Logo, palette e brand kit coerenti e memorabili.' },
-  { num: '07', name: 'MVP & SaaS',              desc: 'Sviluppo prodotto digitale dalla prototipazione al lancio.' },
-  { num: '08', name: 'App',                     desc: 'Applicazioni mobile e web su misura.' },
+  { name: 'Social Media Management', href: '#' },
+  { name: 'Advertising',             href: '#' },
+  { name: 'Website',                 href: '#' },
+  { name: 'E-Commerce',              href: '#' },
+  { name: 'Photo & Video',           href: '#' },
+  { name: 'Visual Identity',         href: '#' },
+  { name: 'MVP & SaaS',              href: '#' },
+  { name: 'App',                     href: '#' },
+];
+
+const caseStudies = [
+  { title: 'Italia Contract',    service: 'Web Design – Social Management', img: '/images/Cover-Italia-Contract.jpg' },
+  { title: 'Val Longa',          service: 'Web Design',                     img: '/images/Cover-ValLonga.jpg' },
+  { title: 'Espressione Danza',  service: 'Social Management',              img: '/images/Cover-Espressione-Danza.jpg' },
+  { title: 'Ottica Toffoli',     service: 'Web Design',                     img: '/images/Cover-Otica-Toffoli.jpg' },
+  { title: 'SoloMattia',         service: 'Social Management',              img: '/images/Cover-SoloMattia.jpg' },
+  { title: 'Disegno Italia',     service: 'Web Design',                     img: '/images/Cover-Disegno-Italia.jpg' },
+];
+
+const partners = [
+  { src: '/images/shopify-partner.png',           alt: 'Shopify Partner',    w: '62%' },
+  { src: '/images/wordpress-logo-png-transparent.png', alt: 'WordPress',      w: '98%' },
+  { src: '/images/keliweb-logo-e1522914795801.png', alt: 'Keliweb',          w: '69%' },
+  { src: '/images/Logo-Litchi-solutions-intero.svg', alt: 'Litchi Solutions', w: '100%' },
+  { src: '/images/ED-logo-completo.svg',           alt: 'ED Digital',        w: '100%' },
 ];
 ---
 
-<Layout title="Agenzia Digitale">
+<Layout title="Partner Strategico Digitale">
 
-  <!-- ── Hero ─────────────────────────────────────────────────── -->
-  <section class="pt-40 pb-32 px-6 md:px-10 max-w-6xl mx-auto">
-    <div class="max-w-4xl">
+  <!-- ══════════════════════════════════════════════════════════
+       HERO
+  ══════════════════════════════════════════════════════════ -->
+  <section class="hero-section">
+    <div class="page-wrap" style="margin-top: 67px; min-height: 500px; position: relative; overflow: hidden;">
 
-      <p class="text-xs font-semibold tracking-[0.22em] uppercase text-black/35 mb-10">
-        Agenzia Digitale Italiana
-      </p>
+      <div class="hero-grid">
 
-      <h1 class="text-[clamp(3rem,9vw,7.5rem)] font-bold leading-[0.95] tracking-tight mb-10">
-        La nostra creatività<br />
-        <em class="not-italic italic">la tua visione.</em>
-      </h1>
+        <!-- Left: headline stack + body + CTA -->
+        <div class="hero-left">
+          <h1 class="hero-h1 hero-h1--black">La nostra</h1>
+          <h1 class="hero-h1 hero-h1--orange">creatività</h1>
+          <h1 class="hero-h1 hero-h1--black">la tua visione.</h1>
 
-      <p class="text-lg md:text-xl text-black/50 max-w-xl leading-relaxed mb-14">
-        Trasformiamo idee in esperienze digitali memorabili.
-        Strategia, design e performance al servizio del tuo brand.
-      </p>
+          <div class="hero-body-wrap">
+            <p class="hero-body">
+              Elaboriamo strategie digitali personalizzate che potenziano la vostra
+              presenza online, migliorano il coinvolgimento e incrementano
+              i risultati di business.
+            </p>
+            <a href="#casistudio" class="btn-ghost btn-ghost--black">
+              SCOPRI DI PIÙ
+              <span class="btn-arrow">→</span>
+            </a>
+          </div>
+        </div>
 
-      <div class="flex items-center gap-5 flex-wrap">
-        <a
-          href="#services"
-          class="inline-flex items-center gap-2 text-sm font-semibold bg-black text-white
-                 px-7 py-3.5 rounded-full hover:bg-black/85 active:scale-95 transition-all duration-150"
-        >
-          Scopri di più
-          <span aria-hidden="true">→</span>
-        </a>
-        <a
-          href="#about"
-          class="text-sm font-medium text-black/50 hover:text-black transition-colors duration-200"
-        >
-          Chi siamo
-        </a>
+        <!-- Right: hero image -->
+        <div class="hero-right">
+          <img
+            src="/images/GrandeProgetto-sesnza-titolo-6-copia.png"
+            alt="ED Digital Agency – portfolio"
+            class="hero-img"
+          />
+        </div>
+
       </div>
-
     </div>
   </section>
 
-  <!-- ── Divider ───────────────────────────────────────────────── -->
-  <div class="px-6 md:px-10 max-w-6xl mx-auto">
-    <hr class="border-black/[0.08]" />
-  </div>
 
-  <!-- ── Di cosa ci occupiamo ──────────────────────────────────── -->
-  <section id="services" class="px-6 md:px-10 py-28 max-w-6xl mx-auto">
-
-    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
-      <h2 class="text-3xl md:text-4xl font-bold tracking-tight leading-tight">
-        Di cosa ci<br />occupiamo
-      </h2>
-      <p class="text-sm text-black/45 max-w-xs leading-relaxed">
-        Otto aree di competenza integrate per costruire e far crescere la tua presenza digitale.
-      </p>
-    </div>
-
-    <!-- Services list -->
-    <ul class="divide-y divide-black/[0.07]">
-      {services.map((s) => (
-        <li>
-          <a
-            href="#contacts"
-            class="group flex items-center gap-6 py-6 hover:pl-2 transition-all duration-300"
-          >
-            <span class="text-[11px] font-semibold text-black/25 w-6 shrink-0 tracking-wide">
-              {s.num}
-            </span>
-            <span class="flex-1 text-xl md:text-2xl font-semibold tracking-tight group-hover:translate-x-1 transition-transform duration-300">
-              {s.name}
-            </span>
-            <span class="hidden md:block text-sm text-black/35 max-w-[240px] leading-snug">
-              {s.desc}
-            </span>
-            <span class="text-black/20 group-hover:text-black group-hover:translate-x-1 transition-all duration-300 shrink-0">
-              →
-            </span>
-          </a>
-        </li>
-      ))}
-    </ul>
-
-  </section>
-
-  <!-- ── Divider ───────────────────────────────────────────────── -->
-  <div class="px-6 md:px-10 max-w-6xl mx-auto">
-    <hr class="border-black/[0.08]" />
-  </div>
-
-  <!-- ── Chi Siamo ─────────────────────────────────────────────── -->
-  <section id="about" class="px-6 md:px-10 py-28 max-w-6xl mx-auto">
-
-    <div class="grid md:grid-cols-2 gap-16 md:gap-24 items-center">
-      <div>
-        <p class="text-xs font-semibold tracking-[0.22em] uppercase text-black/30 mb-6">
-          Chi siamo
-        </p>
-        <h2 class="text-3xl md:text-5xl font-bold tracking-tight leading-[1.05] mb-8">
-          Il tuo partner<br />
-          <em class="not-italic italic">strategico digitale.</em>
+  <!-- ══════════════════════════════════════════════════════════
+       ORANGE STRATEGY CARD
+  ══════════════════════════════════════════════════════════ -->
+  <section class="page-wrap" id="about">
+    <div class="orange-card">
+      <div class="orange-card__text">
+        <h2 class="orange-card__h2">
+          Elaboriamo<br />strategie<br />digitali
         </h2>
-        <a
-          href="#contacts"
-          class="inline-flex items-center gap-2 text-sm font-semibold border border-black
-                 px-7 py-3.5 rounded-full hover:bg-black hover:text-white active:scale-95
-                 transition-all duration-200"
-        >
-          Lavoriamo insieme →
+        <p class="orange-card__body">
+          Personalizzate che potenziano la vostra presenza online,
+          migliorano il coinvolgimento e incrementano i risultati di business.
+        </p>
+        <a href="#services" class="btn-ghost btn-ghost--white">
+          SCOPRI DI PIÙ
+          <span class="btn-arrow">→</span>
         </a>
       </div>
-      <div>
-        <p class="text-base md:text-lg text-black/55 leading-relaxed mb-6">
-          Siamo un team di esperti digitali appassionati che aiuta le piccole imprese
-          a crescere online. Partiamo dall'ascolto delle tue esigenze per costruire
-          strategie su misura che uniscono creatività e dati.
-        </p>
-        <p class="text-base md:text-lg text-black/55 leading-relaxed">
-          Non ci accontentiamo di semplici risultati: puntiamo a superare le aspettative,
-          misurando costantemente l'efficacia delle nostre azioni e adattandoci ai
-          cambiamenti del mercato.
-        </p>
-      </div>
+      <!-- right side intentionally open — the visual weight of the card itself -->
     </div>
-
   </section>
 
-  <!-- ── Collaboriamo? CTA ─────────────────────────────────────── -->
-  <section class="px-6 md:px-10 py-32 max-w-6xl mx-auto text-center">
 
-    <p class="text-xs font-semibold tracking-[0.22em] uppercase text-black/30 mb-8">
-      Inizia il tuo progetto
-    </p>
-    <h2 class="text-5xl md:text-7xl lg:text-[90px] font-bold tracking-tight leading-[0.95] mb-10">
-      Collaboriamo?
-    </h2>
-    <p class="text-base md:text-lg text-black/45 max-w-sm mx-auto leading-relaxed mb-12">
-      Ogni grande progetto inizia con una conversazione.
-    </p>
-    <a
-      href="mailto:ed.digitalagency@gmail.com"
-      class="inline-flex items-center gap-2 text-sm font-semibold bg-black text-white
-             px-10 py-4 rounded-full hover:bg-black/85 active:scale-95 transition-all duration-150"
-    >
-      Contattaci
-      <span aria-hidden="true">→</span>
-    </a>
+  <!-- ══════════════════════════════════════════════════════════
+       CASE STUDIES
+  ══════════════════════════════════════════════════════════ -->
+  <section class="casi-section" id="casistudio">
+    <div class="page-wrap">
 
+      <div class="casi-layout">
+
+        <!-- Left: heading + mini thumbs + CTA -->
+        <div class="casi-left">
+          <h2 class="section-heading">Casi Studio</h2>
+          <div class="casi-thumbs">
+            {caseStudies.slice(0, 3).map(s => (
+              <img src={s.img} alt={s.title} class="casi-thumb" />
+            ))}
+          </div>
+          <a href="#" class="btn-ghost btn-ghost--black" style="margin-top:30px">
+            SCOPRI DI PIÙ
+            <span class="btn-arrow">→</span>
+          </a>
+        </div>
+
+        <!-- Right: full-size horizontal scrollable cards -->
+        <div class="casi-scroll no-scrollbar">
+          <div class="casi-track">
+            {caseStudies.map(s => (
+              <div class="casi-card">
+                <img src={s.img} alt={s.title} class="casi-card__img" />
+                <div class="casi-card__overlay">
+                  <p class="casi-card__title">{s.title}</p>
+                  <p class="casi-card__service">{s.service}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════════════
+       GHOST TEXT + BLACK LOGOS CARD
+  ══════════════════════════════════════════════════════════ -->
+  <div class="ghost-wrap ghost-wrap--200">
+    <span class="ghost-text">Collaboriamo</span>
+  </div>
+
+  <section class="page-wrap" style="margin-top: -53px; position: relative; z-index: 1;">
+    <div class="black-card">
+      <img
+        src="/images/loghi-x-sito-web-ED.png"
+        alt="I nostri clienti"
+        class="black-card__logos"
+        onerror="this.src='/images/loghi-x-sito-web-ED-e1764000086620.png'"
+      />
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════════════
+       SERVICES
+  ══════════════════════════════════════════════════════════ -->
+  <section class="page-wrap services-section" id="services">
+    <div class="services-grid">
+      {services.map(s => (
+        <div class="service-item">
+          <h3 class="service-name">{s.name}</h3>
+          <a href={s.href} class="btn-metal">
+            SCOPRI DI PIÙ →
+          </a>
+        </div>
+      ))}
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════════════
+       GHOST TEXT + ORANGE CTA CARD
+  ══════════════════════════════════════════════════════════ -->
+  <div class="ghost-wrap ghost-wrap--164" style="margin-top: 170px;">
+    <span class="ghost-text">Collaboriamo</span>
+  </div>
+
+  <section class="page-wrap" style="margin-top: 178px; position: relative;">
+    <div class="cta-card">
+      <p class="cta-card__body">
+        Ogni grande progetto inizia con una conversazione.<br />
+        Raccontaci la tua idea.
+      </p>
+      <a href="mailto:ed.digitalagency@gmail.com" class="btn-ghost btn-ghost--white">
+        CONTATTACI
+        <span class="btn-arrow">→</span>
+      </a>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════════════
+       SCELTI DA – PARTNER LOGOS
+  ══════════════════════════════════════════════════════════ -->
+  <section class="page-wrap partners-section">
+    <h2 class="partners-heading">Scelti da</h2>
+    <div class="partners-grid">
+      {partners.map(p => (
+        <div class="partners-grid__cell">
+          <img src={p.src} alt={p.alt} style={`width: ${p.w}`} class="partner-logo" />
+        </div>
+      ))}
+    </div>
   </section>
 
 </Layout>
+
+<!-- ══════════════════════════════════════════════════════════
+     PAGE STYLES
+══════════════════════════════════════════════════════════ -->
+<style>
+  /* ── Utilities ──────────────────────────────────────── */
+  .page-wrap {
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 3rem;   /* 48px */
+    padding-right: 3rem;
+  }
+
+  /* ── HERO ────────────────────────────────────────────── */
+  .hero-section {
+    padding-top: 70px; /* navbar height */
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 47% 34%;
+    justify-content: space-around;
+    align-items: flex-start;
+    min-height: 500px;
+    column-gap: 0;
+  }
+
+  .hero-left {
+    display: flex;
+    flex-direction: column;
+    padding-top: 2rem;
+  }
+
+  .hero-h1 {
+    font-family: 'CalSans', system-ui, sans-serif;
+    font-size: clamp(60px, 6.5vw, 90px);
+    line-height: 1.0;
+    letter-spacing: -0.01em;
+    margin: 0;
+    padding-bottom: 10px;
+  }
+  .hero-h1--black  { font-weight: 400; color: #000; }
+  .hero-h1--orange { font-weight: 400; color: #FF6A00; margin-top: -11px; z-index: 33; position: relative; }
+  .hero-h1--black:last-of-type { margin-top: -10px; }
+
+  .hero-body-wrap {
+    width: 72%;
+    margin-top: 2rem;
+  }
+
+  .hero-body {
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 19px;
+    letter-spacing: 0.5px;
+    word-spacing: 1px;
+    color: #000;
+  }
+
+  .hero-right {
+    position: relative;
+    align-self: stretch;
+  }
+  .hero-img {
+    position: absolute;
+    top: 0;
+    right: -3rem;
+    height: 110%;
+    width: auto;
+    max-width: none;
+    object-fit: contain;
+    object-position: top right;
+  }
+
+  /* ── BUTTONS ─────────────────────────────────────────── */
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 20px;
+    padding: 10px 22px;
+    border: 1px solid;
+    border-radius: 20px;
+    background: transparent;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    text-decoration: none;
+    margin-top: 30px;
+    transition: background 0.2s, color 0.2s;
+  }
+  .btn-ghost--black {
+    border-color: #000;
+    color: #000;
+  }
+  .btn-ghost--black:hover { background: #000; color: #fff; }
+  .btn-ghost--white {
+    border-color: #fff;
+    color: #fff;
+  }
+  .btn-ghost--white:hover { background: #fff; color: #FF6A00; }
+  .btn-arrow { font-size: 16px; }
+
+  .btn-metal {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 28px;
+    border-radius: 21px;
+    background: linear-gradient(180deg, #666666 0%, #929292 100%);
+    color: #fff;
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.2s;
+    margin-top: 24px;
+  }
+  .btn-metal:hover { opacity: 0.85; }
+
+  /* ── ORANGE STRATEGY CARD ────────────────────────────── */
+  .orange-card {
+    background-color: #FF6A00;
+    border-radius: 30px;
+    min-height: 596px;
+    display: grid;
+    grid-template-columns: 36% 1fr;
+    margin-top: 150px;
+    padding: 0 40px;
+    overflow: hidden;
+  }
+
+  .orange-card__text {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+
+  .orange-card__h2 {
+    font-family: 'CalSans', system-ui, sans-serif;
+    font-size: clamp(48px, 5.5vw, 82px);
+    font-weight: 300;
+    line-height: 65px;
+    color: #fff;
+    margin-top: 70px;
+    margin-bottom: 0;
+  }
+
+  .orange-card__body {
+    font-size: 23px;
+    font-weight: 400;
+    line-height: 29px;
+    color: #fff;
+    margin-top: 48px;
+    max-width: 380px;
+  }
+
+  /* ── CASE STUDIES ────────────────────────────────────── */
+  .casi-section {
+    margin-top: 174px;
+  }
+
+  .casi-layout {
+    display: grid;
+    grid-template-columns: 32.5% 1fr;
+    align-items: flex-start;
+    gap: 0 40px;
+  }
+
+  .casi-left {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .section-heading {
+    font-family: 'CalSans', system-ui, sans-serif;
+    font-size: clamp(36px, 4vw, 56px);
+    font-weight: 300;
+    line-height: 1.05;
+    margin: 0 0 16px;
+  }
+
+  .casi-thumbs {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    align-self: flex-end;
+  }
+  .casi-thumb {
+    width: 80px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 10px;
+  }
+
+  .casi-scroll {
+    overflow-x: auto;
+    padding-bottom: 12px;
+  }
+  .casi-track {
+    display: flex;
+    gap: 16px;
+    width: max-content;
+  }
+  .casi-card {
+    position: relative;
+    width: 340px;
+    height: 480px;
+    border-radius: 24px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .casi-card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .casi-card__overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 24px;
+    background: linear-gradient(to top, rgba(0,0,0,0.72) 0%, transparent 100%);
+  }
+  .casi-card__title   { color: #fff; font-weight: 600; font-size: 16px; margin: 0; }
+  .casi-card__service { color: rgba(255,255,255,0.65); font-size: 12px; margin: 4px 0 0; }
+
+  /* ── GHOST TEXT ──────────────────────────────────────── */
+  .ghost-wrap {
+    text-align: center;
+    overflow: hidden;
+    pointer-events: none;
+    user-select: none;
+    line-height: 0.85;
+  }
+  .ghost-wrap--200 { margin-top: 120px; }
+
+  .ghost-text {
+    font-family: 'CalSans', system-ui, sans-serif;
+    font-weight: 300;
+    color: #00000045;
+    -webkit-text-stroke: 1px rgba(0,0,0,0.25);
+    text-shadow: 0px -6px 43px rgba(0,0,0,0.3);
+    white-space: nowrap;
+    display: inline-block;
+  }
+  .ghost-wrap--200 .ghost-text { font-size: clamp(80px, 13vw, 200px); }
+  .ghost-wrap--164 .ghost-text { font-size: clamp(60px, 11vw, 164px); }
+
+  /* ── BLACK LOGOS CARD ────────────────────────────────── */
+  .black-card {
+    background: #000;
+    border-radius: 30px;
+    min-height: 573px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 50px 60px;
+  }
+  .black-card__logos {
+    width: 100%;
+    max-width: 900px;
+    object-fit: contain;
+  }
+
+  /* ── SERVICES ────────────────────────────────────────── */
+  .services-section {
+    margin-top: 46px;
+    padding-top: 0;
+  }
+
+  .services-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-top: 1px solid rgba(0,0,0,0.08);
+  }
+
+  .service-item {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 200px;
+    padding: 36px 32px;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    border-right: 1px solid rgba(0,0,0,0.08);
+  }
+  .service-item:nth-child(even) { border-right: none; }
+
+  .service-name {
+    font-family: 'CalSans', system-ui, sans-serif;
+    font-size: clamp(22px, 2.2vw, 32px);
+    font-weight: 400;
+    margin: 0;
+  }
+
+  /* ── ORANGE CTA CARD ─────────────────────────────────── */
+  .cta-card {
+    background: #FF6A00;
+    border-radius: 30px;
+    min-height: 344px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 80px;
+  }
+
+  .cta-card__body {
+    font-size: 23px;
+    font-weight: 400;
+    line-height: 29px;
+    color: #fff;
+    max-width: 420px;
+    margin: 0 0 0 0;
+  }
+
+  /* ── PARTNERS / SCELTI DA ────────────────────────────── */
+  .partners-section {
+    margin-top: 120px;
+    padding-bottom: 80px;
+    text-align: center;
+  }
+
+  .partners-heading {
+    font-family: 'Trebuchet MS', 'CalSans', sans-serif;
+    font-size: clamp(36px, 3.5vw, 56px);
+    font-weight: 600;
+    margin: 0 0 50px;
+  }
+
+  .partners-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    align-items: center;
+    justify-items: center;
+    gap: 24px;
+    max-width: 83%;
+    margin: 0 auto;
+  }
+
+  .partners-grid__cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+
+  .partner-logo {
+    max-height: 48px;
+    width: auto;
+    object-fit: contain;
+    filter: grayscale(100%);
+    opacity: 0.6;
+    transition: opacity 0.2s, filter 0.2s;
+  }
+  .partner-logo:hover { filter: none; opacity: 1; }
+
+  /* ── RESPONSIVE ──────────────────────────────────────── */
+  @media (max-width: 900px) {
+    .page-wrap { padding-left: 1.5rem; padding-right: 1.5rem; }
+
+    .hero-grid {
+      grid-template-columns: 1fr;
+    }
+    .hero-right { display: none; }
+    .hero-body-wrap { width: 100%; }
+
+    .orange-card {
+      grid-template-columns: 1fr;
+      margin-top: 65px;
+      padding: 40px 28px;
+    }
+    .orange-card__h2 { line-height: 0.9em; }
+
+    .casi-layout { grid-template-columns: 1fr; gap: 24px; }
+    .casi-thumbs { align-self: flex-start; }
+
+    .ghost-wrap--200 .ghost-text { font-size: 98px; }
+    .ghost-wrap--164 .ghost-text { font-size: 60px; }
+
+    .services-grid { grid-template-columns: 1fr; }
+    .service-item { border-right: none; }
+
+    .cta-card { padding: 48px 28px; }
+    .cta-card__body { font-size: 18px; }
+
+    .partners-grid { grid-template-columns: repeat(2, 1fr); max-width: 100%; }
+  }
+</style>
