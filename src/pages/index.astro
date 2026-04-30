@@ -12,21 +12,22 @@ const services = [
   { name: 'App',                     href: '#' },
 ];
 
+// Ho mappato i casi studio usando i file che vedo nel tuo terminale (3.png, 4.png, 7.jpg, etc.)
 const caseStudies = [
-  { title: 'Italia Contract',    service: 'Web Design – Social Management', img: '/images/Cover-Italia-Contract.jpg' },
-  { title: 'Val Longa',          service: 'Web Design',                     img: '/images/Cover-ValLonga.jpg' },
-  { title: 'Espressione Danza',  service: 'Social Management',              img: '/images/Cover-Espressione-Danza.jpg' },
-  { title: 'Ottica Toffoli',     service: 'Web Design',                     img: '/images/Cover-Otica-Toffoli.jpg' },
-  { title: 'SoloMattia',         service: 'Social Management',              img: '/images/Cover-SoloMattia.jpg' },
-  { title: 'Disegno Italia',     service: 'Web Design',                     img: '/images/Cover-Disegno-Italia.jpg' },
+  { title: 'Italia Contract',    service: 'Web Design', img: '/images/3.png' },
+  { title: 'Val Longa',          service: 'Web Design', img: '/images/4.png' },
+  { title: 'Espressione Danza',  service: 'Social Management', img: '/images/7.jpg' },
+  { title: 'Ottica Toffoli',     service: 'Web Design', img: '/images/8.png' },
+  { title: 'SoloMattia',         service: 'Social Management', img: '/images/9.jpg' },
+  { title: 'Disegno Italia',     service: 'Web Design', img: '/images/28.png' },
 ];
 
 const partners = [
-  { src: '/images/shopify-partner.png',           alt: 'Shopify Partner',    w: '62%' },
-  { src: '/images/wordpress-logo-png-transparent.png', alt: 'WordPress',      w: '98%' },
-  { src: '/images/keliweb-logo-e1522914795801.png', alt: 'Keliweb',          w: '69%' },
-  { src: '/images/Logo-Litchi-solutions-intero.svg', alt: 'Litchi Solutions', w: '100%' },
-  { src: '/images/ED-logo-completo.svg',           alt: 'ED Digital',        w: '100%' },
+  { src: '/images/shopify-partner.png',           alt: 'Shopify Partner' },
+  { src: '/images/wordpress-logo-png-transparent.png', alt: 'WordPress' },
+  { src: '/images/keliweb-logo-e1522914795801.png', alt: 'Keliweb' },
+  { src: '/images/Logo-Litchi-solutions-intero.png', alt: 'Litchi Solutions' },
+  { src: '/images/Logo_ED_NERO_ARANCIONE_Girato.png', alt: 'ED Digital' },
 ];
 ---
 
@@ -89,8 +90,7 @@ const partners = [
             <img 
                src={s.img} 
                alt={s.title} 
-               class="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
-               onerror="this.src='https://placehold.co/600x800/111/white?text=Immagine+In+Arrivo'"
+               class="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
             />
             <div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-80"></div>
             <div class="absolute bottom-10 left-10 right-10">
@@ -102,7 +102,8 @@ const partners = [
       </div>
     </section>
 
-    <section class="max-w-[1400px] mx-auto px-8 py-32 border-t border-white/5">
+    <section class="max-w-[1400px] mx-auto px-8 py-32 border-t border-white/5 text-center">
+        <h2 class="text-sm uppercase tracking-[0.5em] text-gray-600 mb-16">Trusted by</h2>
       <div class="flex flex-wrap justify-center items-center gap-12 lg:gap-24 opacity-30 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-1000">
         {partners.map(p => (
           <img src={p.src} alt={p.alt} class="h-8 lg:h-10 w-auto" />
