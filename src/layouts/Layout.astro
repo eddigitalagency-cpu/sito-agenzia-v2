@@ -1,0 +1,93 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+}
+const {
+  title,
+  description = 'ED Digital Agency — Il partner strategico per le piccole imprese che vogliono crescere online.',
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="it" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+      rel="stylesheet"
+    />
+    <title>{title} — ED Digital Agency</title>
+  </head>
+
+  <body class="bg-[#080808] text-white font-sans antialiased overflow-x-hidden selection:bg-white/20">
+
+    <!-- Glassmorphism Navbar -->
+    <header class="fixed top-4 left-0 right-0 z-50 px-4 md:px-6">
+      <nav
+        class="max-w-5xl mx-auto flex items-center justify-between
+               backdrop-blur-2xl bg-white/[0.05] border border-white/[0.08]
+               rounded-2xl px-5 py-3 shadow-[0_4px_32px_rgba(0,0,0,0.4)]"
+      >
+        <a href="/" class="font-semibold text-sm tracking-tight">ED Digital</a>
+
+        <ul class="hidden md:flex items-center gap-1 text-sm">
+          <li>
+            <a
+              href="#services"
+              class="text-white/55 hover:text-white transition-colors duration-200 px-3 py-1.5 rounded-lg hover:bg-white/[0.05]"
+            >Servizi</a>
+          </li>
+          <li>
+            <a
+              href="#work"
+              class="text-white/55 hover:text-white transition-colors duration-200 px-3 py-1.5 rounded-lg hover:bg-white/[0.05]"
+            >Progetti</a>
+          </li>
+          <li>
+            <a
+              href="#about"
+              class="text-white/55 hover:text-white transition-colors duration-200 px-3 py-1.5 rounded-lg hover:bg-white/[0.05]"
+            >Chi Siamo</a>
+          </li>
+        </ul>
+
+        <a
+          href="#contacts"
+          class="text-sm bg-white text-[#080808] font-semibold px-4 py-2 rounded-xl
+                 hover:bg-white/90 active:scale-95 transition-all duration-150"
+        >
+          Contattaci
+        </a>
+      </nav>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer id="contacts" class="border-t border-white/[0.06] py-14 px-6 mt-32">
+      <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+        <div>
+          <p class="font-semibold text-sm">ED Digital Agency</p>
+          <p class="text-xs text-white/35 mt-1">© 2026 Tutti i diritti riservati.</p>
+        </div>
+        <div class="flex flex-col md:flex-row gap-4 text-xs text-white/40">
+          <a href="mailto:ed.digitalagency@gmail.com" class="hover:text-white/70 transition-colors">
+            ed.digitalagency@gmail.com
+          </a>
+          <span class="hidden md:inline text-white/20">·</span>
+          <a href="https://eddigitalagency.it" class="hover:text-white/70 transition-colors">
+            eddigitalagency.it
+          </a>
+        </div>
+      </div>
+    </footer>
+
+  </body>
+</html>
