@@ -31,577 +31,89 @@ const partners = [
 ---
 
 <Layout title="Partner Strategico Digitale">
-
-  <!-- ══════════════════════════════════════════════════════════
-       HERO
-  ══════════════════════════════════════════════════════════ -->
-  <section class="hero-section">
-    <div class="page-wrap" style="margin-top: 67px; min-height: 500px; position: relative; overflow: hidden;">
-
-      <div class="hero-grid">
-
-        <!-- Left: headline stack + body + CTA -->
-        <div class="hero-left">
-          <h1 class="hero-h1 hero-h1--black">La nostra</h1>
-          <h1 class="hero-h1 hero-h1--orange">creatività</h1>
-          <h1 class="hero-h1 hero-h1--black">la tua visione.</h1>
-
-          <div class="hero-body-wrap">
-            <p class="hero-body">
-              Elaboriamo strategie digitali personalizzate che potenziano la vostra
-              presenza online, migliorano il coinvolgimento e incrementano
-              i risultati di business.
-            </p>
-            <a href="#casistudio" class="btn-ghost btn-ghost--black">
-              SCOPRI DI PIÙ
-              <span class="btn-arrow">→</span>
+  <main class="bg-black text-white min-h-screen font-sans">
+    
+    <section class="max-w-[1400px] mx-auto px-8 py-24 lg:py-32">
+      <div class="grid lg:grid-cols-2 gap-16 items-center">
+        <div class="space-y-8">
+          <h1 class="text-7xl lg:text-9xl font-black uppercase leading-[0.9] tracking-tighter italic">
+            La nostra <br/>
+            <span class="text-[#FF6A00]">creatività</span> <br/>
+            la tua visione.
+          </h1>
+          <p class="text-gray-400 text-xl max-w-md leading-relaxed">
+            Siamo il motore digitale della tua crescita. Strategie sartoriali per brand che non temono di farsi notare.
+          </p>
+          <div class="flex gap-4">
+            <a href="#casistudio" class="px-8 py-4 bg-[#FF6A00] text-black font-bold rounded-full hover:scale-105 transition-transform uppercase tracking-widest text-sm">
+              I nostri lavori
+            </a>
+            <a href="mailto:ed.digitalagency@gmail.com" class="px-8 py-4 border border-white/20 rounded-full font-bold hover:bg-white hover:text-black transition-all uppercase tracking-widest text-sm">
+              Contattaci
             </a>
           </div>
         </div>
-
-        <!-- Right: hero image -->
-        <div class="hero-right">
-          <img
-            src="/images/GrandeProgetto-sesnza-titolo-6-copia.png"
-            alt="ED Digital Agency – portfolio"
-            class="hero-img"
+        <div class="relative group">
+          <div class="absolute -inset-10 bg-[#FF6A00]/10 blur-[120px] rounded-full group-hover:bg-[#FF6A00]/20 transition-all"></div>
+          <img 
+            src="/images/GrandeProgetto-sesnza-titolo-6-copia.png" 
+            alt="Hero Agency" 
+            class="relative z-10 w-full rounded-[3rem] grayscale hover:grayscale-0 transition-all duration-700 shadow-2xl"
           />
         </div>
-
       </div>
-    </div>
-  </section>
+    </section>
 
-
-  <!-- ══════════════════════════════════════════════════════════
-       ORANGE STRATEGY CARD
-  ══════════════════════════════════════════════════════════ -->
-  <section class="page-wrap" id="about">
-    <div class="orange-card">
-      <div class="orange-card__text">
-        <h2 class="orange-card__h2">
-          Elaboriamo<br />strategie<br />digitali
-        </h2>
-        <p class="orange-card__body">
-          Personalizzate che potenziano la vostra presenza online,
-          migliorano il coinvolgimento e incrementano i risultati di business.
-        </p>
-        <a href="#services" class="btn-ghost btn-ghost--white">
-          SCOPRI DI PIÙ
-          <span class="btn-arrow">→</span>
-        </a>
-      </div>
-      <!-- right side intentionally open — the visual weight of the card itself -->
-    </div>
-  </section>
-
-
-  <!-- ══════════════════════════════════════════════════════════
-       CASE STUDIES
-  ══════════════════════════════════════════════════════════ -->
-  <section class="casi-section" id="casistudio">
-    <div class="page-wrap">
-
-      <div class="casi-layout">
-
-        <!-- Left: heading + mini thumbs + CTA -->
-        <div class="casi-left">
-          <h2 class="section-heading">Casi Studio</h2>
-          <div class="casi-thumbs">
-            {caseStudies.slice(0, 3).map(s => (
-              <img src={s.img} alt={s.title} class="casi-thumb" />
-            ))}
+    <section class="max-w-[1400px] mx-auto px-8 py-20">
+      <h2 class="text-3xl font-bold mb-12 uppercase tracking-tighter italic">Cosa facciamo <span class="text-[#FF6A00]">/</span></h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {services.map(s => (
+          <div class="bg-[#0A0A0A] border border-white/5 p-10 rounded-[2.5rem] hover:border-[#FF6A00]/50 transition-all group relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-100 transition-opacity">
+               <span class="text-[#FF6A00] text-4xl">→</span>
+            </div>
+            <h3 class="text-2xl font-bold group-hover:text-[#FF6A00] transition-colors">{s.name}</h3>
+            <p class="mt-12 text-xs text-gray-500 uppercase tracking-widest">Digital Service</p>
           </div>
-          <a href="#" class="btn-ghost btn-ghost--black" style="margin-top:30px">
-            SCOPRI DI PIÙ
-            <span class="btn-arrow">→</span>
-          </a>
-        </div>
-
-        <!-- Right: full-size horizontal scrollable cards -->
-        <div class="casi-scroll no-scrollbar">
-          <div class="casi-track">
-            {caseStudies.map(s => (
-              <div class="casi-card">
-                <img src={s.img} alt={s.title} class="casi-card__img" />
-                <div class="casi-card__overlay">
-                  <p class="casi-card__title">{s.title}</p>
-                  <p class="casi-card__service">{s.service}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
+        ))}
       </div>
-    </div>
-  </section>
+    </section>
 
+    <section class="py-20" id="casistudio">
+      <div class="max-w-[1400px] mx-auto px-8 mb-12">
+        <h2 class="text-3xl font-bold uppercase tracking-tighter italic">Progetti Selezionati <span class="text-[#FF6A00]">/</span></h2>
+      </div>
+      <div class="flex gap-8 overflow-x-auto px-8 pb-10 no-scrollbar">
+        {caseStudies.map(s => (
+          <div class="min-w-[350px] lg:min-w-[450px] aspect-[4/5] relative rounded-[3rem] overflow-hidden group">
+            <img 
+               src={s.img} 
+               alt={s.title} 
+               class="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
+               onerror="this.src='https://placehold.co/600x800/111/white?text=Immagine+In+Arrivo'"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-80"></div>
+            <div class="absolute bottom-10 left-10 right-10">
+              <p class="text-[#FF6A00] font-black text-xs uppercase tracking-[0.3em] mb-3">{s.service}</p>
+              <h3 class="text-3xl font-bold leading-none">{s.title}</h3>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
 
-  <!-- ══════════════════════════════════════════════════════════
-       GHOST TEXT + BLACK LOGOS CARD
-  ══════════════════════════════════════════════════════════ -->
-  <div class="ghost-wrap ghost-wrap--200">
-    <span class="ghost-text">Collaboriamo</span>
-  </div>
+    <section class="max-w-[1400px] mx-auto px-8 py-32 border-t border-white/5">
+      <div class="flex flex-wrap justify-center items-center gap-12 lg:gap-24 opacity-30 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-1000">
+        {partners.map(p => (
+          <img src={p.src} alt={p.alt} class="h-8 lg:h-10 w-auto" />
+        ))}
+      </div>
+    </section>
 
-  <section class="page-wrap" style="margin-top: -53px; position: relative; z-index: 1;">
-    <div class="black-card">
-      <img
-        src="/images/loghi-x-sito-web-ED.png"
-        alt="I nostri clienti"
-        class="black-card__logos"
-        onerror="this.src='/images/loghi-x-sito-web-ED-e1764000086620.png'"
-      />
-    </div>
-  </section>
-
-
-  <!-- ══════════════════════════════════════════════════════════
-       SERVICES
-  ══════════════════════════════════════════════════════════ -->
-  <section class="page-wrap services-section" id="services">
-    <div class="services-grid">
-      {services.map(s => (
-        <div class="service-item">
-          <h3 class="service-name">{s.name}</h3>
-          <a href={s.href} class="btn-metal">
-            SCOPRI DI PIÙ →
-          </a>
-        </div>
-      ))}
-    </div>
-  </section>
-
-
-  <!-- ══════════════════════════════════════════════════════════
-       GHOST TEXT + ORANGE CTA CARD
-  ══════════════════════════════════════════════════════════ -->
-  <div class="ghost-wrap ghost-wrap--164" style="margin-top: 170px;">
-    <span class="ghost-text">Collaboriamo</span>
-  </div>
-
-  <section class="page-wrap" style="margin-top: 178px; position: relative;">
-    <div class="cta-card">
-      <p class="cta-card__body">
-        Ogni grande progetto inizia con una conversazione.<br />
-        Raccontaci la tua idea.
-      </p>
-      <a href="mailto:ed.digitalagency@gmail.com" class="btn-ghost btn-ghost--white">
-        CONTATTACI
-        <span class="btn-arrow">→</span>
-      </a>
-    </div>
-  </section>
-
-
-  <!-- ══════════════════════════════════════════════════════════
-       SCELTI DA – PARTNER LOGOS
-  ══════════════════════════════════════════════════════════ -->
-  <section class="page-wrap partners-section">
-    <h2 class="partners-heading">Scelti da</h2>
-    <div class="partners-grid">
-      {partners.map(p => (
-        <div class="partners-grid__cell">
-          <img src={p.src} alt={p.alt} style={`width: ${p.w}`} class="partner-logo" />
-        </div>
-      ))}
-    </div>
-  </section>
-
+  </main>
 </Layout>
 
-<!-- ══════════════════════════════════════════════════════════
-     PAGE STYLES
-══════════════════════════════════════════════════════════ -->
 <style>
-  /* ── Utilities ──────────────────────────────────────── */
-  .page-wrap {
-    max-width: 1400px;
-    margin-left: auto;
-    margin-right: auto;
-    padding-left: 3rem;   /* 48px */
-    padding-right: 3rem;
-  }
-
-  /* ── HERO ────────────────────────────────────────────── */
-  .hero-section {
-    padding-top: 70px; /* navbar height */
-  }
-
-  .hero-grid {
-    display: grid;
-    grid-template-columns: 47% 34%;
-    justify-content: space-around;
-    align-items: flex-start;
-    min-height: 500px;
-    column-gap: 0;
-  }
-
-  .hero-left {
-    display: flex;
-    flex-direction: column;
-    padding-top: 2rem;
-  }
-
-  .hero-h1 {
-    font-family: 'CalSans', system-ui, sans-serif;
-    font-size: clamp(60px, 6.5vw, 90px);
-    line-height: 1.0;
-    letter-spacing: -0.01em;
-    margin: 0;
-    padding-bottom: 10px;
-  }
-  .hero-h1--black  { font-weight: 400; color: #000; }
-  .hero-h1--orange { font-weight: 400; color: #FF6A00; margin-top: -11px; z-index: 33; position: relative; }
-  .hero-h1--black:last-of-type { margin-top: -10px; }
-
-  .hero-body-wrap {
-    width: 72%;
-    margin-top: 2rem;
-  }
-
-  .hero-body {
-    font-size: 15px;
-    font-weight: 400;
-    line-height: 19px;
-    letter-spacing: 0.5px;
-    word-spacing: 1px;
-    color: #000;
-  }
-
-  .hero-right {
-    position: relative;
-    align-self: stretch;
-  }
-  .hero-img {
-    position: absolute;
-    top: 0;
-    right: -3rem;
-    height: 110%;
-    width: auto;
-    max-width: none;
-    object-fit: contain;
-    object-position: top right;
-  }
-
-  /* ── BUTTONS ─────────────────────────────────────────── */
-  .btn-ghost {
-    display: inline-flex;
-    align-items: center;
-    gap: 20px;
-    padding: 10px 22px;
-    border: 1px solid;
-    border-radius: 20px;
-    background: transparent;
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 0.03em;
-    cursor: pointer;
-    text-decoration: none;
-    margin-top: 30px;
-    transition: background 0.2s, color 0.2s;
-  }
-  .btn-ghost--black {
-    border-color: #000;
-    color: #000;
-  }
-  .btn-ghost--black:hover { background: #000; color: #fff; }
-  .btn-ghost--white {
-    border-color: #fff;
-    color: #fff;
-  }
-  .btn-ghost--white:hover { background: #fff; color: #FF6A00; }
-  .btn-arrow { font-size: 16px; }
-
-  .btn-metal {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 10px 28px;
-    border-radius: 21px;
-    background: linear-gradient(180deg, #666666 0%, #929292 100%);
-    color: #fff;
-    font-family: Helvetica, Arial, sans-serif;
-    font-size: 15px;
-    font-weight: 400;
-    cursor: pointer;
-    text-decoration: none;
-    transition: opacity 0.2s;
-    margin-top: 24px;
-  }
-  .btn-metal:hover { opacity: 0.85; }
-
-  /* ── ORANGE STRATEGY CARD ────────────────────────────── */
-  .orange-card {
-    background-color: #FF6A00;
-    border-radius: 30px;
-    min-height: 596px;
-    display: grid;
-    grid-template-columns: 36% 1fr;
-    margin-top: 150px;
-    padding: 0 40px;
-    overflow: hidden;
-  }
-
-  .orange-card__text {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-  }
-
-  .orange-card__h2 {
-    font-family: 'CalSans', system-ui, sans-serif;
-    font-size: clamp(48px, 5.5vw, 82px);
-    font-weight: 300;
-    line-height: 65px;
-    color: #fff;
-    margin-top: 70px;
-    margin-bottom: 0;
-  }
-
-  .orange-card__body {
-    font-size: 23px;
-    font-weight: 400;
-    line-height: 29px;
-    color: #fff;
-    margin-top: 48px;
-    max-width: 380px;
-  }
-
-  /* ── CASE STUDIES ────────────────────────────────────── */
-  .casi-section {
-    margin-top: 174px;
-  }
-
-  .casi-layout {
-    display: grid;
-    grid-template-columns: 32.5% 1fr;
-    align-items: flex-start;
-    gap: 0 40px;
-  }
-
-  .casi-left {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .section-heading {
-    font-family: 'CalSans', system-ui, sans-serif;
-    font-size: clamp(36px, 4vw, 56px);
-    font-weight: 300;
-    line-height: 1.05;
-    margin: 0 0 16px;
-  }
-
-  .casi-thumbs {
-    display: flex;
-    gap: 8px;
-    margin-top: 12px;
-    align-self: flex-end;
-  }
-  .casi-thumb {
-    width: 80px;
-    height: 100px;
-    object-fit: cover;
-    border-radius: 10px;
-  }
-
-  .casi-scroll {
-    overflow-x: auto;
-    padding-bottom: 12px;
-  }
-  .casi-track {
-    display: flex;
-    gap: 16px;
-    width: max-content;
-  }
-  .casi-card {
-    position: relative;
-    width: 340px;
-    height: 480px;
-    border-radius: 24px;
-    overflow: hidden;
-    flex-shrink: 0;
-  }
-  .casi-card__img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-  .casi-card__overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 24px;
-    background: linear-gradient(to top, rgba(0,0,0,0.72) 0%, transparent 100%);
-  }
-  .casi-card__title   { color: #fff; font-weight: 600; font-size: 16px; margin: 0; }
-  .casi-card__service { color: rgba(255,255,255,0.65); font-size: 12px; margin: 4px 0 0; }
-
-  /* ── GHOST TEXT ──────────────────────────────────────── */
-  .ghost-wrap {
-    text-align: center;
-    overflow: hidden;
-    pointer-events: none;
-    user-select: none;
-    line-height: 0.85;
-  }
-  .ghost-wrap--200 { margin-top: 120px; }
-
-  .ghost-text {
-    font-family: 'CalSans', system-ui, sans-serif;
-    font-weight: 300;
-    color: #00000045;
-    -webkit-text-stroke: 1px rgba(0,0,0,0.25);
-    text-shadow: 0px -6px 43px rgba(0,0,0,0.3);
-    white-space: nowrap;
-    display: inline-block;
-  }
-  .ghost-wrap--200 .ghost-text { font-size: clamp(80px, 13vw, 200px); }
-  .ghost-wrap--164 .ghost-text { font-size: clamp(60px, 11vw, 164px); }
-
-  /* ── BLACK LOGOS CARD ────────────────────────────────── */
-  .black-card {
-    background: #000;
-    border-radius: 30px;
-    min-height: 573px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 50px 60px;
-  }
-  .black-card__logos {
-    width: 100%;
-    max-width: 900px;
-    object-fit: contain;
-  }
-
-  /* ── SERVICES ────────────────────────────────────────── */
-  .services-section {
-    margin-top: 46px;
-    padding-top: 0;
-  }
-
-  .services-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    border-top: 1px solid rgba(0,0,0,0.08);
-  }
-
-  .service-item {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    min-height: 200px;
-    padding: 36px 32px;
-    border-bottom: 1px solid rgba(0,0,0,0.08);
-    border-right: 1px solid rgba(0,0,0,0.08);
-  }
-  .service-item:nth-child(even) { border-right: none; }
-
-  .service-name {
-    font-family: 'CalSans', system-ui, sans-serif;
-    font-size: clamp(22px, 2.2vw, 32px);
-    font-weight: 400;
-    margin: 0;
-  }
-
-  /* ── ORANGE CTA CARD ─────────────────────────────────── */
-  .cta-card {
-    background: #FF6A00;
-    border-radius: 30px;
-    min-height: 344px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 60px 80px;
-  }
-
-  .cta-card__body {
-    font-size: 23px;
-    font-weight: 400;
-    line-height: 29px;
-    color: #fff;
-    max-width: 420px;
-    margin: 0 0 0 0;
-  }
-
-  /* ── PARTNERS / SCELTI DA ────────────────────────────── */
-  .partners-section {
-    margin-top: 120px;
-    padding-bottom: 80px;
-    text-align: center;
-  }
-
-  .partners-heading {
-    font-family: 'Trebuchet MS', 'CalSans', sans-serif;
-    font-size: clamp(36px, 3.5vw, 56px);
-    font-weight: 600;
-    margin: 0 0 50px;
-  }
-
-  .partners-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    align-items: center;
-    justify-items: center;
-    gap: 24px;
-    max-width: 83%;
-    margin: 0 auto;
-  }
-
-  .partners-grid__cell {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-  }
-
-  .partner-logo {
-    max-height: 48px;
-    width: auto;
-    object-fit: contain;
-    filter: grayscale(100%);
-    opacity: 0.6;
-    transition: opacity 0.2s, filter 0.2s;
-  }
-  .partner-logo:hover { filter: none; opacity: 1; }
-
-  /* ── RESPONSIVE ──────────────────────────────────────── */
-  @media (max-width: 900px) {
-    .page-wrap { padding-left: 1.5rem; padding-right: 1.5rem; }
-
-    .hero-grid {
-      grid-template-columns: 1fr;
-    }
-    .hero-right { display: none; }
-    .hero-body-wrap { width: 100%; }
-
-    .orange-card {
-      grid-template-columns: 1fr;
-      margin-top: 65px;
-      padding: 40px 28px;
-    }
-    .orange-card__h2 { line-height: 0.9em; }
-
-    .casi-layout { grid-template-columns: 1fr; gap: 24px; }
-    .casi-thumbs { align-self: flex-start; }
-
-    .ghost-wrap--200 .ghost-text { font-size: 98px; }
-    .ghost-wrap--164 .ghost-text { font-size: 60px; }
-
-    .services-grid { grid-template-columns: 1fr; }
-    .service-item { border-right: none; }
-
-    .cta-card { padding: 48px 28px; }
-    .cta-card__body { font-size: 18px; }
-
-    .partners-grid { grid-template-columns: repeat(2, 1fr); max-width: 100%; }
-  }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
