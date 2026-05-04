@@ -2,10 +2,14 @@
   "name": "agenzia-v2",
   "type": "module",
   "version": "0.0.1",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "start": "astro preview --host 0.0.0.0 --port $PORT"
   },
   "dependencies": {
     "@astrojs/react": "^5.0.4",
