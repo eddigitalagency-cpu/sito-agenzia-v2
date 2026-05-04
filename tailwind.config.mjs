@@ -5,7 +5,14 @@ export default {
     extend: {
       fontFamily: {
         sans: ['GraphikLCG', 'Inter', 'system-ui', 'sans-serif'],
-        cal: ['CalSans', 'system-ui', 'sans-serif'],
+        cal:  ['CalSans', 'sans-serif'],
+        body: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+      },
+      fontSize: {
+        'heading': ['90px', { lineHeight: '117px', fontWeight: '600' }],
+      },
+      colors: {
+        'body-text': 'rgb(161, 161, 170)',
       },
     },
   },

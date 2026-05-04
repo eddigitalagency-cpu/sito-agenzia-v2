@@ -81,14 +81,14 @@ export default function HomePage() {
 
             <motion.h1
               variants={fadeUp}
-              className="text-6xl lg:text-8xl font-black uppercase leading-[0.88] tracking-tighter italic"
+              className="font-cal font-semibold uppercase tracking-tighter italic text-white text-5xl leading-tight lg:text-heading"
             >
               La nostra <br />
               <span className="text-[#FF6A00]">creatività</span> <br />
               la tua visione.
             </motion.h1>
 
-            <motion.p variants={fadeUp} className="text-white/50 text-lg max-w-md leading-relaxed">
+            <motion.p variants={fadeUp} className="font-body font-[250] text-body-text text-base leading-6 max-w-md">
               Siamo il motore digitale della tua crescita. Strategie sartoriali per brand che non temono di farsi notare.
             </motion.p>
 
@@ -137,10 +137,10 @@ export default function HomePage() {
       <section id="services" className="max-w-[1400px] mx-auto px-6 md:px-12 py-28">
         <Section>
           <motion.div variants={fadeUp} className="flex items-end justify-between mb-16 gap-8 flex-wrap">
-            <h2 className="text-4xl lg:text-5xl font-black uppercase tracking-tighter italic leading-tight">
+            <h2 className="font-cal font-semibold uppercase tracking-tighter italic text-white text-4xl lg:text-5xl leading-tight">
               Cosa facciamo <span className="text-[#FF6A00]">/</span>
             </h2>
-            <p className="text-white/40 max-w-sm text-sm leading-relaxed">
+            <p className="font-body font-[250] text-body-text text-base leading-6 max-w-sm">
               Ogni servizio è studiato per portare risultati concreti e misurabili al tuo business.
             </p>
           </motion.div>
@@ -169,7 +169,7 @@ export default function HomePage() {
       <section id="casistudio" className="pb-28">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 mb-12">
           <Section>
-            <motion.h2 variants={fadeUp} className="text-4xl lg:text-5xl font-black uppercase tracking-tighter italic">
+            <motion.h2 variants={fadeUp} className="font-cal font-semibold uppercase tracking-tighter italic text-white text-4xl lg:text-5xl">
               Progetti Selezionati <span className="text-[#FF6A00]">/</span>
             </motion.h2>
           </Section>
@@ -210,7 +210,7 @@ export default function HomePage() {
           >
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none"></div>
             <p className="text-black/60 text-sm uppercase tracking-widest mb-4 font-medium">Pronto a crescere?</p>
-            <h2 className="text-4xl lg:text-6xl font-black uppercase tracking-tighter italic text-black leading-tight mb-8">
+            <h2 className="font-cal font-semibold uppercase tracking-tighter italic text-black text-4xl lg:text-6xl leading-tight mb-8">
               Costruiamo qualcosa <br /> di straordinario.
             </h2>
             <a
