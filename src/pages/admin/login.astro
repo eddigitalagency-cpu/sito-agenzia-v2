@@ -3,7 +3,7 @@ export const prerender = false;
 const auth  = Astro.cookies.get('ed-admin');
 const stored = process.env.ADMIN_PASSWORD ?? '';
 if (stored && auth?.value === stored) return Astro.redirect('/admin');
-const err = Astro.url.searchParams.get('err');
+const err = Astro.url.searchParams.get('err'); // '1' = wrong pwd, '2' = rate limited
 ---
 <!doctype html>
 <html lang="it">
@@ -32,7 +32,8 @@ const err = Astro.url.searchParams.get('err');
     <div class="logo">ED Digital Agency</div>
     <h1>Admin Panel</h1>
     <p>Inserisci la password per accedere</p>
-    {err && <div class="err">Password errata. Riprova.</div>}
+    {err === '1' && <div class="err">Password errata. Riprova.</div>}
+    {err === '2' && <div class="err">Troppi tentativi. Riprova tra 15 minuti.</div>}
     <form method="POST" action="/api/admin/login">
       <label for="pwd">Password</label>
       <input id="pwd" name="password" type="password" placeholder="••••••••" autofocus required />

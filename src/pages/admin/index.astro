@@ -1,11 +1,16 @@
 ---
 export const prerender = false;
 import { getPool, initDB } from '../../lib/db';
+import { createHash } from 'node:crypto';
+
+function sessionToken(pwd: string) {
+  return createHash('sha256').update(`ed-admin-session:${pwd}`).digest('hex');
+}
 
 // ── Auth ──────────────────────────────────────────────────────
 const auth   = Astro.cookies.get('ed-admin');
 const stored = process.env.ADMIN_PASSWORD ?? '';
-if (!stored || auth?.value !== stored) return Astro.redirect('/admin/login');
+if (!stored || auth?.value !== sessionToken(stored)) return Astro.redirect('/admin/login');
 
 // ── Data ──────────────────────────────────────────────────────
 await initDB();
