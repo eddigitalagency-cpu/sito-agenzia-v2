@@ -1,0 +1,37 @@
+# ED Digital Agency
+
+> Agenzia digitale italiana con sede a Vittorio Veneto (Treviso, Veneto). Offriamo servizi completi di marketing digitale, sviluppo web, e-commerce, visual identity e automazioni per PMI italiane.
+
+## Chi siamo
+
+ED Digital Agency è il partner strategico per le piccole e medie imprese italiane che vogliono crescere online. Lavoriamo con un approccio sartoriale: ogni strategia è costruita su misura per il cliente, non con template generici. Dal digitale al fisico, sempre con un obiettivo: far crescere il business.
+
+## Servizi offerti
+
+- **Social Media Management**: gestione strategica e creazione contenuti per Instagram, Facebook, LinkedIn, TikTok. Piano editoriale mensile, community management, report KPI.
+- **Advertising**: campagne a pagamento su Meta Ads, Google Ads, TikTok Ads con ottimizzazione continua del ROAS.
+- **Website**: sviluppo siti web custom su WordPress, Astro, React/Next.js. Ottimizzazione SEO on-page, responsive, veloci.
+- **E-Commerce**: negozi Shopify e WooCommerce ottimizzati per le conversioni. Partner Shopify certificati.
+- **Photo & Video**: produzione fotografica e video professionale per brand, social media, campagne advertising.
+- **Visual Identity**: logo design, brand guidelines, palette colori, tipografia, brandbook completo.
+- **MVP & SaaS**: sviluppo prodotti digitali con metodologia lean. Next.js, Node.js, Supabase.
+- **App Development**: applicazioni iOS e Android con React Native. Pubblicazione su App Store e Google Play.
+- **Integrazioni & Automazioni**: connessioni tra CRM, ERP, e-commerce, contabilità via API dirette, Make, Zapier, n8n.
+
+## Contatti
+
+- Email: info@eddigitalagency.it
+- Telefono: +39 379 3248371
+- Indirizzo: Via Carlo Torres, 17/Interno 13, 31029 Vittorio Veneto (TV), Italia
+- Sito web: https://eddigitalagency.it
+
+## Statistiche
+
+- Oltre 50 progetti completati
+- Oltre 5 anni di esperienza
+- 98% clienti soddisfatti
+- Crescita media 3× per i clienti
+
+## Area geografica servita
+
+Principalmente Italia, con focus su Veneto, Treviso, Vittorio Veneto. Disponibili per clienti remoti su tutto il territorio nazionale.

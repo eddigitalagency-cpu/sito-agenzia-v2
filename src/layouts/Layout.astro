@@ -5,11 +5,17 @@ import CustomCursor from '../components/CustomCursor';
 interface Props {
   title: string;
   description?: string;
+  ogImage?: string;
 }
 const {
   title,
-  description = 'ED Digital Agency — Il partner strategico per le piccole imprese che vogliono crescere online.',
+  description = 'ED Digital Agency — Il partner strategico per le piccole imprese italiane che vogliono crescere online. Social media, advertising, siti web, e-commerce, visual identity e automazioni.',
+  ogImage = '/Images/Logo_Bianco_ED.webp',
 } = Astro.props;
+
+const canonicalURL  = new URL(Astro.url.pathname, 'https://eddigitalagency.it');
+const fullTitle     = `${title} — ED Digital Agency`;
+const ogImageAbs    = new URL(ogImage, 'https://eddigitalagency.it').toString();
 ---
 
 <!doctype html>
@@ -17,11 +23,120 @@ const {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content={description} />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>{title} — ED Digital Agency</title>
 
-    <!-- Flash prevention: apply saved theme before first paint -->
+    <!-- ── Primary SEO ──────────────────────────────────────── -->
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="keywords" content="agenzia digitale, web design, social media marketing, advertising, e-commerce, visual identity, app development, Vittorio Veneto, Treviso, Veneto, Italy, SEO, digital marketing" />
+    <meta name="author" content="ED Digital Agency" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <link rel="canonical" href={canonicalURL} />
+
+    <!-- ── Geo ─────────────────────────────────────────────── -->
+    <meta name="geo.region" content="IT-TV" />
+    <meta name="geo.placename" content="Vittorio Veneto, Treviso" />
+    <meta name="geo.position" content="45.9826;12.3001" />
+    <meta name="ICBM" content="45.9826, 12.3001" />
+
+    <!-- ── Open Graph ──────────────────────────────────────── -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImageAbs} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="it_IT" />
+    <meta property="og:site_name" content="ED Digital Agency" />
+
+    <!-- ── Twitter Card ────────────────────────────────────── -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageAbs} />
+
+    <!-- ── Icons & Theme ───────────────────────────────────── -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#FF6A00" />
+    <meta name="msapplication-TileColor" content="#FF6A00" />
+
+    <!-- ── JSON-LD Structured Data ─────────────────────────── -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": ["Organization", "LocalBusiness"],
+            "@id": "https://eddigitalagency.it/#organization",
+            "name": "ED Digital Agency",
+            "alternateName": "ED Digital",
+            "url": "https://eddigitalagency.it",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://eddigitalagency.it/Images/Logo_Bianco_ED.webp"
+            },
+            "image": "https://eddigitalagency.it/Images/Logo_Bianco_ED.webp",
+            "description": "Agenzia digitale italiana specializzata in social media marketing, advertising, sviluppo web, e-commerce, visual identity, MVP e automazioni per PMI italiane.",
+            "telephone": "+39 379 3248371",
+            "email": "info@eddigitalagency.it",
+            "address": {
+              "@type": "PostalAddress",
+              "streetAddress": "Via Carlo Torres, 17/Interno 13",
+              "addressLocality": "Vittorio Veneto",
+              "addressRegion": "TV",
+              "postalCode": "31029",
+              "addressCountry": "IT"
+            },
+            "geo": {
+              "@type": "GeoCoordinates",
+              "latitude": 45.9826,
+              "longitude": 12.3001
+            },
+            "areaServed": {
+              "@type": "Country",
+              "name": "Italia"
+            },
+            "knowsLanguage": "it",
+            "priceRange": "€€",
+            "hasOfferCatalog": {
+              "@type": "OfferCatalog",
+              "name": "Servizi Digitali",
+              "itemListElement": [
+                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Social Media Management", "url": "https://eddigitalagency.it/servizi/social-media-management" } },
+                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Advertising", "url": "https://eddigitalagency.it/servizi/advertising" } },
+                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Website", "url": "https://eddigitalagency.it/servizi/website" } },
+                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "E-Commerce", "url": "https://eddigitalagency.it/servizi/ecommerce" } },
+                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Photo & Video", "url": "https://eddigitalagency.it/servizi/photo-video" } },
+                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Visual Identity", "url": "https://eddigitalagency.it/servizi/visual-identity" } },
+                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "MVP & SaaS", "url": "https://eddigitalagency.it/servizi/mvp-saas" } },
+                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "App Development", "url": "https://eddigitalagency.it/servizi/app" } },
+                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Integrazioni & Automazioni", "url": "https://eddigitalagency.it/servizi/integrazioni" } }
+              ]
+            }
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://eddigitalagency.it/#website",
+            "url": "https://eddigitalagency.it",
+            "name": "ED Digital Agency",
+            "description": "Agenzia digitale per PMI italiane",
+            "publisher": { "@id": "https://eddigitalagency.it/#organization" },
+            "inLanguage": "it-IT"
+          },
+          {
+            "@type": "WebPage",
+            "@id": "https://eddigitalagency.it/#webpage",
+            "url": "https://eddigitalagency.it",
+            "name": "ED Digital Agency — Partner Strategico Digitale",
+            "isPartOf": { "@id": "https://eddigitalagency.it/#website" },
+            "about": { "@id": "https://eddigitalagency.it/#organization" },
+            "inLanguage": "it-IT"
+          }
+        ]
+      }
+    </script>
+
+    <!-- ── Flash prevention: apply saved theme before paint ── -->
     <script is:inline>
       (function(){var t=localStorage.getItem('ed-theme');if(t==='light')document.documentElement.classList.add('light');})();
     </script>
@@ -84,8 +199,9 @@ const {
       .ham-bar { background-color: rgb(var(--c-text)); }
 
       /* ── Footer Themed Classes ───────────────────────────── */
-      .footer-link { color: rgba(var(--c-text), 0.35); transition: color 0.2s ease; }
+      .footer-link { color: rgba(var(--c-text), 0.4); transition: color 0.2s ease; }
       .footer-link:hover { color: rgb(var(--c-text)); }
+      .footer-heading { color: rgba(var(--c-text), 0.9); }
       .footer-dot  { color: rgba(var(--c-text), 0.15); }
 
       /* ── Smooth theme transition ─────────────────────────── */
@@ -118,16 +234,101 @@ const {
     </main>
 
     <!-- ── Footer ──────────────────────────────────────────── -->
-    <footer id="contatti" class="t-border-subtle" style="border-top:1px solid rgba(var(--c-text),0.06); padding:4rem 2rem;">
-      <div class="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-8 px-0 md:px-4">
-        <a href="/">
-          <img id="footer-logo" src="/Images/Logo_Bianco_ED.webp" alt="ED Digital Agency" class="h-9 w-auto" />
-        </a>
-        <p class="text-xs t-text-25">© 2026 ED Digital Agency. Tutti i diritti riservati.</p>
-        <div class="flex flex-wrap gap-6 text-xs">
-          <a href="mailto:ed.digitalagency@gmail.com" class="footer-link">ed.digitalagency@gmail.com</a>
-          <span class="footer-dot">·</span>
-          <a href="https://eddigitalagency.it" class="footer-link">eddigitalagency.it</a>
+    <footer id="contatti" style="border-top:1px solid rgba(var(--c-text),0.06);">
+      <div class="max-w-[1400px] mx-auto px-6 md:px-12 pt-16 pb-10">
+
+        <!-- Top: logo + tagline + CTA -->
+        <div class="flex flex-col md:flex-row md:items-start justify-between gap-10 mb-14">
+          <div class="max-w-xs">
+            <a href="/" aria-label="ED Digital Agency — Home">
+              <img id="footer-logo" src="/Images/Logo_Bianco_ED.webp" alt="ED Digital Agency" class="h-10 w-auto mb-5" loading="lazy" />
+            </a>
+            <p class="text-sm leading-relaxed" style="color:rgba(var(--c-muted),1)">
+              Il partner strategico per le PMI italiane che vogliono crescere nel digitale.
+            </p>
+          </div>
+
+          <a href="/contatti"
+            class="self-start inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold uppercase tracking-widest transition-all duration-200 active:scale-95"
+            style="background:#FF6A00; color:#000;">
+            Inizia un progetto →
+          </a>
+        </div>
+
+        <!-- Nav columns -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-10 mb-14">
+
+          <!-- Servizi -->
+          <div>
+            <p class="footer-heading text-xs font-semibold uppercase tracking-[0.18em] mb-5">Servizi</p>
+            <ul class="space-y-3 text-sm">
+              <li><a href="/servizi/social-media-management" class="footer-link">Social Media</a></li>
+              <li><a href="/servizi/advertising" class="footer-link">Advertising</a></li>
+              <li><a href="/servizi/website" class="footer-link">Website</a></li>
+              <li><a href="/servizi/ecommerce" class="footer-link">E-Commerce</a></li>
+              <li><a href="/servizi/photo-video" class="footer-link">Photo & Video</a></li>
+              <li><a href="/servizi/visual-identity" class="footer-link">Visual Identity</a></li>
+              <li><a href="/servizi/mvp-saas" class="footer-link">MVP & SaaS</a></li>
+              <li><a href="/servizi/app" class="footer-link">App</a></li>
+              <li><a href="/servizi/integrazioni" class="footer-link">Integrazioni</a></li>
+            </ul>
+          </div>
+
+          <!-- Agenzia -->
+          <div>
+            <p class="footer-heading text-xs font-semibold uppercase tracking-[0.18em] mb-5">Agenzia</p>
+            <ul class="space-y-3 text-sm">
+              <li><a href="/" class="footer-link">Home</a></li>
+              <li><a href="/servizi" class="footer-link">Servizi</a></li>
+              <li><a href="/#casistudio" class="footer-link">Progetti</a></li>
+              <li><a href="/contatti" class="footer-link">Contatti</a></li>
+            </ul>
+          </div>
+
+          <!-- Contatti -->
+          <div class="col-span-2 md:col-span-2">
+            <p class="footer-heading text-xs font-semibold uppercase tracking-[0.18em] mb-5">Contatti</p>
+            <ul class="space-y-3 text-sm">
+              <li>
+                <a href="mailto:info@eddigitalagency.it" class="footer-link flex items-center gap-2">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                  info@eddigitalagency.it
+                </a>
+              </li>
+              <li>
+                <a href="tel:+393793248371" class="footer-link flex items-center gap-2">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.1 6.1l.91-.9a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                  +39 379 324 8371
+                </a>
+              </li>
+              <li>
+                <a href="https://maps.google.com/?q=Via+Carlo+Torres+17+Vittorio+Veneto+TV" target="_blank" rel="noopener noreferrer" class="footer-link flex items-center gap-2">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Via Carlo Torres 17, Vittorio Veneto (TV)
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Bottom bar -->
+        <div style="border-top:1px solid rgba(var(--c-text),0.06); padding-top:2rem;"
+          class="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p class="text-xs" style="color:rgba(var(--c-text),0.25);">
+            © 2026 ED Digital Agency. Tutti i diritti riservati.
+          </p>
+          <p class="text-xs" style="color:rgba(var(--c-text),0.20);">
+            Vittorio Veneto (TV) · Italia
+          </p>
+          <!-- Social icons -->
+          <div class="flex items-center gap-4">
+            <a href="https://instagram.com/eddigitalagency" target="_blank" rel="noopener noreferrer" class="footer-link" aria-label="Instagram">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/></svg>
+            </a>
+            <a href="https://linkedin.com/company/ed-digital-agency" target="_blank" rel="noopener noreferrer" class="footer-link" aria-label="LinkedIn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+            </a>
+          </div>
         </div>
       </div>
     </footer>
