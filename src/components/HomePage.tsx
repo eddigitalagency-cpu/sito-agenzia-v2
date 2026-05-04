@@ -165,7 +165,40 @@ function StatItem({ value, suffix, label }: { value: number; suffix: string; lab
 
 export default function HomePage() {
   const heroRef = useRef(null);
+  const caseScrollRef = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll();
+
+  // Wheel → horizontal scroll with lerp for case studies
+  useEffect(() => {
+    const el = caseScrollRef.current;
+    if (!el) return;
+    let target = 0;
+    let rafId = 0;
+
+    const tick = () => {
+      const dx = target - el.scrollLeft;
+      if (Math.abs(dx) < 0.5) { el.scrollLeft = target; return; }
+      el.scrollLeft += dx * 0.1;
+      rafId = requestAnimationFrame(tick);
+    };
+
+    const onWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+      e.preventDefault();
+      target = Math.max(0, Math.min(el.scrollWidth - el.clientWidth, target + e.deltaY));
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(tick);
+    };
+
+    const syncTarget = () => { target = el.scrollLeft; };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    el.addEventListener('pointerenter', syncTarget);
+    return () => {
+      el.removeEventListener('wheel', onWheel);
+      el.removeEventListener('pointerenter', syncTarget);
+      cancelAnimationFrame(rafId);
+    };
+  }, []);
 
   // Hero parallax
   const heroTextY    = useTransform(scrollY, [0, 600], [0, -80]);
@@ -345,7 +378,7 @@ export default function HomePage() {
           </Section>
         </div>
 
-        <div className="flex gap-4 md:gap-5 overflow-x-auto px-5 md:px-12 pb-6 no-scrollbar">
+        <div ref={caseScrollRef} className="flex gap-4 md:gap-5 overflow-x-auto px-5 md:px-12 pb-6 no-scrollbar" style={{ cursor: 'grab' }}>
           {caseStudies.map((s, i) => (
             <motion.div
               key={s.title}
