@@ -13,6 +13,9 @@ export default defineConfig({
     react(),
     sitemap(),
   ],
+  security: {
+    checkOrigin: false,
+  },
   server: {
     allowedHosts: true,
   },
