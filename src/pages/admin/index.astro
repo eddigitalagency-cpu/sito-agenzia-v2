@@ -1,0 +1,223 @@
+---
+export const prerender = false;
+import { getPool, initDB } from '../../lib/db';
+
+// ── Auth ──────────────────────────────────────────────────────
+const auth   = Astro.cookies.get('ed-admin');
+const stored = process.env.ADMIN_PASSWORD ?? '';
+if (!stored || auth?.value !== stored) return Astro.redirect('/admin/login');
+
+// ── Data ──────────────────────────────────────────────────────
+await initDB();
+const db = getPool();
+
+const [
+  totalViews, todayViews, weekViews, monthViews,
+  topPages, dailyViews, submissions, totalForms,
+] = await Promise.all([
+  db.query<{count:number}>('SELECT COUNT(*)::int AS count FROM page_views'),
+  db.query<{count:number}>("SELECT COUNT(*)::int AS count FROM page_views WHERE created_at > NOW()-INTERVAL'1 day'"),
+  db.query<{count:number}>("SELECT COUNT(*)::int AS count FROM page_views WHERE created_at > NOW()-INTERVAL'7 days'"),
+  db.query<{count:number}>("SELECT COUNT(*)::int AS count FROM page_views WHERE created_at > NOW()-INTERVAL'30 days'"),
+  db.query<{path:string,count:number}>("SELECT path, COUNT(*)::int AS count FROM page_views WHERE created_at > NOW()-INTERVAL'30 days' GROUP BY path ORDER BY count DESC LIMIT 10"),
+  db.query<{day:string,count:number}>("SELECT TO_CHAR(DATE(created_at AT TIME ZONE 'Europe/Rome'),'DD/MM') AS day, COUNT(*)::int AS count FROM page_views WHERE created_at > NOW()-INTERVAL'7 days' GROUP BY DATE(created_at AT TIME ZONE 'Europe/Rome') ORDER BY DATE(created_at AT TIME ZONE 'Europe/Rome')"),
+  db.query<{id:number,name:string,email:string,phone:string,company:string,service:string,message:string,created_at:string}>("SELECT * FROM form_submissions ORDER BY created_at DESC LIMIT 100"),
+  db.query<{count:number}>('SELECT COUNT(*)::int AS count FROM form_submissions'),
+]);
+
+const tv  = totalViews.rows[0].count;
+const tdy = todayViews.rows[0].count;
+const wk  = weekViews.rows[0].count;
+const mo  = monthViews.rows[0].count;
+const tf  = totalForms.rows[0].count;
+const pages = topPages.rows;
+const daily = dailyViews.rows;
+const forms = submissions.rows;
+const maxPage = pages[0]?.count ?? 1;
+const maxDay  = Math.max(...daily.map(d => d.count), 1);
+
+function fmt(d: string) {
+  return new Date(d).toLocaleString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+---
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Admin — ED Digital Agency</title>
+  <meta name="robots" content="noindex,nofollow"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#080808;color:#fff;font-family:system-ui,sans-serif;min-height:100vh;}
+    a{color:inherit;text-decoration:none;}
+
+    /* Layout */
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 32px;border-bottom:1px solid rgba(255,255,255,.07);background:#0f0f0f;position:sticky;top:0;z-index:10;}
+    .topbar-left{display:flex;align-items:center;gap:12px;}
+    .brand{font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.4);}
+    .badge{background:#FF6A00;color:#000;font-size:10px;font-weight:800;padding:3px 8px;border-radius:99px;letter-spacing:.08em;text-transform:uppercase;}
+    .logout-form button{padding:8px 16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.5);font-size:12px;cursor:pointer;}
+    .logout-form button:hover{color:#fff;border-color:rgba(255,255,255,.3);}
+
+    .wrap{max-width:1400px;margin:0 auto;padding:32px;}
+
+    /* Stat cards */
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:36px;}
+    .stat{background:#111;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:24px 20px;}
+    .stat-label{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.35);margin-bottom:10px;}
+    .stat-value{font-size:36px;font-weight:800;line-height:1;}
+    .stat-value.orange{color:#FF6A00;}
+
+    /* Grid 2 col */
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:36px;}
+    @media(max-width:900px){.grid2{grid-template-columns:1fr;}}
+
+    .panel{background:#111;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:24px;}
+    .panel-title{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.35);margin-bottom:20px;}
+
+    /* Bar chart (daily) */
+    .bars{display:flex;align-items:flex-end;gap:8px;height:80px;}
+    .bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;}
+    .bar{width:100%;background:#FF6A00;border-radius:4px 4px 0 0;min-height:3px;transition:opacity .2s;}
+    .bar:hover{opacity:.8;}
+    .bar-label{font-size:10px;color:rgba(255,255,255,.3);}
+    .bar-val{font-size:10px;color:rgba(255,255,255,.5);}
+
+    /* Top pages */
+    .page-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+    .page-row:last-child{border-bottom:none;}
+    .page-path{flex:1;font-size:13px;color:rgba(255,255,255,.75);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .page-bar{flex:2;height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;}
+    .page-fill{height:100%;background:#FF6A00;border-radius:3px;}
+    .page-count{font-size:12px;font-weight:700;color:rgba(255,255,255,.5);width:32px;text-align:right;}
+
+    /* Submissions table */
+    .table-wrap{overflow-x:auto;}
+    table{width:100%;border-collapse:collapse;font-size:13px;}
+    th{text-align:left;padding:10px 14px;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.3);border-bottom:1px solid rgba(255,255,255,.08);white-space:nowrap;}
+    td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:top;color:rgba(255,255,255,.8);}
+    tr:last-child td{border-bottom:none;}
+    tr:hover td{background:rgba(255,255,255,.02);}
+    .msg{max-width:280px;white-space:normal;font-size:12px;color:rgba(255,255,255,.5);}
+    .svc{background:rgba(255,106,0,.15);color:#FF6A00;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;white-space:nowrap;}
+    .empty{color:rgba(255,255,255,.25);font-size:13px;padding:24px;text-align:center;}
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="brand">ED Digital Agency</span>
+      <span class="badge">Admin</span>
+    </div>
+    <form class="logout-form" method="POST" action="/api/admin/logout">
+      <button type="submit">Esci</button>
+    </form>
+  </div>
+
+  <div class="wrap">
+
+    <!-- Stats cards -->
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">Visualizzazioni totali</div>
+        <div class="stat-value orange">{tv.toLocaleString('it-IT')}</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Oggi</div>
+        <div class="stat-value">{tdy.toLocaleString('it-IT')}</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Ultimi 7 giorni</div>
+        <div class="stat-value">{wk.toLocaleString('it-IT')}</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Ultimi 30 giorni</div>
+        <div class="stat-value">{mo.toLocaleString('it-IT')}</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Richieste form</div>
+        <div class="stat-value orange">{tf.toLocaleString('it-IT')}</div>
+      </div>
+    </div>
+
+    <!-- Charts row -->
+    <div class="grid2">
+
+      <!-- Daily bar chart -->
+      <div class="panel">
+        <div class="panel-title">Visite ultimi 7 giorni</div>
+        {daily.length === 0
+          ? <p class="empty">Nessun dato ancora</p>
+          : (
+            <div class="bars">
+              {daily.map(d => (
+                <div class="bar-wrap">
+                  <span class="bar-val">{d.count}</span>
+                  <div class="bar" style={`height:${Math.round((d.count/maxDay)*70)+10}px`}></div>
+                  <span class="bar-label">{d.day}</span>
+                </div>
+              ))}
+            </div>
+          )
+        }
+      </div>
+
+      <!-- Top pages -->
+      <div class="panel">
+        <div class="panel-title">Pagine più visitate (30gg)</div>
+        {pages.length === 0
+          ? <p class="empty">Nessun dato ancora</p>
+          : pages.map(p => (
+            <div class="page-row">
+              <div class="page-path">{p.path}</div>
+              <div class="page-bar"><div class="page-fill" style={`width:${Math.round((p.count/maxPage)*100)}%`}></div></div>
+              <div class="page-count">{p.count}</div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+
+    <!-- Form submissions -->
+    <div class="panel">
+      <div class="panel-title">Richieste dal form ({tf} totali)</div>
+      {forms.length === 0
+        ? <p class="empty">Nessuna richiesta ricevuta ancora</p>
+        : (
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Nome</th>
+                  <th>Email</th>
+                  <th>Telefono</th>
+                  <th>Azienda</th>
+                  <th>Servizio</th>
+                  <th>Messaggio</th>
+                </tr>
+              </thead>
+              <tbody>
+                {forms.map(f => (
+                  <tr>
+                    <td style="white-space:nowrap;color:rgba(255,255,255,.4);font-size:12px">{fmt(f.created_at)}</td>
+                    <td style="font-weight:600">{f.name}</td>
+                    <td><a href={`mailto:${f.email}`} style="color:#FF6A00">{f.email}</a></td>
+                    <td>{f.phone || '—'}</td>
+                    <td>{f.company || '—'}</td>
+                    <td>{f.service ? <span class="svc">{f.service}</span> : '—'}</td>
+                    <td class="msg">{f.message}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )
+      }
+    </div>
+
+  </div>
+</body>
+</html>

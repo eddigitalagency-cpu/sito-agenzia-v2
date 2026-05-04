@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { Resend } from 'resend';
+import { getPool, initDB } from '../../lib/db';
 
 export const prerender = false;
 
@@ -59,6 +60,14 @@ export const POST: APIRoute = async ({ request }) => {
       </div>
     </div>
   `;
+
+  // Save to DB (non-blocking — never fail the request over this)
+  initDB()
+    .then(() => getPool().query(
+      'INSERT INTO form_submissions (name,email,phone,company,service,message) VALUES ($1,$2,$3,$4,$5,$6)',
+      [name, email, phone ?? null, company ?? null, service ?? null, message],
+    ))
+    .catch(err => console.error('DB save error:', err));
 
   try {
     await resend.emails.send({

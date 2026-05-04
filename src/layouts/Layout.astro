@@ -347,6 +347,20 @@ const ogImageAbs    = new URL(ogImage, 'https://eddigitalagency.it').toString();
       })();
     </script>
 
+    <!-- Page view tracking -->
+    <script is:inline>
+      (function(){
+        try {
+          fetch('/api/track', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path: window.location.pathname, referrer: document.referrer || null }),
+            keepalive: true,
+          });
+        } catch(e) {}
+      })();
+    </script>
+
     <CustomCursor client:load />
 
   </body>
