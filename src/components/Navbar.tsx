@@ -40,9 +40,9 @@ export default function Navbar() {
           {/* Logo */}
           <a href="/" className="shrink-0">
             <img
-              src="/images/ED-Digital-logo-black.svg"
+              src="/images/Logo_Bianco_ED.webp"
               alt="ED Digital Agency"
-              className={`h-6 transition-all duration-300 ${isDark ? 'invert' : ''}`}
+              className={`h-9 w-auto transition-all duration-300 ${isDark ? '' : 'invert'}`}
             />
           </a>
 

@@ -121,7 +121,7 @@ const {
     <footer id="contatti" class="t-border-subtle" style="border-top:1px solid rgba(var(--c-text),0.06); padding:4rem 2rem;">
       <div class="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-8 px-0 md:px-4">
         <a href="/">
-          <img id="footer-logo" src="/images/ED-Digital-logo-black.svg" alt="ED Digital Agency" class="h-6" />
+          <img id="footer-logo" src="/images/Logo_Bianco_ED.webp" alt="ED Digital Agency" class="h-9 w-auto" />
         </a>
         <p class="text-xs t-text-25">© 2026 ED Digital Agency. Tutti i diritti riservati.</p>
         <div class="flex flex-wrap gap-6 text-xs">
@@ -137,7 +137,7 @@ const {
       (function(){
         function syncLogo(){
           var el=document.getElementById('footer-logo');
-          if(el) el.style.filter=document.documentElement.classList.contains('light')?'none':'invert(1)';
+          if(el) el.style.filter=document.documentElement.classList.contains('light')?'invert(1)':'none';
         }
         syncLogo();
         var obs=new MutationObserver(syncLogo);
