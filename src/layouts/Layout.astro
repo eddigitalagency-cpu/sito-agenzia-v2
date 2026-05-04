@@ -1,4 +1,7 @@
 ---
+import Navbar from '../components/Navbar';
+import CustomCursor from '../components/CustomCursor';
+
 interface Props {
   title: string;
   description?: string;
@@ -18,137 +21,131 @@ const {
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{title} — ED Digital Agency</title>
 
+    <!-- Flash prevention: apply saved theme before first paint -->
+    <script is:inline>
+      (function(){var t=localStorage.getItem('ed-theme');if(t==='light')document.documentElement.classList.add('light');})();
+    </script>
+
     <style is:global>
-      /* ── Custom Fonts ────────────────────────────────── */
+      /* ── Custom Fonts ──────────────────────────────────────── */
       @font-face {
         font-family: 'CalSans';
         src: url('/fonts/CalSans-Regular.ttf') format('truetype');
         font-weight: 400 700;
         font-display: swap;
       }
-      @font-face {
-        font-family: 'GraphikLCG';
-        src: url('/fonts/GraphikLCG-Extralight.woff2') format('woff2');
-        font-weight: 200;
-        font-display: swap;
+      @font-face { font-family:'GraphikLCG'; src:url('/fonts/GraphikLCG-Extralight.woff2') format('woff2'); font-weight:200; font-display:swap; }
+      @font-face { font-family:'GraphikLCG'; src:url('/fonts/GraphikLCG-Light.woff2') format('woff2');      font-weight:300; font-display:swap; }
+      @font-face { font-family:'GraphikLCG'; src:url('/fonts/GraphikLCG-Regular.woff2') format('woff2');    font-weight:400; font-display:swap; }
+      @font-face { font-family:'GraphikLCG'; src:url('/fonts/GraphikLCG-Medium.woff2') format('woff2');     font-weight:500; font-display:swap; }
+      @font-face { font-family:'GraphikLCG'; src:url('/fonts/GraphikLCG-Semibold.woff2') format('woff2');   font-weight:600; font-display:swap; }
+      @font-face { font-family:'GraphikLCG'; src:url('/fonts/GraphikLCG-Bold.woff2') format('woff2');       font-weight:700; font-display:swap; }
+
+      /* ── Theme Variables ─────────────────────────────────── */
+      :root {
+        --c-bg:      15,15,15;
+        --c-surface: 20,20,20;
+        --c-card:    26,26,26;
+        --c-text:    255,255,255;
+        --c-muted:   161,161,170;
+        --partner-filter: invert(1);
       }
-      @font-face {
-        font-family: 'GraphikLCG';
-        src: url('/fonts/GraphikLCG-Light.woff2') format('woff2');
-        font-weight: 300;
-        font-display: swap;
-      }
-      @font-face {
-        font-family: 'GraphikLCG';
-        src: url('/fonts/GraphikLCG-Regular.woff2') format('woff2');
-        font-weight: 400;
-        font-display: swap;
-      }
-      @font-face {
-        font-family: 'GraphikLCG';
-        src: url('/fonts/GraphikLCG-Medium.woff2') format('woff2');
-        font-weight: 500;
-        font-display: swap;
-      }
-      @font-face {
-        font-family: 'GraphikLCG';
-        src: url('/fonts/GraphikLCG-Semibold.woff2') format('woff2');
-        font-weight: 600;
-        font-display: swap;
-      }
-      @font-face {
-        font-family: 'GraphikLCG';
-        src: url('/fonts/GraphikLCG-Bold.woff2') format('woff2');
-        font-weight: 700;
-        font-display: swap;
+      html.light {
+        --c-bg:      247,247,247;
+        --c-surface: 255,255,255;
+        --c-card:    237,237,237;
+        --c-text:    15,15,15;
+        --c-muted:   100,100,110;
+        --partner-filter: none;
       }
 
-      /* ── Base ────────────────────────────────────────── */
+      /* ── Theme Utilities ─────────────────────────────────── */
+      .t-bg      { background-color: rgb(var(--c-bg))  !important; }
+      .t-surface { background-color: rgb(var(--c-surface)) !important; }
+      .t-card    { background-color: rgb(var(--c-card)) !important; }
+      .t-text    { color: rgb(var(--c-text)) !important; }
+      .t-muted   { color: rgb(var(--c-muted)) !important; }
+      .t-border        { border-color: rgba(var(--c-text), 0.07) !important; }
+      .t-border-subtle { border-color: rgba(var(--c-text), 0.05) !important; }
+      .t-text-50  { color: rgba(var(--c-text), 0.50) !important; }
+      .t-text-40  { color: rgba(var(--c-text), 0.40) !important; }
+      .t-text-30  { color: rgba(var(--c-text), 0.30) !important; }
+      .t-text-25  { color: rgba(var(--c-text), 0.25) !important; }
+
+      /* ── Nav Themed Classes ──────────────────────────────── */
+      .nav-bg    { background-color: rgba(var(--c-bg), 0.92); }
+      .nav-border { border-bottom: 1px solid rgba(var(--c-text), 0.06); }
+      .nav-link  { color: rgba(var(--c-text), 0.45); transition: color 0.2s ease; font-size: 13px; }
+      .nav-link:hover { color: rgb(var(--c-text)); }
+      .nav-cta   { border: 1px solid rgba(var(--c-text), 0.2); color: rgb(var(--c-text)); transition: all 0.2s ease; }
+      .nav-cta:hover { background-color: #FF6A00; border-color: #FF6A00; color: #000; }
+      .nav-icon-btn { color: rgba(var(--c-text), 0.5); transition: color 0.2s ease, background-color 0.2s ease; }
+      .nav-icon-btn:hover { color: rgb(var(--c-text)); background-color: rgba(var(--c-text), 0.07); }
+      .ham-bar { background-color: rgb(var(--c-text)); }
+
+      /* ── Footer Themed Classes ───────────────────────────── */
+      .footer-link { color: rgba(var(--c-text), 0.35); transition: color 0.2s ease; }
+      .footer-link:hover { color: rgb(var(--c-text)); }
+      .footer-dot  { color: rgba(var(--c-text), 0.15); }
+
+      /* ── Smooth theme transition ─────────────────────────── */
+      .t-bg,.t-surface,.t-card,.t-text,.t-muted,.t-border,.t-border-subtle,
+      .t-text-50,.t-text-40,.t-text-30,.t-text-25,.nav-bg,.nav-border,
+      .ham-bar, .footer-link {
+        transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+      }
+
+      /* ── Base ────────────────────────────────────────────── */
       *, *::before, *::after { box-sizing: border-box; }
-
       html { -webkit-font-smoothing: antialiased; }
+      body { transition: background-color 0.3s ease, color 0.3s ease; }
 
-      /* ── Scrollbar ────────────────────────────────────── */
+      /* ── Hide cursor on desktop for custom cursor ─────────── */
+      @media (pointer: fine) { * { cursor: none !important; } }
+
+      /* ── Scrollbar ───────────────────────────────────────── */
       .no-scrollbar::-webkit-scrollbar { display: none; }
       .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
   </head>
 
-  <body class="bg-[#0f0f0f] text-white font-sans antialiased overflow-x-hidden selection:bg-white/10">
+  <body class="t-bg t-text font-sans antialiased overflow-x-hidden">
 
-    <!-- ── Minimal Navbar ─────────────────────────────── -->
-    <header class="fixed top-0 left-0 right-0 z-50 bg-[#0f0f0f]/90 backdrop-blur-sm border-b border-white/[0.06]">
-      <nav class="max-w-[1400px] mx-auto px-8 md:px-12 h-[70px] flex items-center justify-between">
-
-        <!-- Logo -->
-        <a href="/" class="shrink-0">
-          <img
-            src="/images/ED-Digital-logo-black.svg"
-            alt="ED Digital Agency"
-            class="h-7 invert"
-            onerror="this.style.display='none'; this.nextElementSibling.style.display='block'"
-          />
-          <span style="display:none" class="font-bold text-sm tracking-tight text-white">ED Digital</span>
-        </a>
-
-        <!-- Nav links -->
-        <ul class="hidden md:flex items-center gap-8 text-[13px] font-medium">
-          <li>
-            <a href="/servizi" class="text-white/40 hover:text-white transition-colors">
-              Servizi
-            </a>
-          </li>
-          <li>
-            <a href="#casistudio" class="text-white/40 hover:text-white transition-colors">
-              Progetti
-            </a>
-          </li>
-          <li>
-            <a href="mailto:ed.digitalagency@gmail.com" class="text-white/40 hover:text-white transition-colors">
-              Contatti
-            </a>
-          </li>
-          <li>
-            <a
-              href="mailto:ed.digitalagency@gmail.com"
-              class="border border-white/20 text-white text-[13px] font-medium
-                     px-5 py-2 rounded-full hover:bg-white hover:text-black
-                     active:scale-95 transition-all duration-200"
-            >
-              Lavoriamo insieme
-            </a>
-          </li>
-        </ul>
-
-      </nav>
-    </header>
+    <Navbar client:load />
 
     <main>
       <slot />
     </main>
 
-    <!-- ── Footer ─────────────────────────────────────── -->
-    <footer id="contatti" class="border-t border-white/[0.06] py-16 px-8 md:px-12">
-      <div class="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-        <img
-          src="/images/ED-Digital-logo-black.svg"
-          alt="ED Digital Agency"
-          class="h-6 invert"
-          onerror="this.style.display='none'; this.nextElementSibling.style.display='block'"
-        />
-        <span style="display:none" class="font-bold text-sm text-white">ED Digital Agency</span>
-        <p class="text-xs text-white/25">© 2026 ED Digital Agency. Tutti i diritti riservati.</p>
-        <div class="flex gap-6 text-xs text-white/30">
-          <a href="mailto:ed.digitalagency@gmail.com" class="hover:text-white transition-colors">
-            ed.digitalagency@gmail.com
-          </a>
-          <span class="text-white/10">·</span>
-          <a href="https://eddigitalagency.it" class="hover:text-white transition-colors">
-            eddigitalagency.it
-          </a>
+    <!-- ── Footer ──────────────────────────────────────────── -->
+    <footer id="contatti" class="t-border-subtle" style="border-top:1px solid rgba(var(--c-text),0.06); padding:4rem 2rem;">
+      <div class="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-8 px-0 md:px-4">
+        <a href="/">
+          <img id="footer-logo" src="/images/ED-Digital-logo-black.svg" alt="ED Digital Agency" class="h-6" />
+        </a>
+        <p class="text-xs t-text-25">© 2026 ED Digital Agency. Tutti i diritti riservati.</p>
+        <div class="flex flex-wrap gap-6 text-xs">
+          <a href="mailto:ed.digitalagency@gmail.com" class="footer-link">ed.digitalagency@gmail.com</a>
+          <span class="footer-dot">·</span>
+          <a href="https://eddigitalagency.it" class="footer-link">eddigitalagency.it</a>
         </div>
       </div>
     </footer>
+
+    <!-- Footer logo inversion follows theme -->
+    <script is:inline>
+      (function(){
+        function syncLogo(){
+          var el=document.getElementById('footer-logo');
+          if(el) el.style.filter=document.documentElement.classList.contains('light')?'none':'invert(1)';
+        }
+        syncLogo();
+        var obs=new MutationObserver(syncLogo);
+        obs.observe(document.documentElement,{attributes:true,attributeFilter:['class']});
+      })();
+    </script>
+
+    <CustomCursor client:load />
 
   </body>
 </html>
