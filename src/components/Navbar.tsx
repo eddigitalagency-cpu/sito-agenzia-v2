@@ -41,9 +41,9 @@ export default function Navbar() {
           {/* Logo */}
           <a href="/" className="shrink-0">
             <img
-              src="/Images/Logo_Bianco_ED.webp"
+              src="/Images/Logo%20ED%20Digitla.png"
               alt="ED Digital Agency"
-              className={`h-9 w-auto transition-all duration-300 ${isDark ? '' : 'invert'}`}
+              className={`h-11 w-auto transition-all duration-300 ${isDark ? '' : 'invert'}`}
             />
           </a>
 
