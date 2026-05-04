@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-import { motion, AnimatePresence, useInView, useScroll, useTransform, useMotionValue, useSpring, animate } from 'framer-motion';
+import { motion, AnimatePresence, useMotionTemplate, useInView, useScroll, useTransform, useMotionValue, useSpring, animate, type MotionValue } from 'framer-motion';
 
 // Apple ease
 const ease = [0.16, 1, 0.3, 1] as const;
@@ -88,6 +88,86 @@ function CyclingWord() {
         </motion.span>
       </AnimatePresence>
     </span>
+  );
+}
+
+// ── 3D Logo ────────────────────────────────────────────────
+function Logo3D() {
+  const mouseX = useMotionValue(0.5);
+  const mouseY = useMotionValue(0.5);
+  const { scrollY } = useScroll();
+  const spring = { damping: 28, stiffness: 100, mass: 1 };
+
+  // Mouse tilt (cursor drives rotateX/Y)
+  const tiltX = useSpring(useTransform(mouseY, [0, 1], [13, -13]), spring);
+  const tiltY = useSpring(useTransform(mouseX, [0, 1], [-18, 18]), spring);
+
+  // Scroll spin (logo rotates as you scroll)
+  const scrollSpin  = useTransform(scrollY, [0, 1400], [0, 52]);
+  const scrollTiltX = useTransform(scrollY, [0, 700],  [0, -7]);
+  const scrollScale = useTransform(scrollY, [0, 700],  [1, 0.84]);
+
+  // Combine mouse + scroll
+  const rotateX = useTransform(
+    [tiltX, scrollTiltX] as MotionValue<number>[],
+    ([a, b]: number[]) => a + b,
+  );
+  const rotateY = useTransform(
+    [tiltY, scrollSpin] as MotionValue<number>[],
+    ([a, b]: number[]) => a + b,
+  );
+
+  // Moving shine follows cursor like a light source
+  const shineX = useSpring(useTransform(mouseX, [0, 1], [10, 90]), spring);
+  const shineY = useSpring(useTransform(mouseY, [0, 1], [10, 90]), spring);
+  const shine  = useMotionTemplate`radial-gradient(circle at ${shineX}% ${shineY}%, rgba(255,255,255,0.20) 0%, rgba(255,106,0,0.07) 38%, transparent 62%)`;
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      mouseX.set(e.clientX / window.innerWidth);
+      mouseY.set(e.clientY / window.innerHeight);
+    };
+    window.addEventListener('mousemove', onMove, { passive: true });
+    return () => window.removeEventListener('mousemove', onMove);
+  }, [mouseX, mouseY]);
+
+  return (
+    <div
+      className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden"
+      style={{ perspective: '750px' }}
+    >
+      <motion.div
+        style={{ rotateX, rotateY, scale: scrollScale, transformStyle: 'preserve-3d' }}
+        className="relative w-[64vw] max-w-[580px]"
+      >
+        {/* Ambient orange glow behind */}
+        <div
+          className="absolute rounded-full blur-[110px]"
+          style={{ inset: '-30%', background: 'radial-gradient(circle, rgba(255,106,0,0.14) 0%, transparent 65%)' }}
+        />
+
+        {/* Logo — drop-shadow gives floating depth */}
+        <img
+          src="/Images/Logo_Bianco_ED.webp"
+          alt=""
+          draggable={false}
+          className="relative w-full"
+          style={{
+            opacity: 0.09,
+            filter: 'drop-shadow(0 0 70px rgba(255,106,0,0.28)) drop-shadow(0 24px 48px rgba(0,0,0,0.55))',
+          }}
+        />
+
+        {/* Moving shine overlay — simulates moving light source */}
+        <motion.div className="absolute inset-0" style={{ background: shine }} />
+
+        {/* Top-edge highlight — gives illusion of surface thickness */}
+        <div
+          className="absolute inset-0"
+          style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.07) 0%, transparent 28%)' }}
+        />
+      </motion.div>
+    </div>
   );
 }
 
@@ -184,10 +264,8 @@ export default function HomePage() {
           <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] rounded-full" style={{ background: 'radial-gradient(circle, rgba(255,106,0,0.07) 0%, transparent 65%)' }} />
         </div>
 
-        {/* Ghost logo watermark */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
-          <img src="/Images/Logo_Bianco_ED.webp" alt="" className="w-[70vw] max-w-[700px] opacity-[0.025]" />
-        </div>
+        {/* 3D logo — mouse tilt + scroll spin */}
+        <Logo3D />
 
         {/* Content */}
         <motion.div style={{ y: heroTextY, opacity: heroOpacity }} className="relative z-10 text-center px-5 max-w-6xl mx-auto pt-24 pb-16">
