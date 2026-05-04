@@ -159,20 +159,20 @@ export default function ContattiPage() {
                   {/* Row 1: name + email */}
                   <div className="grid sm:grid-cols-2 gap-5">
                     <Field label="Nome completo *" error={errors.name}>
-                      <input type="text" placeholder="Mario Rossi" value={form.name} onChange={set('name')} className={field(!!errors.name)} />
+                      <input type="text" autoComplete="name" placeholder="Mario Rossi" value={form.name} onChange={set('name')} className={field(!!errors.name)} />
                     </Field>
                     <Field label="Email *" error={errors.email}>
-                      <input type="email" placeholder="mario@esempio.it" value={form.email} onChange={set('email')} className={field(!!errors.email)} />
+                      <input type="email" autoComplete="email" inputMode="email" placeholder="mario@esempio.it" value={form.email} onChange={set('email')} className={field(!!errors.email)} />
                     </Field>
                   </div>
 
                   {/* Row 2: phone + company */}
                   <div className="grid sm:grid-cols-2 gap-5">
                     <Field label="Telefono">
-                      <input type="tel" placeholder="+39 333 000 0000" value={form.phone} onChange={set('phone')} className={field(false)} />
+                      <input type="tel" autoComplete="tel" inputMode="tel" placeholder="+39 333 000 0000" value={form.phone} onChange={set('phone')} className={field(false)} />
                     </Field>
                     <Field label="Azienda">
-                      <input type="text" placeholder="Nome azienda" value={form.company} onChange={set('company')} className={field(false)} />
+                      <input type="text" autoComplete="organization" placeholder="Nome azienda" value={form.company} onChange={set('company')} className={field(false)} />
                     </Field>
                   </div>
 
@@ -296,7 +296,7 @@ function Field({ label, error, children }: { label: string; error?: string; chil
 
 function field(hasError: boolean) {
   return [
-    'w-full px-4 py-3.5 rounded-xl text-sm font-[250] outline-none transition-all duration-200',
+    'w-full px-4 py-3.5 rounded-xl text-[16px] font-[250] outline-none transition-all duration-200',
     'bg-[rgba(var(--c-text),0.05)] t-text placeholder:text-[rgba(var(--c-text),0.25)]',
     'border focus:border-[#FF6A00] focus:ring-2 focus:ring-[#FF6A00]/15',
     hasError ? 'border-red-500/60' : 't-border',

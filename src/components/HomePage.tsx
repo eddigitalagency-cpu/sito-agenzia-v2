@@ -74,7 +74,7 @@ function CyclingWord() {
   }, []);
 
   return (
-    <span className="relative inline-flex overflow-hidden align-bottom" style={{ minWidth: '1px' }}>
+    <span className="relative inline-block align-bottom" style={{ minWidth: '0.6em' }}>
       <AnimatePresence mode="wait" initial={false}>
         <motion.span
           key={cyclingWords[index]}
@@ -380,7 +380,12 @@ export default function HomePage() {
           </Section>
         </div>
 
-        <div ref={caseScrollRef} className="flex gap-4 md:gap-5 overflow-x-auto px-5 md:px-12 pb-6 no-scrollbar" style={{ cursor: 'grab' }}>
+        {/* Swipe hint — mobile only */}
+        <p className="md:hidden text-center text-[11px] uppercase tracking-[0.18em] mb-4 px-5" style={{ color: 'rgba(var(--c-text),0.25)' }}>
+          ← scorri per vedere altri →
+        </p>
+
+        <div ref={caseScrollRef} className="flex gap-4 md:gap-5 overflow-x-auto px-5 md:px-12 pb-6 no-scrollbar" style={{ cursor: 'grab', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
           {caseStudies.map((s, i) => (
             <motion.div
               key={s.title}

@@ -217,6 +217,9 @@ const ogImageAbs    = new URL(ogImage, 'https://eddigitalagency.it').toString();
       html { -webkit-font-smoothing: antialiased; }
       body { transition: background-color 0.3s ease, color 0.3s ease; }
 
+      /* ── Remove 300ms tap delay on buttons/links ─────────── */
+      a, button { touch-action: manipulation; }
+
       /* ── Hide cursor on desktop for custom cursor ─────────── */
       @media (pointer: fine) { * { cursor: none !important; } }
 
