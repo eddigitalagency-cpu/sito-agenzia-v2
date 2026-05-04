@@ -132,20 +132,20 @@ const services = [
 ];
 
 const caseStudies = [
-  { title: 'Italia Contract',   service: 'Web Design',        img: '/images/Cover-Italia-Contract.jpg' },
-  { title: 'Val Longa',         service: 'Web Design',        img: '/images/Cover-ValLonga.jpg' },
-  { title: 'Espressione Danza', service: 'Social Management', img: '/images/Cover-Espressione-Danza.jpg' },
-  { title: 'Ottica Toffoli',    service: 'Web Design',        img: '/images/Cover-Otica-Toffoli.jpg' },
-  { title: 'SoloMattia',        service: 'Social Management', img: '/images/Cover-SoloMattia.jpg' },
-  { title: 'Disegno Italia',    service: 'Web Design',        img: '/images/Cover-Disegno-Italia.jpg' },
+  { title: 'Italia Contract',   service: 'Web Design',        img: '/Images/Cover-Italia-Contract.jpg' },
+  { title: 'Val Longa',         service: 'Web Design',        img: '/Images/Cover-ValLonga.jpg' },
+  { title: 'Espressione Danza', service: 'Social Management', img: '/Images/Cover-Espressione-Danza.jpg' },
+  { title: 'Ottica Toffoli',    service: 'Web Design',        img: '/Images/Cover-Otica-Toffoli.jpg' },
+  { title: 'SoloMattia',        service: 'Social Management', img: '/Images/Cover-SoloMattia.jpg' },
+  { title: 'Disegno Italia',    service: 'Web Design',        img: '/Images/Cover-Disegno-Italia.jpg' },
 ];
 
 const partners = [
-  { src: '/images/shopify-partner.png',                alt: 'Shopify' },
-  { src: '/images/wordpress-logo-png-transparent.png', alt: 'WordPress' },
-  { src: '/images/keliweb-logo-e1522914795801.png',     alt: 'Keliweb' },
-  { src: '/images/Logo-Litchi-solutions-intero.png',    alt: 'Litchi' },
-  { src: '/images/ED-logo-completo.svg',               alt: 'ED Digital' },
+  { src: '/Images/shopify-partner.png',                alt: 'Shopify' },
+  { src: '/Images/wordpress-logo-png-transparent.png', alt: 'WordPress' },
+  { src: '/Images/keliweb-logo-e1522914795801.png',     alt: 'Keliweb' },
+  { src: '/Images/Logo-Litchi-solutions-intero.png',    alt: 'Litchi' },
+  { src: '/Images/ED-logo-completo.svg',               alt: 'ED Digital' },
 ];
 
 // ── Stats ──────────────────────────────────────────────────
@@ -186,7 +186,7 @@ export default function HomePage() {
 
         {/* Ghost logo watermark */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
-          <img src="/images/Logo_Bianco_ED.webp" alt="" className="w-[70vw] max-w-[700px] opacity-[0.025]" />
+          <img src="/Images/Logo_Bianco_ED.webp" alt="" className="w-[70vw] max-w-[700px] opacity-[0.025]" />
         </div>
 
         {/* Content */}
@@ -240,7 +240,7 @@ export default function HomePage() {
           className="relative z-10 w-full max-w-[480px] md:max-w-[600px] mx-auto px-6 pb-8">
           <motion.div initial={{ opacity:0, y:60 }} animate={{ opacity:1, y:0 }} transition={{ duration:1.3, delay:0.5, ease }}>
             <div className="absolute -inset-10 rounded-full blur-[80px]" style={{ background: 'radial-gradient(circle, rgba(255,106,0,0.15) 0%, transparent 70%)' }} />
-            <img src="/images/GrandeProgetto-sesnza-titolo-6-copia.png" alt="ED Digital Agency"
+            <img src="/Images/GrandeProgetto-sesnza-titolo-6-copia.png" alt="ED Digital Agency"
               className="relative w-full rounded-[2.5rem] md:rounded-[3rem] shadow-2xl shadow-black/50" />
           </motion.div>
         </motion.div>
