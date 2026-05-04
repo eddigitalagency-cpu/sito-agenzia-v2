@@ -132,12 +132,14 @@ const services = [
 ];
 
 const caseStudies = [
-  { title: 'Italia Contract',   service: 'Web Design',        img: '/Images/Cover-Italia-Contract.jpg' },
-  { title: 'Val Longa',         service: 'Web Design',        img: '/Images/Cover-ValLonga.jpg' },
-  { title: 'Espressione Danza', service: 'Social Management', img: '/Images/Cover-Espressione-Danza.jpg' },
-  { title: 'Ottica Toffoli',    service: 'Web Design',        img: '/Images/Cover-Otica-Toffoli.jpg' },
-  { title: 'SoloMattia',        service: 'Social Management', img: '/Images/Cover-SoloMattia.jpg' },
-  { title: 'Disegno Italia',    service: 'Web Design',        img: '/Images/Cover-Disegno-Italia.jpg' },
+  { title: 'Italia Contract',   service: 'Web Design',        img: '/Images/Lavori%20Clienti/Sito%20web%20Italia%20Contract.png' },
+  { title: 'Espressione Danza', service: 'Social Media',      img: '/Images/Lavori%20Clienti/Espressione%20Danza.jpg' },
+  { title: 'CDVI',              service: 'Video',             img: '/Images/Lavori%20Clienti/CDVI.jpg' },
+  { title: 'Gallo Immobiliare', service: 'Web Design',        img: '/Images/Lavori%20Clienti/Gallo%20Immobiliare.jpg' },
+  { title: 'Disegno Italia',    service: 'Web Design',        img: '/Images/Lavori%20Clienti/Disegno%20Italia.png' },
+  { title: 'Solo Mattia',       service: 'Web Design',        img: '/Images/Lavori%20Clienti/Sito%20web%20Solo%20Mattia.jpg' },
+  { title: 'UpBeat Tattoo',     service: 'Social Media',      img: '/Images/Lavori%20Clienti/UpBeat%20Tattoo.jpg' },
+  { title: 'I Bamboi',          service: 'Web Design',        img: '/Images/Lavori%20Clienti/3.png' },
 ];
 
 const partners = [
