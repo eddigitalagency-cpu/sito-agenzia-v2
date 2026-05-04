@@ -74,10 +74,10 @@ const {
     </style>
   </head>
 
-  <body class="bg-white text-black font-sans antialiased overflow-x-hidden selection:bg-black/10">
+  <body class="bg-[#0f0f0f] text-white font-sans antialiased overflow-x-hidden selection:bg-white/10">
 
     <!-- ── Minimal Navbar ─────────────────────────────── -->
-    <header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm">
+    <header class="fixed top-0 left-0 right-0 z-50 bg-[#0f0f0f]/90 backdrop-blur-sm border-b border-white/[0.06]">
       <nav class="max-w-[1400px] mx-auto px-8 md:px-12 h-[70px] flex items-center justify-between">
 
         <!-- Logo -->
@@ -85,37 +85,37 @@ const {
           <img
             src="/images/ED-Digital-logo-black.svg"
             alt="ED Digital Agency"
-            class="h-7"
+            class="h-7 invert"
             onerror="this.style.display='none'; this.nextElementSibling.style.display='block'"
           />
-          <span style="display:none" class="font-bold text-sm tracking-tight">ED Digital</span>
+          <span style="display:none" class="font-bold text-sm tracking-tight text-white">ED Digital</span>
         </a>
 
         <!-- Nav links -->
         <ul class="hidden md:flex items-center gap-8 text-[13px] font-medium">
           <li>
-            <a href="#services" class="text-black/50 hover:text-black transition-colors">
+            <a href="#services" class="text-white/40 hover:text-white transition-colors">
               Servizi
             </a>
           </li>
           <li>
-            <a href="#casistudio" class="text-black/50 hover:text-black transition-colors">
+            <a href="#casistudio" class="text-white/40 hover:text-white transition-colors">
               Progetti
             </a>
           </li>
           <li>
-            <a href="#about" class="text-black/50 hover:text-black transition-colors">
-              Chi Siamo
+            <a href="mailto:ed.digitalagency@gmail.com" class="text-white/40 hover:text-white transition-colors">
+              Contatti
             </a>
           </li>
           <li>
             <a
-              href="#contatti"
-              class="border border-black text-black text-[13px] font-medium
-                     px-5 py-2 rounded-full hover:bg-black hover:text-white
+              href="mailto:ed.digitalagency@gmail.com"
+              class="border border-white/20 text-white text-[13px] font-medium
+                     px-5 py-2 rounded-full hover:bg-white hover:text-black
                      active:scale-95 transition-all duration-200"
             >
-              Contattaci
+              Lavoriamo insieme
             </a>
           </li>
         </ul>
@@ -128,22 +128,22 @@ const {
     </main>
 
     <!-- ── Footer ─────────────────────────────────────── -->
-    <footer id="contatti" class="border-t border-black/[0.07] py-16 px-8 md:px-12 mt-32">
+    <footer id="contatti" class="border-t border-white/[0.06] py-16 px-8 md:px-12">
       <div class="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
         <img
           src="/images/ED-Digital-logo-black.svg"
           alt="ED Digital Agency"
-          class="h-6"
+          class="h-6 invert"
           onerror="this.style.display='none'; this.nextElementSibling.style.display='block'"
         />
-        <span style="display:none" class="font-bold text-sm">ED Digital Agency</span>
-        <p class="text-xs text-black/35">© 2026 ED Digital Agency. Tutti i diritti riservati.</p>
-        <div class="flex gap-6 text-xs text-black/40">
-          <a href="mailto:ed.digitalagency@gmail.com" class="hover:text-black transition-colors">
+        <span style="display:none" class="font-bold text-sm text-white">ED Digital Agency</span>
+        <p class="text-xs text-white/25">© 2026 ED Digital Agency. Tutti i diritti riservati.</p>
+        <div class="flex gap-6 text-xs text-white/30">
+          <a href="mailto:ed.digitalagency@gmail.com" class="hover:text-white transition-colors">
             ed.digitalagency@gmail.com
           </a>
-          <span class="text-black/20">·</span>
-          <a href="https://eddigitalagency.it" class="hover:text-black transition-colors">
+          <span class="text-white/10">·</span>
+          <a href="https://eddigitalagency.it" class="hover:text-white transition-colors">
             eddigitalagency.it
           </a>
         </div>
