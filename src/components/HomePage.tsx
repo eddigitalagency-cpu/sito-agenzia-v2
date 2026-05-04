@@ -283,7 +283,7 @@ export default function HomePage() {
       <section className="py-24 md:py-32">
         <div className="max-w-[1200px] mx-auto px-5 md:px-12">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-10 md:gap-16">
-            <StatItem value={50}  suffix="+" label="Progetti completati" />
+            <StatItem value={200} suffix="+" label="Progetti completati" />
             <StatItem value={5}   suffix="+"  label="Anni di esperienza" />
             <StatItem value={98}  suffix="%" label="Clienti soddisfatti" />
             <StatItem value={3}   suffix="×"  label="Crescita media" />
