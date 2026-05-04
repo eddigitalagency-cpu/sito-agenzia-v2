@@ -231,15 +231,6 @@ export default function HomePage() {
           </motion.div>
         </motion.div>
 
-        {/* Hero image with parallax */}
-        <motion.div style={{ y: heroImageY, scale: heroImageScale }}
-          className="relative z-10 w-full max-w-[480px] md:max-w-[600px] mx-auto px-6 pb-8">
-          <motion.div initial={{ opacity:0, y:60 }} animate={{ opacity:1, y:0 }} transition={{ duration:1.3, delay:0.5, ease }}>
-            <div className="absolute -inset-10 rounded-full blur-[80px]" style={{ background: 'radial-gradient(circle, rgba(255,106,0,0.15) 0%, transparent 70%)' }} />
-            <img src="/Images/GrandeProgetto-sesnza-titolo-6-copia.png" alt="ED Digital Agency"
-              className="relative w-full rounded-[2.5rem] md:rounded-[3rem] shadow-2xl shadow-black/50" />
-          </motion.div>
-        </motion.div>
 
         {/* Scroll hint */}
         <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:1.6, duration:0.8 }}
