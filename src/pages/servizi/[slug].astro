@@ -1,0 +1,20 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ServiceDetailPage from '../../components/ServiceDetailPage';
+import { services, getRelatedServices } from '../../data/services';
+
+export function getStaticPaths() {
+  return services.map((s) => ({ params: { slug: s.slug } }));
+}
+
+const { slug } = Astro.params;
+const service = services.find((s) => s.slug === slug)!;
+const related = getRelatedServices(service.related);
+---
+
+<Layout
+  title={service.name}
+  description={service.description}
+>
+  <ServiceDetailPage client:load service={service} related={related} />
+</Layout>
