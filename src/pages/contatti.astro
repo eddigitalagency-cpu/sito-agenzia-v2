@@ -1,0 +1,13 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ContattiPage from '../components/ContattiPage';
+
+export const prerender = true;
+---
+
+<Layout
+  title="Contatti"
+  description="Contattaci per discutere del tuo progetto digitale. Rispondiamo entro 24 ore."
+>
+  <ContattiPage client:load />
+</Layout>

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const links = [
   { label: 'Servizi',  href: '/servizi' },
   { label: 'Progetti', href: '/#casistudio' },
-  { label: 'Contatti', href: 'mailto:ed.digitalagency@gmail.com' },
+  { label: 'Contatti', href: '/contatti' },
 ];
 
 export default function Navbar() {
