@@ -1,27 +1,31 @@
-import { motion, useInView } from 'framer-motion';
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
+import { motion, useInView, useScroll, useTransform, useMotionValue, useSpring, animate } from 'framer-motion';
 
-// Apple-style easing
-const ease = [0.25, 0.1, 0.25, 1.0] as const;
+// Apple ease
+const ease = [0.16, 1, 0.3, 1] as const;
 
-const reveal = {
-  hidden:  { opacity: 0, y: 24, scale: 0.98 },
+// Clip-path text reveal (Apple style)
+const clipReveal = {
+  hidden:  { clipPath: 'inset(0 0 100% 0)', opacity: 0, y: 16 },
   visible: (i = 0) => ({
-    opacity: 1, y: 0, scale: 1,
-    transition: { duration: 0.9, delay: i * 0.08, ease },
+    clipPath: 'inset(0 0 0% 0)', opacity: 1, y: 0,
+    transition: { duration: 1.0, delay: i * 0.1, ease },
   }),
 };
 
-const fadeIn = {
-  hidden:  { opacity: 0, scale: 1.03 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 1.1, ease } },
+const fadeUp = {
+  hidden:  { opacity: 0, y: 24 },
+  visible: (i = 0) => ({
+    opacity: 1, y: 0,
+    transition: { duration: 0.9, delay: i * 0.1, ease },
+  }),
 };
 
-const stagger = { visible: { transition: { staggerChildren: 0.08 } } };
+const stagger = { visible: { transition: { staggerChildren: 0.07 } } };
 
 function Section({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: '-60px' });
+  const inView = useInView(ref, { once: true, margin: '-80px' });
   return (
     <motion.div ref={ref} variants={stagger} initial="hidden" animate={inView ? 'visible' : 'hidden'} className={className}>
       {children}
@@ -29,15 +33,64 @@ function Section({ children, className = '' }: { children: React.ReactNode; clas
   );
 }
 
+// Counter animation hook
+function useCountUp(target: number, suffix = '') {
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true });
+  const motionVal = useMotionValue(0);
+
+  useEffect(() => {
+    if (!inView) return;
+    const controls = animate(motionVal, target, {
+      duration: 1.8,
+      ease: [0.16, 1, 0.3, 1],
+      onUpdate: (v) => {
+        if (ref.current) ref.current.textContent = Math.round(v) + suffix;
+      },
+    });
+    return controls.stop;
+  }, [inView]);
+
+  return ref;
+}
+
+// ── Marquee strip ──────────────────────────────────────────
+const marqueeItems = [
+  'Social Media', 'Advertising', 'Web Design', 'E-Commerce',
+  'Photo & Video', 'Visual Identity', 'MVP & SaaS', 'App Development',
+  'Brand Strategy', 'Digital Growth',
+];
+
+function Marquee() {
+  const items = [...marqueeItems, ...marqueeItems];
+  return (
+    <div className="overflow-hidden py-5 border-y" style={{ borderColor: 'rgba(var(--c-text),0.06)' }}>
+      <motion.div
+        animate={{ x: ['0%', '-50%'] }}
+        transition={{ duration: 24, repeat: Infinity, ease: 'linear' }}
+        className="flex gap-10 whitespace-nowrap"
+      >
+        {items.map((item, i) => (
+          <span key={i} className="flex items-center gap-10 text-sm font-medium uppercase tracking-[0.18em]" style={{ color: 'rgba(var(--c-text),0.25)' }}>
+            {item}
+            <span className="text-[#FF6A00]">✦</span>
+          </span>
+        ))}
+      </motion.div>
+    </div>
+  );
+}
+
+// ── Services bento ─────────────────────────────────────────
 const services = [
-  { name: 'Social Media Management', slug: 'social-media-management', icon: '◈' },
-  { name: 'Advertising',             slug: 'advertising',             icon: '◉' },
-  { name: 'Website',                 slug: 'website',                 icon: '◎' },
-  { name: 'E-Commerce',              slug: 'ecommerce',               icon: '⬡' },
-  { name: 'Photo & Video',           slug: 'photo-video',             icon: '◫' },
-  { name: 'Visual Identity',         slug: 'visual-identity',         icon: '◭' },
-  { name: 'MVP & SaaS',              slug: 'mvp-saas',                icon: '◬' },
-  { name: 'App',                     slug: 'app',                     icon: '⬢' },
+  { name: 'Social Media Management', slug: 'social-media-management', tagline: 'Community che converte.', span: 'lg:col-span-2', gradient: 'from-orange-500/10 via-transparent' },
+  { name: 'Advertising',             slug: 'advertising',             tagline: 'ROI misurabile.',       span: 'lg:col-span-1', gradient: 'from-violet-500/8 via-transparent' },
+  { name: 'Website',                 slug: 'website',                 tagline: '24/7 per te.',          span: 'lg:col-span-1', gradient: 'from-blue-500/8 via-transparent' },
+  { name: 'E-Commerce',              slug: 'ecommerce',               tagline: 'Negozi che vendono.',   span: 'lg:col-span-2', gradient: 'from-emerald-500/8 via-transparent' },
+  { name: 'Photo & Video',           slug: 'photo-video',             tagline: 'Contenuti straordinari.', span: 'lg:col-span-1', gradient: 'from-pink-500/8 via-transparent' },
+  { name: 'Visual Identity',         slug: 'visual-identity',         tagline: 'Brand memorabile.',    span: 'lg:col-span-1', gradient: 'from-yellow-500/8 via-transparent' },
+  { name: 'MVP & SaaS',              slug: 'mvp-saas',                tagline: 'Idea → Prodotto.',      span: 'lg:col-span-1', gradient: 'from-cyan-500/8 via-transparent' },
+  { name: 'App',                     slug: 'app',                     tagline: 'Nelle loro tasche.',    span: 'lg:col-span-1', gradient: 'from-indigo-500/8 via-transparent' },
 ];
 
 const caseStudies = [
@@ -49,172 +102,284 @@ const caseStudies = [
   { title: 'Disegno Italia',    service: 'Web Design',        img: '/images/Cover-Disegno-Italia.jpg' },
 ];
 
-const stats = [
-  { value: '50+', label: 'Progetti completati' },
-  { value: '5+',  label: 'Anni di esperienza' },
-  { value: '98%', label: 'Clienti soddisfatti' },
-  { value: '3×',  label: 'Crescita media' },
+const partners = [
+  { src: '/images/shopify-partner.png',                alt: 'Shopify' },
+  { src: '/images/wordpress-logo-png-transparent.png', alt: 'WordPress' },
+  { src: '/images/keliweb-logo-e1522914795801.png',     alt: 'Keliweb' },
+  { src: '/images/Logo-Litchi-solutions-intero.png',    alt: 'Litchi' },
+  { src: '/images/ED-logo-completo.svg',               alt: 'ED Digital' },
 ];
 
-const partners = [
-  { src: '/images/shopify-partner.png',                   alt: 'Shopify Partner' },
-  { src: '/images/wordpress-logo-png-transparent.png',    alt: 'WordPress' },
-  { src: '/images/keliweb-logo-e1522914795801.png',        alt: 'Keliweb' },
-  { src: '/images/Logo-Litchi-solutions-intero.png',       alt: 'Litchi' },
-  { src: '/images/ED-logo-completo.svg',                   alt: 'ED Digital' },
-];
+// ── Stats ──────────────────────────────────────────────────
+function StatItem({ value, suffix, label }: { value: number; suffix: string; label: string }) {
+  const ref = useCountUp(value, suffix);
+  const wrapRef = useRef(null);
+  const inView = useInView(wrapRef, { once: true });
+  return (
+    <motion.div ref={wrapRef} initial={{ opacity: 0, y: 20 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.9, ease }} className="text-center space-y-2">
+      <p className="text-5xl md:text-6xl font-black italic font-cal text-[#FF6A00] tabular-nums">
+        <span ref={ref}>0{suffix}</span>
+      </p>
+      <p className="text-xs uppercase tracking-[0.18em] font-medium" style={{ color: 'rgba(var(--c-text),0.35)' }}>{label}</p>
+    </motion.div>
+  );
+}
 
 export default function HomePage() {
+  const heroRef = useRef(null);
+  const { scrollY } = useScroll();
+
+  // Hero parallax
+  const heroTextY    = useTransform(scrollY, [0, 600], [0, -80]);
+  const heroOpacity  = useTransform(scrollY, [0, 400], [1, 0]);
+  const heroImageY   = useTransform(scrollY, [0, 600], [40, -40]);
+  const heroImageScale = useTransform(scrollY, [0, 600], [1, 1.06]);
+
   return (
-    <div className="t-bg t-text overflow-x-hidden" style={{ fontFamily: 'GraphikLCG, Inter, system-ui, sans-serif' }}>
+    <div className="t-bg t-text overflow-x-hidden" style={{ fontFamily: 'GraphikLCG, system-ui, sans-serif' }}>
 
-      {/* ── Hero ──────────────────────────────────────────── */}
-      <section className="max-w-[1400px] mx-auto px-5 md:px-12 pt-32 md:pt-40 pb-20 md:pb-28">
-        <Section className="grid lg:grid-cols-2 gap-12 md:gap-16 items-center">
+      {/* ── HERO ─────────────────────────────────────────── */}
+      <section ref={heroRef} className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
 
-          <div className="space-y-7 md:space-y-8">
-            <motion.div variants={reveal} className="inline-flex items-center gap-2 px-4 py-2 rounded-full t-border t-text-50 border text-xs uppercase tracking-widest" style={{ backgroundColor: 'rgba(var(--c-text),0.04)' }}>
-              <span className="w-1.5 h-1.5 rounded-full bg-[#FF6A00] inline-block" />
-              Partner Strategico Digitale
-            </motion.div>
+        {/* Background glow */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] rounded-full" style={{ background: 'radial-gradient(circle, rgba(255,106,0,0.07) 0%, transparent 65%)' }} />
+        </div>
 
-            <motion.h1 variants={reveal} custom={1}
-              className="font-cal font-semibold uppercase tracking-tighter italic t-text text-[clamp(2.8rem,8vw,5.5rem)] leading-[0.9]"
-            >
-              La nostra <br />
-              <span className="text-[#FF6A00]">creatività</span> <br />
-              la tua visione.
-            </motion.h1>
+        {/* Ghost logo watermark */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
+          <img src="/images/Logo_Bianco_ED.webp" alt="" className="w-[70vw] max-w-[700px] opacity-[0.025]" />
+        </div>
 
-            <motion.p variants={reveal} custom={2} className="t-muted font-[250] text-base md:text-lg leading-7 max-w-md">
-              Siamo il motore digitale della tua crescita. Strategie sartoriali per brand che non temono di farsi notare.
-            </motion.p>
+        {/* Content */}
+        <motion.div style={{ y: heroTextY, opacity: heroOpacity }} className="relative z-10 text-center px-5 max-w-6xl mx-auto pt-24 pb-16">
 
-            <motion.div variants={reveal} custom={3} className="flex flex-wrap gap-3">
-              <a href="#casistudio" className="px-7 py-3.5 bg-[#FF6A00] text-black font-bold rounded-full hover:scale-105 active:scale-95 transition-transform uppercase tracking-widest text-sm">
-                I Nostri Lavori
-              </a>
-              <a href="mailto:ed.digitalagency@gmail.com" className="px-7 py-3.5 t-border t-text border rounded-full font-semibold hover:bg-[#FF6A00] hover:border-[#FF6A00] hover:text-black transition-all uppercase tracking-widest text-sm">
-                Contattaci
-              </a>
-            </motion.div>
-          </div>
-
-          <motion.div variants={fadeIn} className="relative group order-first lg:order-last">
-            <div className="absolute -inset-8 md:-inset-12 bg-[#FF6A00]/8 blur-[90px] rounded-full pointer-events-none group-hover:bg-[#FF6A00]/14 transition-all duration-700" />
-            <img
-              src="/images/GrandeProgetto-sesnza-titolo-6-copia.png"
-              alt="ED Digital Agency"
-              className="relative z-10 w-full rounded-[2rem] md:rounded-[2.5rem] shadow-2xl"
-            />
+          {/* Label */}
+          <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.8, delay:0.1, ease }}
+            className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full border text-xs uppercase tracking-[0.2em] font-medium mb-10"
+            style={{ borderColor:'rgba(var(--c-text),0.1)', backgroundColor:'rgba(var(--c-text),0.04)', color:'rgba(var(--c-text),0.5)' }}>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#FF6A00] animate-pulse inline-block" />
+            Partner Strategico Digitale
           </motion.div>
 
-        </Section>
+          {/* Headline */}
+          <div className="overflow-hidden mb-4">
+            <motion.h1
+              initial={{ y: 100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 1.1, delay: 0.2, ease }}
+              className="font-cal font-semibold uppercase italic t-text leading-[0.88] tracking-[-0.03em]"
+              style={{ fontSize: 'clamp(3.2rem, 9vw, 8rem)' }}
+            >
+              La nostra <span className="text-[#FF6A00]">creatività.</span>
+              <br />La tua visione.
+            </motion.h1>
+          </div>
+
+          <motion.p initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.9, delay:0.45, ease }}
+            className="font-[250] text-base md:text-xl leading-relaxed max-w-xl mx-auto mt-8 mb-10"
+            style={{ color:'rgba(var(--c-muted),1)' }}>
+            Strategie sartoriali per brand che non temono di farsi notare.
+            <br className="hidden md:block" /> Dal digitale al fisico, sempre con un obiettivo: far crescere il tuo business.
+          </motion.p>
+
+          {/* Buttons */}
+          <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.8, delay:0.6, ease }} className="flex flex-wrap items-center justify-center gap-4">
+            <a href="#casistudio" className="px-8 py-4 bg-[#FF6A00] text-black font-bold rounded-full hover:scale-[1.03] active:scale-[0.97] transition-transform text-sm uppercase tracking-widest shadow-lg shadow-orange-500/20">
+              I Nostri Lavori
+            </a>
+            <a href="/contatti" className="px-8 py-4 rounded-full font-semibold text-sm uppercase tracking-widest transition-all active:scale-[0.97]"
+              style={{ border:'1px solid rgba(var(--c-text),0.15)', color:'rgb(var(--c-text))' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(var(--c-text),0.07)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = ''; }}>
+              Inizia un progetto →
+            </a>
+          </motion.div>
+        </motion.div>
+
+        {/* Hero image with parallax */}
+        <motion.div style={{ y: heroImageY, scale: heroImageScale }}
+          className="relative z-10 w-full max-w-[480px] md:max-w-[600px] mx-auto px-6 pb-8">
+          <motion.div initial={{ opacity:0, y:60 }} animate={{ opacity:1, y:0 }} transition={{ duration:1.3, delay:0.5, ease }}>
+            <div className="absolute -inset-10 rounded-full blur-[80px]" style={{ background: 'radial-gradient(circle, rgba(255,106,0,0.15) 0%, transparent 70%)' }} />
+            <img src="/images/GrandeProgetto-sesnza-titolo-6-copia.png" alt="ED Digital Agency"
+              className="relative w-full rounded-[2.5rem] md:rounded-[3rem] shadow-2xl shadow-black/50" />
+          </motion.div>
+        </motion.div>
+
+        {/* Scroll hint */}
+        <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:1.6, duration:0.8 }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+          <span className="text-[10px] uppercase tracking-[0.2em]" style={{ color:'rgba(var(--c-text),0.2)' }}>Scorri</span>
+          <motion.div animate={{ y:[0,6,0] }} transition={{ duration:1.5, repeat:Infinity, ease:'easeInOut' }}
+            className="w-px h-8" style={{ background:'linear-gradient(to bottom, rgba(var(--c-text),0.3), transparent)' }} />
+        </motion.div>
       </section>
 
-      {/* ── Stats ─────────────────────────────────────────── */}
-      <section style={{ borderTop: '1px solid rgba(var(--c-text),0.06)', borderBottom: '1px solid rgba(var(--c-text),0.06)' }}>
-        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-10 md:py-12">
-          <Section className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-            {stats.map((s, i) => (
-              <motion.div key={s.value} variants={reveal} custom={i} className="text-center">
-                <p className="text-4xl md:text-5xl font-black text-[#FF6A00] italic font-cal">{s.value}</p>
-                <p className="text-xs md:text-sm t-text-40 mt-2 uppercase tracking-widest">{s.label}</p>
-              </motion.div>
-            ))}
+      {/* ── MARQUEE ──────────────────────────────────────── */}
+      <Marquee />
+
+      {/* ── STATS ────────────────────────────────────────── */}
+      <section className="py-24 md:py-32">
+        <div className="max-w-[1200px] mx-auto px-5 md:px-12">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-10 md:gap-16">
+            <StatItem value={50}  suffix="+" label="Progetti completati" />
+            <StatItem value={5}   suffix="+"  label="Anni di esperienza" />
+            <StatItem value={98}  suffix="%" label="Clienti soddisfatti" />
+            <StatItem value={3}   suffix="×"  label="Crescita media" />
+          </div>
+        </div>
+      </section>
+
+      {/* ── STATEMENT ────────────────────────────────────── */}
+      <section className="py-16 md:py-24 overflow-hidden">
+        <div className="max-w-[1200px] mx-auto px-5 md:px-12">
+          <Section>
+            <motion.p variants={clipReveal}
+              className="font-cal font-semibold italic t-text leading-tight tracking-tight text-center"
+              style={{ fontSize:'clamp(1.8rem,4.5vw,3.5rem)', letterSpacing:'-0.03em' }}>
+              Non siamo solo un'agenzia. <br />
+              <span className="text-[#FF6A00]">Siamo il motore digitale</span> <br />
+              della tua crescita.
+            </motion.p>
           </Section>
         </div>
       </section>
 
-      {/* ── Services ──────────────────────────────────────── */}
-      <section id="services" className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-28">
-        <Section>
-          <motion.div variants={reveal} className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 md:mb-16 gap-6">
-            <h2 className="font-cal font-semibold uppercase tracking-tighter italic t-text text-3xl md:text-5xl leading-tight">
-              Cosa facciamo <span className="text-[#FF6A00]">/</span>
-            </h2>
-            <p className="t-muted font-[250] text-sm leading-6 max-w-xs">
-              Ogni servizio è studiato per portare risultati concreti e misurabili al tuo business.
-            </p>
-          </motion.div>
+      {/* ── SERVICES BENTO ───────────────────────────────── */}
+      <section id="services" className="py-20 md:py-28">
+        <div className="max-w-[1200px] mx-auto px-5 md:px-12">
+          <Section>
+            <motion.div variants={fadeUp} className="flex flex-col sm:flex-row sm:items-end justify-between mb-14 gap-6">
+              <div>
+                <p className="text-xs uppercase tracking-[0.2em] mb-4 font-medium" style={{ color:'rgba(var(--c-text),0.35)' }}>Cosa facciamo</p>
+                <h2 className="font-cal font-semibold uppercase italic t-text leading-tight"
+                  style={{ fontSize:'clamp(2.2rem,5vw,3.8rem)', letterSpacing:'-0.03em' }}>
+                  Servizi<span className="text-[#FF6A00]">.</span>
+                </h2>
+              </div>
+              <a href="/servizi" className="text-sm font-semibold text-[#FF6A00] hover:opacity-70 transition-opacity shrink-0">
+                Vedi tutti →
+              </a>
+            </motion.div>
+          </Section>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+          {/* Bento grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 auto-rows-[180px]">
             {services.map((s, i) => (
               <motion.a
                 key={s.slug}
                 href={`/servizi/${s.slug}`}
-                variants={reveal}
-                custom={i}
-                whileHover={{ y: -4 }}
-                transition={{ duration: 0.2 }}
-                className="t-card t-border border p-7 md:p-8 rounded-[1.75rem] group relative overflow-hidden"
+                initial={{ opacity:0, y:32, scale:0.97 }}
+                whileInView={{ opacity:1, y:0, scale:1 }}
+                viewport={{ once:true, margin:'-40px' }}
+                transition={{ duration:0.85, delay: i * 0.06, ease }}
+                whileHover={{ scale:1.02, y:-2 }}
+                className={`group relative rounded-[1.75rem] overflow-hidden flex flex-col justify-end p-7 ${s.span}`}
+                style={{ backgroundColor:'rgb(var(--c-card))', border:'1px solid rgba(var(--c-text),0.07)' }}
               >
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-[1.75rem]" style={{ background: 'linear-gradient(135deg, rgba(255,106,0,0.06) 0%, transparent 100%)' }} />
-                <span className="text-xl t-text-25 group-hover:text-[#FF6A00] transition-colors duration-300">{s.icon}</span>
-                <h3 className="mt-7 md:mt-8 text-base md:text-lg font-semibold t-text leading-tight group-hover:text-[#FF6A00] transition-colors duration-300">{s.name}</h3>
-                <p className="mt-3 text-[11px] t-text-30 uppercase tracking-widest">Digital Service →</p>
+                {/* gradient bg */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${s.gradient} to-transparent opacity-60 group-hover:opacity-100 transition-opacity duration-500`} />
+
+                {/* hover glow border */}
+                <div className="absolute inset-0 rounded-[1.75rem] opacity-0 group-hover:opacity-100 transition-opacity duration-400"
+                  style={{ boxShadow:'inset 0 0 0 1px rgba(255,106,0,0.25)' }} />
+
+                {/* Number */}
+                <span className="absolute top-6 right-7 text-5xl font-black font-cal italic opacity-[0.07] group-hover:opacity-[0.12] transition-opacity" style={{ color:'rgb(var(--c-text))' }}>
+                  {String(i+1).padStart(2,'0')}
+                </span>
+
+                <div className="relative z-10 space-y-1.5">
+                  <p className="text-xs uppercase tracking-[0.15em] font-medium group-hover:text-[#FF6A00] transition-colors" style={{ color:'rgba(var(--c-text),0.35)' }}>
+                    {s.tagline}
+                  </p>
+                  <h3 className="font-cal font-semibold t-text text-xl md:text-2xl leading-tight group-hover:text-[#FF6A00] transition-colors duration-300">
+                    {s.name}
+                  </h3>
+                </div>
               </motion.a>
             ))}
           </div>
-        </Section>
+        </div>
       </section>
 
-      {/* ── Case Studies ──────────────────────────────────── */}
-      <section id="casistudio" className="pb-20 md:pb-28">
-        <div className="max-w-[1400px] mx-auto px-5 md:px-12 mb-10 md:mb-12">
+      {/* ── CASE STUDIES ─────────────────────────────────── */}
+      <section id="casistudio" className="py-20 md:py-28">
+        <div className="max-w-[1200px] mx-auto px-5 md:px-12 mb-12">
           <Section>
-            <motion.h2 variants={reveal} className="font-cal font-semibold uppercase tracking-tighter italic t-text text-3xl md:text-5xl">
-              Progetti Selezionati <span className="text-[#FF6A00]">/</span>
-            </motion.h2>
+            <motion.div variants={fadeUp} className="flex items-end justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.2em] mb-4 font-medium" style={{ color:'rgba(var(--c-text),0.35)' }}>Portfolio</p>
+                <h2 className="font-cal font-semibold uppercase italic t-text leading-tight"
+                  style={{ fontSize:'clamp(2.2rem,5vw,3.8rem)', letterSpacing:'-0.03em' }}>
+                  Progetti<span className="text-[#FF6A00]">.</span>
+                </h2>
+              </div>
+            </motion.div>
           </Section>
         </div>
 
-        <div className="flex gap-4 md:gap-6 overflow-x-auto px-5 md:px-12 pb-6 no-scrollbar">
+        <div className="flex gap-4 md:gap-5 overflow-x-auto px-5 md:px-12 pb-6 no-scrollbar">
           {caseStudies.map((s, i) => (
             <motion.div
               key={s.title}
-              initial={{ opacity: 0, x: 40 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: '-40px' }}
-              transition={{ duration: 0.75, delay: i * 0.07, ease }}
-              whileHover={{ scale: 1.02 }}
-              className="min-w-[280px] sm:min-w-[340px] lg:min-w-[420px] aspect-[4/5] relative rounded-[2rem] md:rounded-[2.5rem] overflow-hidden group flex-shrink-0"
+              initial={{ opacity:0, x:40 }}
+              whileInView={{ opacity:1, x:0 }}
+              viewport={{ once:true, margin:'-40px' }}
+              transition={{ duration:0.8, delay:i*0.07, ease }}
+              whileHover={{ scale:1.02, y:-4 }}
+              className="min-w-[260px] sm:min-w-[320px] lg:min-w-[380px] aspect-[3/4] relative rounded-[2rem] overflow-hidden flex-shrink-0 group"
             >
               <img src={s.img} alt={s.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/15 to-transparent" />
-              <div className="absolute bottom-6 md:bottom-8 left-6 md:left-8 right-6 md:right-8">
-                <p className="text-[#FF6A00] font-bold text-[10px] uppercase tracking-[0.3em] mb-1.5">{s.service}</p>
-                <h3 className="text-xl md:text-2xl font-black text-white">{s.title}</h3>
+              <div className="absolute inset-0" style={{ background:'linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0) 55%)' }} />
+              <div className="absolute bottom-6 left-6 right-6">
+                <p className="text-[#FF6A00] text-[10px] uppercase tracking-[0.25em] font-bold mb-1.5">{s.service}</p>
+                <h3 className="text-white text-xl md:text-2xl font-black">{s.title}</h3>
               </div>
             </motion.div>
           ))}
         </div>
       </section>
 
-      {/* ── CTA ───────────────────────────────────────────── */}
-      <section className="max-w-[1400px] mx-auto px-5 md:px-12 pb-20 md:pb-28">
-        <Section>
-          <motion.div variants={fadeIn} className="relative rounded-[2.5rem] md:rounded-[3rem] overflow-hidden bg-[#FF6A00] px-8 py-14 md:p-24 text-center">
-            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
-            <p className="text-black/60 text-xs uppercase tracking-widest mb-4 font-medium">Pronto a crescere?</p>
-            <h2 className="font-cal font-semibold uppercase tracking-tighter italic text-black text-3xl md:text-6xl leading-tight mb-8">
-              Costruiamo qualcosa <br className="hidden sm:block" /> di straordinario.
-            </h2>
-            <a href="mailto:ed.digitalagency@gmail.com" className="inline-block px-8 md:px-10 py-4 bg-black text-white font-bold rounded-full hover:scale-105 active:scale-95 transition-transform uppercase tracking-widest text-sm">
-              Inizia ora
-            </a>
-          </motion.div>
-        </Section>
+      {/* ── CTA ──────────────────────────────────────────── */}
+      <section className="px-5 md:px-12 pb-24 md:pb-32">
+        <div className="max-w-[1200px] mx-auto">
+          <Section>
+            <motion.div variants={fadeUp}
+              className="relative rounded-[2.5rem] md:rounded-[3.5rem] overflow-hidden text-center px-8 py-20 md:py-28"
+              style={{ background:'linear-gradient(135deg, #FF6A00 0%, #FF8C00 100%)' }}
+            >
+              <div className="absolute inset-0" style={{ background:'radial-gradient(ellipse at top, rgba(255,255,255,0.15) 0%, transparent 60%)' }} />
+              <div className="relative z-10">
+                <p className="text-black/60 text-xs uppercase tracking-[0.2em] font-medium mb-6">Pronto a crescere?</p>
+                <h2 className="font-cal font-semibold uppercase italic text-black leading-tight tracking-tight mb-10"
+                  style={{ fontSize:'clamp(2.4rem,6vw,5rem)', letterSpacing:'-0.03em' }}>
+                  Costruiamo qualcosa<br className="hidden sm:block" /> di straordinario.
+                </h2>
+                <a href="/contatti"
+                  className="inline-flex items-center gap-3 px-10 py-4 bg-black text-white font-bold rounded-full hover:scale-[1.04] active:scale-[0.97] transition-transform text-sm uppercase tracking-widest shadow-xl shadow-black/30">
+                  Inizia ora
+                  <span>→</span>
+                </a>
+              </div>
+            </motion.div>
+          </Section>
+        </div>
       </section>
 
-      {/* ── Partners ──────────────────────────────────────── */}
-      <section style={{ borderTop: '1px solid rgba(var(--c-text),0.06)' }} className="py-16 md:py-20">
-        <div className="max-w-[1400px] mx-auto px-5 md:px-12">
+      {/* ── PARTNERS ─────────────────────────────────────── */}
+      <section className="pb-24 md:pb-32">
+        <div className="max-w-[1200px] mx-auto px-5 md:px-12">
           <Section>
-            <motion.p variants={reveal} className="text-center text-[10px] t-text-25 uppercase tracking-widest mb-10">Technology partners</motion.p>
-            <motion.div variants={stagger} className="flex flex-wrap justify-center items-center gap-8 md:gap-16">
+            <motion.p variants={fadeUp} className="text-center text-[10px] uppercase tracking-[0.2em] mb-12 font-medium" style={{ color:'rgba(var(--c-text),0.2)' }}>
+              Technology partners
+            </motion.p>
+            <motion.div variants={stagger} className="flex flex-wrap justify-center items-center gap-10 md:gap-16">
               {partners.map(p => (
-                <motion.img key={p.alt} variants={reveal} src={p.src} alt={p.alt} className="h-6 md:h-8 w-auto opacity-25 hover:opacity-60 transition-opacity duration-300" style={{ filter: 'var(--partner-filter, invert(1))' }} />
+                <motion.img key={p.alt} variants={fadeUp} src={p.src} alt={p.alt}
+                  className="h-6 md:h-7 w-auto opacity-20 hover:opacity-50 transition-opacity duration-400"
+                  style={{ filter:'var(--partner-filter)' }} />
               ))}
             </motion.div>
           </Section>
