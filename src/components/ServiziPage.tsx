@@ -108,7 +108,7 @@ export default function ServiziPage() {
             <h2 className="font-cal font-semibold uppercase tracking-tighter italic text-black text-3xl md:text-6xl leading-tight mb-8">
               Iniziamo a <br className="hidden sm:block" /> costruire insieme.
             </h2>
-            <a href="mailto:ed.digitalagency@gmail.com" className="inline-block px-8 md:px-10 py-4 bg-black text-white font-bold rounded-full hover:scale-105 active:scale-95 transition-transform uppercase tracking-widest text-sm">
+            <a href="/contatti" className="inline-block px-8 md:px-10 py-4 bg-black text-white font-bold rounded-full hover:scale-105 active:scale-95 transition-transform uppercase tracking-widest text-sm">
               Scrivici ora
             </a>
           </motion.div>
