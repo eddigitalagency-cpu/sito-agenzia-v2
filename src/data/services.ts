@@ -254,6 +254,36 @@ export const services: Service[] = [
     ],
     related: ['mvp-saas', 'website', 'advertising'],
   },
+  {
+    slug: 'integrazioni',
+    name: 'Integrazioni & Automazioni',
+    tagline: 'Il tuo stack parla finalmente una sola lingua.',
+    description: 'Integriamo qualsiasi tool del tuo stack: CRM, ERP, email, e-commerce, contabilità, HR. API dirette, Make, Zapier e n8n per la soluzione più efficace e sostenibile.',
+    longDescription: "Ogni azienda accumula nel tempo decine di strumenti che non comunicano tra loro: il CRM non sa cosa fa l'e-commerce, la contabilità non parla con l'HR, le email partono a mano. Noi colleghiamo tutto. Utilizziamo API dirette quando servono performance e affidabilità massima, Make o Zapier quando la velocità è prioritaria, n8n quando serve controllo completo e costo zero. Il risultato: dati sincronizzati, team più libero, errori umani eliminati.",
+    heroImage: '/images/Copia-di-Progetto-senza-titolo-1-copia-2-1.jpg',
+    overviewImage: '/images/Copia-di-Progetto-senza-titolo.jpg',
+    gallery: [
+      '/images/marquee-image3.jpg',
+      '/images/Copia-di-Progetto-senza-titolo-1-copia-2.jpg',
+      '/images/marquee-image4.jpg',
+    ],
+    includes: [
+      'API dirette per performance massima e affidabilità',
+      'Make e Zapier per integrazioni rapide senza codice',
+      'Connettori custom quando le piattaforme lo richiedono',
+      'Supporto per webhook ed eventi in tempo reale',
+      'Integrazione CRM, ERP, email, contabilità, HR',
+      'Documentazione e manutenzione dei flussi automatizzati',
+    ],
+    platforms: ['Make', 'Zapier', 'n8n', 'REST API', 'Webhooks'],
+    process: [
+      { step: '01', title: 'Mappatura', description: 'Analizziamo tutti i tool del tuo stack e i flussi di lavoro esistenti per identificare colli di bottiglia e opportunità.' },
+      { step: '02', title: 'Progettazione', description: 'Definiamo l\'architettura delle integrazioni, scegliendo la tecnologia più adatta per ogni connessione.' },
+      { step: '03', title: 'Sviluppo', description: 'Implementiamo i flussi automatizzati con test su ogni scenario, inclusi i casi di errore.' },
+      { step: '04', title: 'Monitoraggio', description: 'Attiviamo alerting sui flussi critici e forniamo dashboard per controllare che tutto funzioni.' },
+    ],
+    related: ['mvp-saas', 'ecommerce', 'website'],
+  },
 ];
 
 export function getService(slug: string): Service | undefined {

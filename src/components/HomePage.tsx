@@ -128,6 +128,7 @@ const services = [
   { name: 'Visual Identity',         slug: 'visual-identity',         tagline: 'Brand memorabile.',    span: 'lg:col-span-1', gradient: 'from-yellow-500/8 via-transparent' },
   { name: 'MVP & SaaS',              slug: 'mvp-saas',                tagline: 'Idea → Prodotto.',      span: 'lg:col-span-1', gradient: 'from-cyan-500/8 via-transparent' },
   { name: 'App',                     slug: 'app',                     tagline: 'Nelle loro tasche.',    span: 'lg:col-span-1', gradient: 'from-indigo-500/8 via-transparent' },
+  { name: 'Integrazioni & Automazioni', slug: 'integrazioni',         tagline: 'Stack connesso, zero sprechi.', span: 'lg:col-span-1', gradient: 'from-teal-500/8 via-transparent' },
 ];
 
 const caseStudies = [

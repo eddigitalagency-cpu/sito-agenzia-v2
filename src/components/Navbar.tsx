@@ -84,7 +84,7 @@ export default function Navbar() {
 
             {/* CTA desktop */}
             <a
-              href="mailto:ed.digitalagency@gmail.com"
+              href="/contatti"
               className="hidden md:inline-flex items-center nav-cta text-[13px] font-semibold px-5 py-2 rounded-full transition-all duration-200 active:scale-95"
             >
               Inizia un progetto
@@ -134,7 +134,7 @@ export default function Navbar() {
               ))}
 
               <motion.a
-                href="mailto:ed.digitalagency@gmail.com"
+                href="/contatti"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
