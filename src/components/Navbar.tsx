@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const links = [
+  { label: 'Home',     href: '/' },
   { label: 'Servizi',  href: '/servizi' },
   { label: 'Progetti', href: '/#casistudio' },
   { label: 'Contatti', href: '/contatti' },

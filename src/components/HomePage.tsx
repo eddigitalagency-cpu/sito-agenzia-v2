@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-import { motion, useInView, useScroll, useTransform, useMotionValue, useSpring, animate } from 'framer-motion';
+import { motion, AnimatePresence, useInView, useScroll, useTransform, useMotionValue, useSpring, animate } from 'framer-motion';
 
 // Apple ease
 const ease = [0.16, 1, 0.3, 1] as const;
@@ -52,6 +52,43 @@ function useCountUp(target: number, suffix = '') {
   }, [inView]);
 
   return ref;
+}
+
+// ── Cycling hero word ──────────────────────────────────────
+const cyclingWords = [
+  'creatività',
+  'strategia',
+  'innovazione',
+  'identità',
+  'performance',
+  'visione',
+  'crescita',
+];
+
+function CyclingWord() {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setIndex(i => (i + 1) % cyclingWords.length), 2800);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <span className="relative inline-flex overflow-hidden align-bottom" style={{ minWidth: '1px' }}>
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.span
+          key={cyclingWords[index]}
+          className="inline-block text-[#FF6A00]"
+          initial={{ clipPath: 'inset(0 0 100% 0)', y: '60%', opacity: 0 }}
+          animate={{ clipPath: 'inset(0 0 0% 0)', y: '0%', opacity: 1 }}
+          exit={{ clipPath: 'inset(100% 0 0% 0)', y: '-60%', opacity: 0 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        >
+          {cyclingWords[index]}.
+        </motion.span>
+      </AnimatePresence>
+    </span>
+  );
 }
 
 // ── Marquee strip ──────────────────────────────────────────
@@ -171,7 +208,7 @@ export default function HomePage() {
               className="font-cal font-semibold uppercase italic t-text leading-[0.88] tracking-[-0.03em]"
               style={{ fontSize: 'clamp(3.2rem, 9vw, 8rem)' }}
             >
-              La nostra <span className="text-[#FF6A00]">creatività.</span>
+              La nostra <CyclingWord />
               <br />La tua visione.
             </motion.h1>
           </div>
