@@ -147,7 +147,6 @@ const partners = [
   { src: '/Images/wordpress-logo-png-transparent.png', alt: 'WordPress' },
   { src: '/Images/keliweb-logo-e1522914795801.png',     alt: 'Keliweb' },
   { src: '/Images/Logo-Litchi-solutions-intero.png',    alt: 'Litchi' },
-  { src: '/Images/ED-logo-completo.svg',               alt: 'ED Digital' },
 ];
 
 // ── Stats ──────────────────────────────────────────────────
