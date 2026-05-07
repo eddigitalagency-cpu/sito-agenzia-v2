@@ -179,7 +179,7 @@ export const projects: Project[] = [
     tagline: 'L\'arte sulla pelle, raccontata sui social.',
     description: 'UpBeat Tattoo è uno studio di tatuaggi con un\'identità visiva forte e un team di artisti di talento. Abbiamo costruito la loro presenza social da zero, creando un feed coerente e accattivante che mette in mostra il lavoro degli artisti. Il risultato: una community fedele e una lista d\'attesa piena.',
     what: [
-      'Strategia social da zero su Instagram e TikTok',
+      'Strategia social da zero su Instagram e Facebook',
       'Produzione contenuti fotografici e video dei lavori',
       'Piano editoriale mensile con storytelling degli artisti',
       'Gestione diretta messaggi e prenotazioni via DM',
