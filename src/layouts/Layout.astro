@@ -27,16 +27,17 @@ const ogImageAbs    = new URL(ogImage, 'https://eddigitalagency.it').toString();
     <!-- ── Primary SEO ──────────────────────────────────────── -->
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
-    <meta name="keywords" content="agenzia digitale, web design, social media marketing, advertising, e-commerce, visual identity, app development, Vittorio Veneto, Treviso, Veneto, Italy, SEO, digital marketing" />
+    <meta name="keywords" content="agenzia digitale Treviso, agenzia marketing Treviso, web agency Vittorio Veneto, social media marketing Treviso, siti web Treviso, advertising Treviso, e-commerce Treviso, agenzia digitale Veneto, marketing digitale PMI, web design Treviso, SEO Treviso, agenzia comunicazione Treviso, ED Digital Agency" />
     <meta name="author" content="ED Digital Agency" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <link rel="canonical" href={canonicalURL} />
 
     <!-- ── Geo ─────────────────────────────────────────────── -->
     <meta name="geo.region" content="IT-TV" />
-    <meta name="geo.placename" content="Vittorio Veneto, Treviso" />
+    <meta name="geo.placename" content="Vittorio Veneto, Treviso, Veneto" />
     <meta name="geo.position" content="45.9826;12.3001" />
     <meta name="ICBM" content="45.9826, 12.3001" />
+    <meta name="DC.coverage" content="Vittorio Veneto, Treviso, Veneto, Italia" />
 
     <!-- ── Open Graph ──────────────────────────────────────── -->
     <meta property="og:type" content="website" />
@@ -67,24 +68,27 @@ const ogImageAbs    = new URL(ogImage, 'https://eddigitalagency.it').toString();
         "@context": "https://schema.org",
         "@graph": [
           {
-            "@type": ["Organization", "LocalBusiness"],
+            "@type": ["Organization", "LocalBusiness", "ProfessionalService"],
             "@id": "https://eddigitalagency.it/#organization",
             "name": "ED Digital Agency",
-            "alternateName": "ED Digital",
+            "alternateName": ["ED Digital", "ED Digital Agency Treviso"],
             "url": "https://eddigitalagency.it",
             "logo": {
               "@type": "ImageObject",
-              "url": "https://eddigitalagency.it/Images/Logo_Bianco_ED.webp"
+              "url": "https://eddigitalagency.it/Images/Logo%20ED%20Digitla.png",
+              "width": 400,
+              "height": 400
             },
-            "image": "https://eddigitalagency.it/Images/Logo_Bianco_ED.webp",
-            "description": "Agenzia digitale italiana specializzata in social media marketing, advertising, sviluppo web, e-commerce, visual identity, MVP e automazioni per PMI italiane.",
+            "image": "https://eddigitalagency.it/Images/Logo%20ED%20Digitla.png",
+            "description": "ED Digital Agency è l'agenzia digitale di riferimento a Vittorio Veneto e nella provincia di Treviso. Specializzata in social media marketing, advertising, siti web, e-commerce, visual identity e automazioni per PMI italiane.",
+            "foundingDate": "2019",
             "telephone": "+39 379 3248371",
             "email": "info@eddigitalagency.it",
             "address": {
               "@type": "PostalAddress",
               "streetAddress": "Via Carlo Torres, 17/Interno 13",
               "addressLocality": "Vittorio Veneto",
-              "addressRegion": "TV",
+              "addressRegion": "Treviso",
               "postalCode": "31029",
               "addressCountry": "IT"
             },
@@ -93,45 +97,108 @@ const ogImageAbs    = new URL(ogImage, 'https://eddigitalagency.it').toString();
               "latitude": 45.9826,
               "longitude": 12.3001
             },
-            "areaServed": {
-              "@type": "Country",
-              "name": "Italia"
+            "areaServed": [
+              { "@type": "City", "name": "Vittorio Veneto" },
+              { "@type": "City", "name": "Treviso" },
+              { "@type": "City", "name": "Conegliano" },
+              { "@type": "City", "name": "Pieve di Soligo" },
+              { "@type": "AdministrativeArea", "name": "Provincia di Treviso" },
+              { "@type": "State", "name": "Veneto" },
+              { "@type": "Country", "name": "Italia" }
+            ],
+            "contactPoint": {
+              "@type": "ContactPoint",
+              "telephone": "+39-379-3248371",
+              "email": "info@eddigitalagency.it",
+              "contactType": "customer service",
+              "availableLanguage": "Italian",
+              "areaServed": "IT"
             },
+            "openingHoursSpecification": [{
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
+              "opens": "09:00",
+              "closes": "18:00"
+            }],
+            "sameAs": [
+              "https://www.instagram.com/eddigitalagency",
+              "https://www.linkedin.com/company/ed-digital-agency"
+            ],
             "knowsLanguage": "it",
             "priceRange": "€€",
             "hasOfferCatalog": {
               "@type": "OfferCatalog",
-              "name": "Servizi Digitali",
+              "name": "Servizi Digitali per PMI",
               "itemListElement": [
-                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Social Media Management", "url": "https://eddigitalagency.it/servizi/social-media-management" } },
-                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Advertising", "url": "https://eddigitalagency.it/servizi/advertising" } },
-                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Website", "url": "https://eddigitalagency.it/servizi/website" } },
-                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "E-Commerce", "url": "https://eddigitalagency.it/servizi/ecommerce" } },
-                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Photo & Video", "url": "https://eddigitalagency.it/servizi/photo-video" } },
-                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Visual Identity", "url": "https://eddigitalagency.it/servizi/visual-identity" } },
-                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "MVP & SaaS", "url": "https://eddigitalagency.it/servizi/mvp-saas" } },
-                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "App Development", "url": "https://eddigitalagency.it/servizi/app" } },
-                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Integrazioni & Automazioni", "url": "https://eddigitalagency.it/servizi/integrazioni" } }
+                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Social Media Management a Treviso", "url": "https://eddigitalagency.it/servizi/social-media-management" } },
+                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Advertising Digitale a Treviso", "url": "https://eddigitalagency.it/servizi/advertising" } },
+                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Siti Web a Treviso", "url": "https://eddigitalagency.it/servizi/website" } },
+                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "E-Commerce a Treviso", "url": "https://eddigitalagency.it/servizi/ecommerce" } },
+                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Foto e Video Professionale", "url": "https://eddigitalagency.it/servizi/photo-video" } },
+                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Visual Identity e Logo Design", "url": "https://eddigitalagency.it/servizi/visual-identity" } },
+                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Sviluppo MVP e SaaS", "url": "https://eddigitalagency.it/servizi/mvp-saas" } },
+                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Sviluppo App Mobile", "url": "https://eddigitalagency.it/servizi/app" } },
+                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Integrazioni e Automazioni", "url": "https://eddigitalagency.it/servizi/integrazioni" } }
               ]
+            },
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": "5",
+              "reviewCount": "200",
+              "bestRating": "5"
             }
           },
           {
             "@type": "WebSite",
             "@id": "https://eddigitalagency.it/#website",
             "url": "https://eddigitalagency.it",
-            "name": "ED Digital Agency",
-            "description": "Agenzia digitale per PMI italiane",
+            "name": "ED Digital Agency — Agenzia Digitale Treviso",
+            "description": "Agenzia digitale a Vittorio Veneto (Treviso). Social media, advertising, siti web, e-commerce, visual identity per PMI italiane.",
             "publisher": { "@id": "https://eddigitalagency.it/#organization" },
-            "inLanguage": "it-IT"
+            "inLanguage": "it-IT",
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "https://eddigitalagency.it/servizi?q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
           },
           {
             "@type": "WebPage",
             "@id": "https://eddigitalagency.it/#webpage",
             "url": "https://eddigitalagency.it",
-            "name": "ED Digital Agency — Partner Strategico Digitale",
+            "name": "Agenzia Digitale a Treviso e Vittorio Veneto — ED Digital Agency",
             "isPartOf": { "@id": "https://eddigitalagency.it/#website" },
             "about": { "@id": "https://eddigitalagency.it/#organization" },
-            "inLanguage": "it-IT"
+            "inLanguage": "it-IT",
+            "speakable": {
+              "@type": "SpeakableSpecification",
+              "cssSelector": ["h1", "h2", ".speakable"]
+            }
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Dove si trova ED Digital Agency?",
+                "acceptedAnswer": { "@type": "Answer", "text": "ED Digital Agency ha sede a Vittorio Veneto, in provincia di Treviso (Veneto), in Via Carlo Torres 17. Operiamo in tutta la provincia di Treviso, il Veneto e su tutto il territorio italiano anche da remoto." }
+              },
+              {
+                "@type": "Question",
+                "name": "Quali servizi offre ED Digital Agency a Treviso?",
+                "acceptedAnswer": { "@type": "Answer", "text": "Offriamo social media management, advertising su Meta e Google, sviluppo siti web e e-commerce, produzione foto e video, visual identity e logo design, sviluppo app e software, integrazioni e automazioni tra tool aziendali." }
+              },
+              {
+                "@type": "Question",
+                "name": "ED Digital Agency segue anche clienti fuori dalla provincia di Treviso?",
+                "acceptedAnswer": { "@type": "Answer", "text": "Sì, lavoriamo con clienti in tutta Italia. Siamo specializzati in aziende a Vittorio Veneto, Conegliano, Treviso e nel Veneto, ma operiamo da remoto con PMI su tutto il territorio nazionale." }
+              },
+              {
+                "@type": "Question",
+                "name": "Quanto costa un sito web con ED Digital Agency a Treviso?",
+                "acceptedAnswer": { "@type": "Answer", "text": "Il costo di un sito web varia in base alle esigenze del progetto. Offriamo soluzioni per PMI con prezzi competitivi. Contattaci per un preventivo gratuito e personalizzato entro 24 ore." }
+              }
+            ]
           }
         ]
       }

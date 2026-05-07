@@ -15,8 +15,8 @@ const related = getRelatedServices(service.related);
 ---
 
 <Layout
-  title={service.name}
-  description={service.description}
+  title={`${service.name} a Treviso e Vittorio Veneto`}
+  description={`${service.description} ED Digital Agency, agenzia specializzata a Vittorio Veneto in provincia di Treviso. Contattaci per un preventivo gratuito.`}
 >
   <ServiceDetailPage client:load service={service} related={related} />
 </Layout>
