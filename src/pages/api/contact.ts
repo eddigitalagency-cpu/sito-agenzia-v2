@@ -72,7 +72,7 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     await resend.emails.send({
       from:     'ED Digital Agency <onboarding@resend.dev>',
-      to:       'info@eddigitalagency.it',
+      to:       'enzo@eddigitalagency.it',
       replyTo:  email,
       subject:  `✉️ ${name} — ${service || 'Contatto dal sito'}`,
       html,
