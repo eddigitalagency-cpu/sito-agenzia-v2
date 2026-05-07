@@ -287,6 +287,28 @@ const ogImageAbs    = new URL(ogImage, 'https://eddigitalagency.it').toString();
       /* ── Remove 300ms tap delay on buttons/links ─────────── */
       a, button { touch-action: manipulation; }
 
+      /* ── Content protection ──────────────────────────────── */
+      body {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        user-select: none;
+      }
+      /* Allow selection in form fields */
+      input, textarea, select {
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        user-select: text;
+      }
+      /* Prevent image drag and download */
+      img {
+        -webkit-user-drag: none;
+        user-drag: none;
+        pointer-events: none;
+      }
+      /* Re-enable pointer events for images inside links */
+      a img { pointer-events: auto; }
+      a img { -webkit-user-drag: none; }
+
       /* ── Hide cursor on desktop for custom cursor ─────────── */
       @media (pointer: fine) { * { cursor: none !important; } }
 
@@ -415,6 +437,21 @@ const ogImageAbs    = new URL(ogImage, 'https://eddigitalagency.it').toString();
         var obs=new MutationObserver(syncLogo);
         obs.observe(document.documentElement,{attributes:true,attributeFilter:['class']});
       })();
+    </script>
+
+    <!-- Content protection -->
+    <script is:inline>
+      // Block right-click on images
+      document.addEventListener('contextmenu', function(e) {
+        if (e.target.tagName === 'IMG') e.preventDefault();
+      });
+      // Block common download shortcuts
+      document.addEventListener('keydown', function(e) {
+        const k = e.key.toLowerCase();
+        if ((e.ctrlKey || e.metaKey) && (k === 's' || k === 'u' || k === 'p')) {
+          e.preventDefault();
+        }
+      });
     </script>
 
     <!-- Page view tracking -->
