@@ -52,14 +52,14 @@ const contacts = [
 
 interface FormState {
   name: string; email: string; phone: string;
-  company: string; service: string; message: string;
+  company: string; service: string; message: string; website: string;
 }
 
 type Status = 'idle' | 'sending' | 'success' | 'error';
 
 export default function ContattiPage() {
   const [form, setForm] = useState<FormState>({
-    name: '', email: '', phone: '', company: '', service: '', message: '',
+    name: '', email: '', phone: '', company: '', service: '', message: '', website: '',
   });
   const [errors, setErrors] = useState<Partial<FormState>>({});
   const [status, setStatus] = useState<Status>('idle');
@@ -93,7 +93,7 @@ export default function ContattiPage() {
       const data = await res.json();
       if (res.ok) {
         setStatus('success');
-        setForm({ name: '', email: '', phone: '', company: '', service: '', message: '' });
+        setForm({ name: '', email: '', phone: '', company: '', service: '', message: '', website: '' });
       } else {
         setErrorMsg(data.error || 'Errore sconosciuto.');
         setStatus('error');
@@ -155,6 +155,8 @@ export default function ContattiPage() {
                 </motion.div>
               ) : (
                 <motion.form key="form" onSubmit={submit} noValidate className="space-y-5">
+                  {/* Honeypot — hidden from humans, bots fill it → blocked */}
+                  <input name="website" type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ display: 'none' }} />
 
                   {/* Row 1: name + email */}
                   <div className="grid sm:grid-cols-2 gap-5">

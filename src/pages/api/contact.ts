@@ -4,24 +4,59 @@ import { getPool, initDB } from '../../lib/db';
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request }) => {
-  let body: Record<string, string>;
+// Rate limiting: max 5 submissions per IP per hour
+const _rate = new Map<string, { count: number; resetAt: number }>();
 
+const LIMITS = { name: 100, email: 150, phone: 30, company: 100, service: 80, message: 5000 };
+const URL_RX = /https?:\/\//gi;
+
+export const POST: APIRoute = async ({ request, clientAddress }) => {
+  // ── Rate limit ────────────────────────────────────────────
+  const ip  = clientAddress ?? 'unknown';
+  const now = Date.now();
+  const rec = _rate.get(ip) ?? { count: 0, resetAt: now + 60 * 60 * 1000 };
+  if (now > rec.resetAt) { rec.count = 0; rec.resetAt = now + 60 * 60 * 1000; }
+  if (rec.count >= 5) return json({ error: 'Troppi messaggi. Riprova tra un\'ora.' }, 429);
+  rec.count++;
+  _rate.set(ip, rec);
+
+  // ── Parse body ────────────────────────────────────────────
+  let body: Record<string, string>;
   try {
     body = await request.json();
   } catch {
     return json({ error: 'Richiesta non valida.' }, 400);
   }
 
-  const { name, email, phone, company, service, message } = body;
+  // ── Honeypot: bots fill this, humans leave it empty ───────
+  if (body.website?.trim()) return json({ ok: true }); // silent fake success
 
-  if (!name?.trim() || !email?.trim() || !message?.trim()) {
+  // ── Extract + sanitize fields ─────────────────────────────
+  const name    = String(body.name    ?? '').trim().slice(0, LIMITS.name);
+  const email   = String(body.email   ?? '').trim().slice(0, LIMITS.email);
+  const phone   = String(body.phone   ?? '').trim().slice(0, LIMITS.phone)   || null;
+  const company = String(body.company ?? '').trim().slice(0, LIMITS.company) || null;
+  const service = String(body.service ?? '').trim().slice(0, LIMITS.service) || null;
+  const message = String(body.message ?? '').trim().slice(0, LIMITS.message);
+
+  // ── Required fields ───────────────────────────────────────
+  if (!name || !email || !message) {
     return json({ error: 'Nome, email e messaggio sono obbligatori.' }, 400);
   }
 
-  const emailRx = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRx.test(email)) {
+  // ── Email validation ──────────────────────────────────────
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return json({ error: 'Inserisci un indirizzo email valido.' }, 400);
+  }
+
+  // ── Spam: block if message has 4+ URLs ───────────────────
+  if ((message.match(URL_RX) ?? []).length >= 4) {
+    return json({ error: 'Messaggio non valido.' }, 400);
+  }
+
+  // ── No HTML tags in name ──────────────────────────────────
+  if (/<[a-z][\s\S]*>/i.test(name)) {
+    return json({ error: 'Caratteri non validi nel nome.' }, 400);
   }
 
   const apiKey = import.meta.env.RESEND_API_KEY;
@@ -61,20 +96,20 @@ export const POST: APIRoute = async ({ request }) => {
     </div>
   `;
 
-  // Save to DB (non-blocking — never fail the request over this)
+  // Save to DB (non-blocking)
   initDB()
     .then(() => getPool().query(
       'INSERT INTO form_submissions (name,email,phone,company,service,message) VALUES ($1,$2,$3,$4,$5,$6)',
-      [name, email, phone ?? null, company ?? null, service ?? null, message],
+      [name, email, phone, company, service, message],
     ))
     .catch(err => console.error('DB save error:', err));
 
   try {
     await resend.emails.send({
-      from:     'ED Digital Agency <onboarding@resend.dev>',
-      to:       'enzo@eddigitalagency.it',
-      replyTo:  email,
-      subject:  `✉️ ${name} — ${service || 'Contatto dal sito'}`,
+      from:    'ED Digital Agency <onboarding@resend.dev>',
+      to:      'enzo@eddigitalagency.it',
+      replyTo: email,
+      subject: `✉️ ${name} — ${service || 'Contatto dal sito'}`,
       html,
     });
 
