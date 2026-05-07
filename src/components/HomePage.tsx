@@ -132,14 +132,15 @@ const services = [
 ];
 
 const caseStudies = [
-  { title: 'Italia Contract',   service: 'Web Design',        img: '/Images/Lavori%20Clienti/Sito%20web%20Italia%20Contract.png' },
-  { title: 'Espressione Danza', service: 'Social Media',      img: '/Images/Lavori%20Clienti/Espressione%20Danza.jpg' },
-  { title: 'CDVI',              service: 'Video',             img: '/Images/Lavori%20Clienti/CDVI.jpg' },
-  { title: 'Gallo Immobiliare', service: 'Web Design',        img: '/Images/Lavori%20Clienti/Gallo%20Immobiliare.jpg' },
-  { title: 'Disegno Italia',    service: 'Web Design',        img: '/Images/Lavori%20Clienti/Disegno%20Italia.png' },
-  { title: 'Solo Mattia',       service: 'Web Design',        img: '/Images/Lavori%20Clienti/Sito%20web%20Solo%20Mattia.jpg' },
-  { title: 'UpBeat Tattoo',     service: 'Social Media',      img: '/Images/Lavori%20Clienti/UpBeat%20Tattoo.jpg' },
-  { title: 'I Bamboi',          service: 'Web Design',        img: '/Images/Lavori%20Clienti/3.png' },
+  { slug: 'zenia',            title: 'Zenia',            service: 'Web Design',   img: '/Images/Zenia.png' },
+  { slug: 'italia-contract',  title: 'Italia Contract',  service: 'Web Design',   img: '/Images/Lavori%20Clienti/Sito%20web%20Italia%20Contract.png' },
+  { slug: 'espressione-danza',title: 'Espressione Danza',service: 'Social Media', img: '/Images/Lavori%20Clienti/Espressione%20Danza.jpg' },
+  { slug: 'cdvi',             title: 'CDVI',             service: 'Video',        img: '/Images/Lavori%20Clienti/CDVI.jpg' },
+  { slug: 'gallo-immobiliare',title: 'Gallo Immobiliare',service: 'Web Design',   img: '/Images/Lavori%20Clienti/Gallo%20Immobiliare.jpg' },
+  { slug: 'disegno-italia',   title: 'Disegno Italia',   service: 'Web Design',   img: '/Images/Lavori%20Clienti/Disegno%20Italia.png' },
+  { slug: 'solo-mattia',      title: 'Solo Mattia',      service: 'Web Design',   img: '/Images/Lavori%20Clienti/Sito%20web%20Solo%20Mattia.jpg' },
+  { slug: 'upbeat-tattoo',    title: 'UpBeat Tattoo',    service: 'Social Media', img: '/Images/Lavori%20Clienti/UpBeat%20Tattoo.jpg' },
+  { slug: 'i-bamboi',         title: 'I Bamboi',         service: 'Web Design',   img: '/Images/Lavori%20Clienti/3.png' },
 ];
 
 const partners = [
@@ -386,8 +387,9 @@ export default function HomePage() {
 
         <div ref={caseScrollRef} className="flex gap-4 md:gap-5 overflow-x-auto px-5 md:px-12 pb-6 no-scrollbar" style={{ cursor: 'grab', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
           {caseStudies.map((s, i) => (
-            <motion.div
+            <motion.a
               key={s.title}
+              href={`/progetti/${s.slug}`}
               initial={{ opacity:0, x:40 }}
               whileInView={{ opacity:1, x:0 }}
               viewport={{ once:true, margin:'-40px' }}
@@ -402,7 +404,10 @@ export default function HomePage() {
                 <p className="text-[#FF6A00] text-[10px] uppercase tracking-[0.25em] font-bold mb-1.5">{s.service}</p>
                 <h3 className="text-white text-xl md:text-2xl font-black">{s.title}</h3>
               </div>
-            </motion.div>
+              <div className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <span className="text-white text-xs">→</span>
+              </div>
+            </motion.a>
           ))}
         </div>
       </section>

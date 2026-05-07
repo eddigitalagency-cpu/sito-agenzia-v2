@@ -1,0 +1,21 @@
+---
+export const prerender = true;
+
+import Layout from '../../layouts/Layout.astro';
+import ProjectDetailPage from '../../components/ProjectDetailPage';
+import { projects, getProject } from '../../data/projects';
+
+export function getStaticPaths() {
+  return projects.map(p => ({ params: { slug: p.slug } }));
+}
+
+const { slug } = Astro.params;
+const project = getProject(slug)!;
+---
+
+<Layout
+  title={`${project.title} — ${project.service}`}
+  description={`${project.tagline} Scopri come ED Digital Agency ha realizzato il progetto ${project.title}: ${project.description.slice(0, 120)}...`}
+>
+  <ProjectDetailPage client:load project={project} />
+</Layout>
