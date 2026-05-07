@@ -393,7 +393,8 @@ export default function HomePage() {
               viewport={{ once:true, margin:'-40px' }}
               transition={{ duration:0.8, delay:i*0.07, ease }}
               whileHover={{ scale:1.02, y:-4 }}
-              className="min-w-[260px] sm:min-w-[320px] lg:min-w-[380px] aspect-[3/4] relative rounded-[2rem] overflow-hidden flex-shrink-0 group"
+              className="min-w-[260px] sm:min-w-[320px] lg:min-w-[380px] aspect-[3/4] relative rounded-[2rem] overflow-hidden flex-shrink-0 group border-0 outline-none"
+              style={{ isolation: 'isolate', WebkitMaskImage: '-webkit-radial-gradient(white, black)' } as React.CSSProperties}
             >
               <img src={s.img} alt={s.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute inset-0" style={{ background:'linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0) 55%)' }} />
