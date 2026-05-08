@@ -278,11 +278,15 @@ const pageTitle = isNew ? 'Nuovo Progetto' : `Modifica: ${p?.title ?? ''}`;
             <div style="display:flex;flex-direction:column;gap:14px;">
               <div class="field">
                 <label>Chi è il cliente e in che settore opera?</label>
-                <textarea id="ai-q1" rows="2" placeholder="Es. Studio dentistico a Treviso con 3 sedi, target famiglie e professionisti"></textarea>
+                <textarea id="ai-q1" rows="2" placeholder="Es. Studio dentistico a Treviso con 3 sedi, target famiglie e professionisti locali"></textarea>
               </div>
               <div class="field">
                 <label>Quali erano gli obiettivi e cosa avete ottenuto?</label>
-                <textarea id="ai-q2" rows="2" placeholder="Es. Aumentare le prenotazioni online, migliorare la presenza social, raggiunto +40% contatti in 4 mesi"></textarea>
+                <textarea id="ai-q2" rows="2" placeholder="Es. Aumentare le prenotazioni online, migliorare la presenza social — raggiunto +40% contatti in 4 mesi"></textarea>
+              </div>
+              <div class="field">
+                <label>Tono del brand e target cliente</label>
+                <textarea id="ai-q3" rows="2" placeholder="Es. Lusso sobrio, target adulti 35-55 alto spendenti — oppure: dinamico e giovanile, B2C 18-30 anni — oppure: B2B professionale, PMI manifatturiere"></textarea>
               </div>
               <div style="display:flex;align-items:center;gap:14px;">
                 <button type="button" class="btn-ai" id="btn-ai-generate">Genera contenuti</button>
@@ -473,6 +477,7 @@ const pageTitle = isNew ? 'Nuovo Progetto' : `Modifica: ${p?.title ?? ''}`;
     const aiStatus   = document.getElementById('ai-status');
     const aiQ1       = document.getElementById('ai-q1');
     const aiQ2       = document.getElementById('ai-q2');
+    const aiQ3       = document.getElementById('ai-q3');
 
     function toggleAiPanel() {
       const open = aiPanel.classList.toggle('open');
@@ -491,8 +496,9 @@ const pageTitle = isNew ? 'Nuovo Progetto' : `Modifica: ${p?.title ?? ''}`;
     btnGenerate?.addEventListener('click', async () => {
       const q1 = aiQ1?.value?.trim();
       const q2 = aiQ2?.value?.trim();
+      const q3 = aiQ3?.value?.trim() || '';
       if (!q1 || !q2) {
-        aiStatus.textContent = '⚠ Compila entrambe le domande.';
+        aiStatus.textContent = '⚠ Compila almeno le prime due domande.';
         aiStatus.style.color = '#ff6666';
         return;
       }
@@ -500,14 +506,14 @@ const pageTitle = isNew ? 'Nuovo Progetto' : `Modifica: ${p?.title ?? ''}`;
       const serviceVal = document.getElementById('input-service')?.value?.trim() ?? '';
 
       btnGenerate.disabled = true;
-      aiStatus.textContent = '⏳ Generazione in corso...';
+      aiStatus.textContent = '⏳ Sto scrivendo il testo...';
       aiStatus.style.color = 'rgba(255,255,255,.45)';
 
       try {
         const res = await fetch('/api/admin/generate-project', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title: titleVal || 'Progetto', service: serviceVal, q1, q2 }),
+          body: JSON.stringify({ title: titleVal || 'Progetto', service: serviceVal, q1, q2, q3 }),
         });
         const data = await res.json();
         if (!res.ok || data.error) {
