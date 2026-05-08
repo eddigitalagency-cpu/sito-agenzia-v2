@@ -106,7 +106,7 @@ export const projects: Project[] = [
     title: 'Gallo Immobiliare',
     service: 'Web Design',
     serviceSlug: 'website',
-    img: '/Images/Lavori%20Clienti/Gallo%20Immobiliare.jpg',
+    img: '/Images/GalloImmobiliare.png',
     tagline: 'Trovare casa, inizia da qui.',
     description: 'Gallo Immobiliare è un\'agenzia immobiliare locale con anni di esperienza nel Trevigiano. Abbiamo creato un sito moderno e funzionale con listing degli immobili, ricerca filtrata per categoria e zona, e un sistema di contatto diretto per ogni annuncio. Il tutto ottimizzato per portare lead qualificati.',
     what: [
