@@ -1,0 +1,429 @@
+---
+export const prerender = false;
+import { getPool, initDB } from '../../../lib/db';
+import { createHash } from 'node:crypto';
+
+function sessionToken(pwd: string) {
+  return createHash('sha256').update(`ed-admin-session:${pwd}`).digest('hex');
+}
+const auth   = Astro.cookies.get('ed-admin');
+const stored = process.env.ADMIN_PASSWORD ?? '';
+if (!stored || auth?.value !== sessionToken(stored)) return Astro.redirect('/admin/login');
+
+await initDB();
+const db = getPool();
+
+const { id } = Astro.params;
+const isNew = id === 'nuovo';
+const projId = isNew ? 0 : parseInt(id ?? '0');
+
+type ProjRow = {
+  id: number; slug: string; title: string; service: string; service_slug: string;
+  tagline: string; description: string; what: string[];
+  results: { value: string; label: string }[]; year: string;
+  cover_img: string; display_order: number; published: boolean;
+};
+
+let project: ProjRow | null = null;
+if (!isNew) {
+  if (!projId) return Astro.redirect('/admin/progetti');
+  const res = await db.query<ProjRow>('SELECT * FROM projects_db WHERE id=$1', [projId]);
+  if (!res.rowCount) return Astro.redirect('/admin/progetti');
+  project = res.rows[0];
+}
+
+let errorMsg = '';
+
+// ── Handle form POST ────────────────────────────────────────────
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+
+  const title       = String(form.get('title')       ?? '').trim();
+  const rawSlug     = String(form.get('slug')        ?? '').trim();
+  const slug        = rawSlug.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  const service     = String(form.get('service')     ?? '').trim();
+  const serviceSlug = String(form.get('service_slug')  ?? '').trim();
+  const year        = String(form.get('year')        ?? '').trim();
+  const tagline     = String(form.get('tagline')     ?? '').trim();
+  const description = String(form.get('description') ?? '').trim();
+  const whatRaw     = String(form.get('what')        ?? '');
+  const what        = whatRaw.split('\n').map(s => s.trim()).filter(Boolean);
+  const coverImg    = String(form.get('cover_img')   ?? '').trim();
+  const published   = form.get('published') === 'on';
+  const order       = parseInt(String(form.get('display_order') ?? '0')) || 0;
+
+  const results: { value: string; label: string }[] = [];
+  for (let i = 0; i < 3; i++) {
+    const v = String(form.get(`res_${i}_val`) ?? '').trim();
+    const l = String(form.get(`res_${i}_lbl`) ?? '').trim();
+    if (v || l) results.push({ value: v, label: l });
+  }
+
+  if (!title || !slug) {
+    errorMsg = 'Titolo e slug sono obbligatori.';
+  } else {
+    try {
+      if (isNew) {
+        await db.query(
+          `INSERT INTO projects_db (slug,title,service,service_slug,tagline,description,what,results,year,cover_img,published,display_order)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+          [slug,title,service,serviceSlug,tagline,description,what,JSON.stringify(results),year,coverImg,published,order],
+        );
+      } else {
+        await db.query(
+          `UPDATE projects_db SET slug=$1,title=$2,service=$3,service_slug=$4,tagline=$5,description=$6,
+           what=$7,results=$8,year=$9,cover_img=$10,published=$11,display_order=$12,updated_at=NOW()
+           WHERE id=$13`,
+          [slug,title,service,serviceSlug,tagline,description,what,JSON.stringify(results),year,coverImg,published,order,projId],
+        );
+      }
+      return Astro.redirect('/admin/progetti');
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      errorMsg = msg.includes('unique') ? 'Slug già esistente. Scegli uno slug diverso.' : 'Errore nel salvataggio.';
+    }
+  }
+}
+
+// ── Helpers for template ────────────────────────────────────────
+const p = project;
+const v = (field: string, fallback = '') => {
+  if (errorMsg) return ''; // after error, form has been re-submitted but no data cached
+  return p ? String((p as Record<string, unknown>)[field] ?? fallback) : fallback;
+};
+const whatStr = p ? (p.what ?? []).join('\n') : '';
+const r = (i: number, key: 'value' | 'label') => p?.results?.[i]?.[key] ?? '';
+
+const serviceOptions = [
+  { label: 'Web Design',         slug: 'website' },
+  { label: 'Social Media',       slug: 'social-media-management' },
+  { label: 'Advertising',        slug: 'advertising' },
+  { label: 'E-Commerce',         slug: 'ecommerce' },
+  { label: 'Foto & Video',       slug: 'photo-video' },
+  { label: 'Brand Identity',     slug: 'visual-identity' },
+  { label: 'MVP / SaaS',         slug: 'mvp-saas' },
+  { label: 'App Mobile',         slug: 'app' },
+  { label: 'Integrazioni',       slug: 'integrazioni' },
+];
+
+const pageTitle = isNew ? 'Nuovo Progetto' : `Modifica: ${p?.title ?? ''}`;
+---
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>{pageTitle} — Admin</title>
+  <meta name="robots" content="noindex,nofollow"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#080808;color:#fff;font-family:system-ui,sans-serif;min-height:100vh;}
+    a{color:inherit;text-decoration:none;}
+    .topbar{display:flex;align-items:center;gap:12px;padding:0 28px;border-bottom:1px solid rgba(255,255,255,.07);background:#0d0d0d;position:sticky;top:0;z-index:20;height:56px;}
+    .brand{font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.4);}
+    .badge{background:#FF6A00;color:#000;font-size:10px;font-weight:800;padding:3px 8px;border-radius:99px;}
+    .btn-back{padding:7px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.45);font-size:12px;text-decoration:none;white-space:nowrap;}
+    .btn-back:hover{color:#fff;border-color:rgba(255,255,255,.25);}
+    .wrap{max-width:900px;margin:0 auto;padding:32px 24px;}
+    .page-title{font-size:22px;font-weight:800;margin-bottom:28px;}
+    .error-box{background:rgba(255,68,68,.1);border:1px solid rgba(255,68,68,.3);border-radius:10px;padding:12px 16px;color:#ff6666;font-size:13px;margin-bottom:20px;}
+
+    /* Form */
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+    @media(max-width:640px){.form-grid{grid-template-columns:1fr;}}
+    .form-full{grid-column:1/-1;}
+    .field{display:flex;flex-direction:column;gap:6px;}
+    .field label{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.35);font-weight:600;}
+    .field input,.field select,.field textarea{
+      padding:10px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
+      border-radius:9px;color:#fff;font-size:14px;font-family:inherit;outline:none;transition:border-color .15s;
+    }
+    .field input:focus,.field select,.field select:focus,.field textarea:focus{border-color:rgba(255,106,0,.5);}
+    .field input::placeholder,.field textarea::placeholder{color:rgba(255,255,255,.2);}
+    .field select option{background:#1a1a1a;color:#fff;}
+    .field textarea{resize:vertical;line-height:1.6;}
+    .field-hint{font-size:11px;color:rgba(255,255,255,.25);margin-top:2px;}
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+    /* Image upload */
+    .img-upload-area{border:2px dashed rgba(255,255,255,.15);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:border-color .15s;position:relative;}
+    .img-upload-area:hover{border-color:rgba(255,106,0,.4);}
+    .img-preview{width:100%;max-height:200px;object-fit:cover;border-radius:8px;margin-bottom:12px;display:none;}
+    .img-preview.has-img{display:block;}
+    .upload-label{font-size:13px;color:rgba(255,255,255,.4);cursor:pointer;}
+    .upload-label strong{color:#FF6A00;}
+    .upload-btn{margin-top:8px;padding:7px 16px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:7px;color:rgba(255,255,255,.6);font-size:12px;cursor:pointer;transition:all .15s;}
+    .upload-btn:hover{color:#fff;border-color:rgba(255,255,255,.3);}
+    .upload-spinner{display:none;font-size:12px;color:rgba(255,255,255,.35);margin-top:8px;}
+    .upload-err{display:none;font-size:12px;color:#ff6666;margin-top:6px;}
+
+    /* Results */
+    .results-grid{display:grid;grid-template-columns:1fr 2fr;gap:10px;align-items:center;}
+    .results-grid .col-header{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.25);padding-bottom:4px;}
+
+    /* Toggle */
+    .toggle-row{display:flex;align-items:center;gap:10px;}
+    .toggle-row input[type=checkbox]{width:18px;height:18px;accent-color:#FF6A00;cursor:pointer;}
+    .toggle-row label{font-size:14px;color:rgba(255,255,255,.75);cursor:pointer;}
+
+    /* Divider */
+    .divider{border:none;border-top:1px solid rgba(255,255,255,.06);margin:8px 0;}
+
+    /* Submit */
+    .form-actions{display:flex;gap:12px;align-items:center;margin-top:8px;}
+    .btn-save{padding:12px 28px;background:#FF6A00;color:#000;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.07em;transition:opacity .15s;}
+    .btn-save:hover{opacity:.85;}
+    .btn-cancel-link{padding:12px 20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:9px;color:rgba(255,255,255,.5);font-size:13px;text-decoration:none;transition:all .15s;}
+    .btn-cancel-link:hover{color:#fff;border-color:rgba(255,255,255,.25);}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="brand">ED Digital</span>
+      <span class="badge">Admin</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
+      <a href="/admin/progetti" class="btn-back">← Progetti</a>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="page-title">{pageTitle}</div>
+
+    {errorMsg && <div class="error-box">{errorMsg}</div>}
+
+    <form method="POST" id="proj-form">
+      {!isNew && <input type="hidden" name="id" value={projId}/>}
+
+      <div class="form-grid">
+
+        <!-- Title -->
+        <div class="field">
+          <label>Titolo *</label>
+          <input type="text" name="title" required value={v('title')} placeholder="es. Gallo Immobiliare" id="input-title"/>
+        </div>
+
+        <!-- Slug -->
+        <div class="field">
+          <label>Slug URL *</label>
+          <input type="text" name="slug" required value={v('slug')} placeholder="es. gallo-immobiliare" id="input-slug" pattern="[a-z0-9\-]+" title="Solo lettere minuscole, numeri e trattini"/>
+          <span class="field-hint">Usato nell'URL: /progetti/<strong id="slug-preview">{v('slug', '...')}</strong></span>
+        </div>
+
+        <!-- Service select -->
+        <div class="field">
+          <label>Servizio</label>
+          <select name="service_slug" id="sel-service-slug">
+            <option value="">— Seleziona —</option>
+            {serviceOptions.map(o => (
+              <option value={o.slug} selected={v('service_slug') === o.slug}>{o.label}</option>
+            ))}
+          </select>
+        </div>
+
+        <!-- Service label (auto-filled) -->
+        <div class="field">
+          <label>Nome servizio (visualizzato)</label>
+          <input type="text" name="service" id="input-service" value={v('service')} placeholder="Es. Web Design"/>
+          <span class="field-hint">Si compila in automatico dal menu</span>
+        </div>
+
+        <!-- Year -->
+        <div class="field">
+          <label>Anno</label>
+          <input type="text" name="year" value={v('year')} placeholder="2025" maxlength="4"/>
+        </div>
+
+        <!-- Published + Order -->
+        <div class="field">
+          <label>Ordine visualizzazione</label>
+          <input type="number" name="display_order" value={p?.display_order ?? 0} min="0" max="999"/>
+          <span class="field-hint">Numeri più bassi appaiono prima</span>
+        </div>
+
+        <!-- Published -->
+        <div class="field form-full">
+          <div class="toggle-row">
+            <input type="checkbox" name="published" id="chk-published" checked={p?.published !== false}/>
+            <label for="chk-published">Pubblicato (visibile sul sito)</label>
+          </div>
+        </div>
+
+        <hr class="divider form-full"/>
+
+        <!-- Tagline -->
+        <div class="field form-full">
+          <label>Tagline</label>
+          <input type="text" name="tagline" value={v('tagline')} placeholder="Una frase breve che riassume il progetto"/>
+        </div>
+
+        <!-- Description -->
+        <div class="field form-full">
+          <label>Descrizione</label>
+          <textarea name="description" rows="5" placeholder="Descrizione del progetto per la pagina interna...">{v('description')}</textarea>
+        </div>
+
+        <!-- What we did -->
+        <div class="field form-full">
+          <label>Cosa abbiamo fatto</label>
+          <textarea name="what" rows="6" id="what-ta" placeholder={"Una voce per riga:\nProgettazione UX/UI\nSviluppo sito web\n..."}>{whatStr}</textarea>
+          <span class="field-hint">Una voce per riga — ogni riga diventa un punto elenco</span>
+        </div>
+
+        <hr class="divider form-full"/>
+
+        <!-- Results -->
+        <div class="field form-full">
+          <label>Risultati (max 3)</label>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
+            {[0, 1, 2].map(i => (
+              <div class="row2">
+                <input type="text" name={`res_${i}_val`} value={r(i, 'value')} placeholder="Es. +320%" style="font-weight:700;color:#FF6A00;"/>
+                <input type="text" name={`res_${i}_lbl`} value={r(i, 'label')} placeholder="Es. Follower in 6 mesi"/>
+              </div>
+            ))}
+          </div>
+          <span class="field-hint">Valore (sinistra) + etichetta (destra)</span>
+        </div>
+
+        <hr class="divider form-full"/>
+
+        <!-- Cover image -->
+        <div class="field form-full">
+          <label>Immagine copertina</label>
+          <input type="hidden" name="cover_img" id="cover-img-val" value={v('cover_img')}/>
+
+          <div class="img-upload-area" id="upload-area">
+            <img class={`img-preview${v('cover_img') ? ' has-img' : ''}`} id="img-preview"
+              src={v('cover_img') || undefined} alt="Anteprima"/>
+            <div class="upload-label">
+              Trascina qui un'immagine o <strong>clicca per caricare</strong>
+            </div>
+            <input type="file" id="file-input" accept="image/*" style="display:none"/>
+            <button type="button" class="upload-btn" id="upload-btn">Scegli file</button>
+            <div class="upload-spinner" id="upload-spinner">Caricamento in corso...</div>
+            <div class="upload-err" id="upload-err"></div>
+          </div>
+
+          <span class="field-hint">JPG, PNG, WebP — max 8 MB. O incolla un URL direttamente:</span>
+          <input type="text" id="cover-url-input" placeholder="Oppure incolla URL immagine..." value={v('cover_img')} style="margin-top:6px"/>
+        </div>
+
+      </div><!-- /form-grid -->
+
+      <div class="form-actions">
+        <button type="submit" class="btn-save">{isNew ? 'Crea Progetto' : 'Salva Modifiche'}</button>
+        <a href="/admin/progetti" class="btn-cancel-link">Annulla</a>
+      </div>
+    </form>
+  </div>
+
+  <script define:vars={{ isNew }}>
+    // ── Auto-slug from title ───────────────────────────────
+    const titleInput = document.getElementById('input-title');
+    const slugInput  = document.getElementById('input-slug');
+    const slugPrev   = document.getElementById('slug-preview');
+
+    if (isNew && titleInput && slugInput) {
+      titleInput.addEventListener('input', () => {
+        const s = titleInput.value.toLowerCase().trim()
+          .replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        slugInput.value = s;
+        if (slugPrev) slugPrev.textContent = s || '...';
+      });
+    }
+    if (slugInput && slugPrev) {
+      slugInput.addEventListener('input', () => {
+        slugPrev.textContent = slugInput.value || '...';
+      });
+    }
+
+    // ── Service slug → service name ────────────────────────
+    const serviceMap = {
+      'website': 'Web Design',
+      'social-media-management': 'Social Media',
+      'advertising': 'Advertising',
+      'ecommerce': 'E-Commerce',
+      'photo-video': 'Foto & Video',
+      'visual-identity': 'Brand Identity',
+      'mvp-saas': 'MVP / SaaS',
+      'app': 'App Mobile',
+      'integrazioni': 'Integrazioni',
+    };
+    const selSlug = document.getElementById('sel-service-slug');
+    const inpSvc  = document.getElementById('input-service');
+    if (selSlug && inpSvc) {
+      selSlug.addEventListener('change', () => {
+        const label = serviceMap[selSlug.value] || '';
+        if (label) inpSvc.value = label;
+      });
+    }
+
+    // ── Image upload ───────────────────────────────────────
+    const fileInput   = document.getElementById('file-input');
+    const uploadBtn   = document.getElementById('upload-btn');
+    const uploadArea  = document.getElementById('upload-area');
+    const imgPreview  = document.getElementById('img-preview');
+    const coverVal    = document.getElementById('cover-img-val');
+    const spinner     = document.getElementById('upload-spinner');
+    const uploadErr   = document.getElementById('upload-err');
+    const urlInput    = document.getElementById('cover-url-input');
+
+    uploadBtn?.addEventListener('click', () => fileInput?.click());
+    uploadArea?.addEventListener('click', (e) => { if (e.target === uploadArea) fileInput?.click(); });
+
+    // Drag & drop
+    uploadArea?.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.style.borderColor='rgba(255,106,0,.6)'; });
+    uploadArea?.addEventListener('dragleave', () => { uploadArea.style.borderColor=''; });
+    uploadArea?.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.style.borderColor = '';
+      const f = e.dataTransfer?.files[0];
+      if (f) uploadFile(f);
+    });
+
+    fileInput?.addEventListener('change', () => {
+      const f = fileInput.files[0];
+      if (f) uploadFile(f);
+    });
+
+    async function uploadFile(file) {
+      uploadErr.style.display = 'none';
+      spinner.style.display = 'block';
+      uploadBtn.disabled = true;
+      try {
+        const fd = new FormData();
+        fd.append('file', file);
+        const res = await fetch('/api/admin/upload', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.url) {
+          setImage(data.url);
+        } else {
+          showErr(data.error || 'Errore upload');
+        }
+      } catch { showErr('Errore di rete'); }
+      spinner.style.display = 'none';
+      uploadBtn.disabled = false;
+    }
+
+    function setImage(url) {
+      if (imgPreview) { imgPreview.src = url; imgPreview.classList.add('has-img'); }
+      if (coverVal)   coverVal.value = url;
+      if (urlInput)   urlInput.value = url;
+    }
+
+    function showErr(msg) {
+      uploadErr.textContent = msg;
+      uploadErr.style.display = 'block';
+    }
+
+    // URL input sync
+    urlInput?.addEventListener('input', () => {
+      const url = urlInput.value.trim();
+      if (coverVal) coverVal.value = url;
+      if (url && imgPreview) { imgPreview.src = url; imgPreview.classList.add('has-img'); }
+    });
+  </script>
+</body>
+</html>

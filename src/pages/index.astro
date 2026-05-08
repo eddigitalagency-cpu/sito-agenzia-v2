@@ -1,13 +1,21 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import HomePage from '../components/HomePage';
+import { initDB, getPool } from '../lib/db';
 
-export const prerender = true;
+export const prerender = false;
+
+await initDB();
+type ProjCard = { slug: string; title: string; service: string; img: string };
+const rows = (await getPool().query<{ slug: string; title: string; service: string; cover_img: string }>(
+  "SELECT slug, title, service, cover_img FROM projects_db WHERE published=true ORDER BY display_order, created_at DESC"
+)).rows;
+const projects: ProjCard[] = rows.map(r => ({ slug: r.slug, title: r.title, service: r.service, img: r.cover_img }));
 ---
 
 <Layout
   title="Agenzia Digitale a Treviso e Vittorio Veneto"
   description="ED Digital Agency è l'agenzia digitale di riferimento a Vittorio Veneto, in provincia di Treviso. Social media, advertising, siti web, e-commerce e visual identity per PMI che vogliono crescere online."
 >
-  <HomePage client:load />
+  <HomePage client:load projects={projects} />
 </Layout>

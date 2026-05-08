@@ -131,18 +131,7 @@ const services = [
   { name: 'Integrazioni & Automazioni', slug: 'integrazioni',         tagline: 'Stack connesso, zero sprechi.', span: 'lg:col-span-1', gradient: 'from-teal-500/8 via-transparent' },
 ];
 
-const caseStudies = [
-  { slug: 'zenia',            title: 'Zenia',            service: 'Web Design',   img: '/Images/Zenia.png' },
-  { slug: 'italia-contract',  title: 'Italia Contract',  service: 'Web Design',   img: '/Images/Lavori%20Clienti/Sito%20web%20Italia%20Contract.png' },
-  { slug: 'espansione-immobiliare', title: 'Espansione Immobiliare', service: 'Social Media', img: '/Images/EspansioneImmobiliare.png' },
-  { slug: 'espressione-danza',title: 'Espressione Danza',service: 'Social Media', img: '/Images/Lavori%20Clienti/Espressione%20Danza.jpg' },
-  { slug: 'cdvi',             title: 'CDVI',             service: 'Video',        img: '/Images/Lavori%20Clienti/CDVI.jpg' },
-  { slug: 'gallo-immobiliare',title: 'Gallo Immobiliare',service: 'Web Design',   img: '/Images/GalloImmobiliare.png' },
-  { slug: 'disegno-italia',   title: 'Disegno Italia',   service: 'Web Design',   img: '/Images/Lavori%20Clienti/Disegno%20Italia.png' },
-  { slug: 'solo-mattia',      title: 'Solo Mattia',      service: 'Web Design',   img: '/Images/Lavori%20Clienti/Sito%20web%20Solo%20Mattia.jpg' },
-  { slug: 'upbeat-tattoo',    title: 'UpBeat Tattoo',    service: 'Social Media', img: '/Images/Lavori%20Clienti/UpBeat%20Tattoo.jpg' },
-  { slug: 'i-bamboi',         title: 'I Bamboi',         service: 'Web Design',   img: '/Images/Lavori%20Clienti/3.png' },
-];
+type CaseStudy = { slug: string; title: string; service: string; img: string };
 
 const partners = [
   { src: '/Images/shopify-partner.png',                alt: 'Shopify' },
@@ -166,7 +155,8 @@ function StatItem({ value, suffix, label }: { value: number; suffix: string; lab
   );
 }
 
-export default function HomePage() {
+export default function HomePage({ projects = [] }: { projects?: CaseStudy[] }) {
+  const caseStudies = projects;
   const heroRef = useRef(null);
   const caseScrollRef = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll();

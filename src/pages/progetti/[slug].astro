@@ -1,16 +1,44 @@
 ---
-export const prerender = true;
+export const prerender = false;
 
 import Layout from '../../layouts/Layout.astro';
 import ProjectDetailPage from '../../components/ProjectDetailPage';
-import { projects, getProject } from '../../data/projects';
-
-export function getStaticPaths() {
-  return projects.map(p => ({ params: { slug: p.slug } }));
-}
+import { initDB, getPool } from '../../lib/db';
+import { getProject } from '../../data/projects';
+import type { Project } from '../../data/projects';
 
 const { slug } = Astro.params;
-const project = getProject(slug)!;
+
+await initDB();
+type ProjRow = {
+  slug: string; title: string; service: string; service_slug: string;
+  cover_img: string; tagline: string; description: string;
+  what: string[]; results: { value: string; label: string }[]; year: string;
+};
+const res = await getPool().query<ProjRow>(
+  'SELECT * FROM projects_db WHERE slug=$1 AND published=true', [slug]
+);
+
+let project: Project | undefined;
+if (res.rowCount) {
+  const r = res.rows[0];
+  project = {
+    slug:        r.slug,
+    title:       r.title,
+    service:     r.service,
+    serviceSlug: r.service_slug,
+    img:         r.cover_img,
+    tagline:     r.tagline,
+    description: r.description,
+    what:        Array.isArray(r.what) ? r.what : [],
+    results:     Array.isArray(r.results) ? r.results : [],
+    year:        r.year,
+  };
+} else {
+  project = getProject(slug!);
+}
+
+if (!project) return Astro.redirect('/');
 ---
 
 <Layout
