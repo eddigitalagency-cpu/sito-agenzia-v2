@@ -161,6 +161,19 @@ const pageTitle = isNew ? 'Nuovo Progetto' : `Modifica: ${p?.title ?? ''}`;
     .results-grid{display:grid;grid-template-columns:1fr 2fr;gap:10px;align-items:center;}
     .results-grid .col-header{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.25);padding-bottom:4px;}
 
+    /* AI generation panel */
+    .ai-trigger{display:flex;align-items:center;gap:12px;padding:14px 18px;background:rgba(255,106,0,.06);border:1px solid rgba(255,106,0,.18);border-radius:12px;cursor:pointer;transition:border-color .15s;}
+    .ai-trigger:hover{border-color:rgba(255,106,0,.4);}
+    .ai-trigger-label{flex:1;font-size:13px;color:rgba(255,255,255,.6);}
+    .ai-trigger-label strong{color:#FF6A00;}
+    .btn-ai{padding:8px 18px;background:rgba(255,106,0,.15);border:1px solid rgba(255,106,0,.35);border-radius:8px;color:#FF6A00;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;flex-shrink:0;}
+    .btn-ai:hover{background:rgba(255,106,0,.28);border-color:rgba(255,106,0,.6);}
+    .btn-ai:disabled{opacity:.45;cursor:not-allowed;}
+    .ai-panel{background:rgba(15,15,15,1);border:1px solid rgba(255,106,0,.2);border-top:none;border-radius:0 0 12px 12px;padding:20px;display:none;}
+    .ai-panel.open{display:block;}
+    .ai-panel-desc{font-size:12px;color:rgba(255,255,255,.35);margin-bottom:18px;line-height:1.6;}
+    .ai-status{font-size:12px;padding:0 2px;}
+
     /* Toggle */
     .toggle-row{display:flex;align-items:center;gap:10px;}
     .toggle-row input[type=checkbox]{width:18px;height:18px;accent-color:#FF6A00;cursor:pointer;}
@@ -252,16 +265,43 @@ const pageTitle = isNew ? 'Nuovo Progetto' : `Modifica: ${p?.title ?? ''}`;
 
         <hr class="divider form-full"/>
 
+        <!-- AI generation panel -->
+        <div class="form-full">
+          <div class="ai-trigger" id="ai-trigger">
+            <div class="ai-trigger-label">
+              <strong>✦ Genera con AI</strong> — compila tagline, descrizione, attività e risultati in automatico
+            </div>
+            <button type="button" class="btn-ai" id="btn-ai-toggle">Apri</button>
+          </div>
+          <div class="ai-panel" id="ai-panel">
+            <p class="ai-panel-desc">Rispondi a due domande e l'AI genererà i contenuti del case study. Potrai modificarli prima di salvare.</p>
+            <div style="display:flex;flex-direction:column;gap:14px;">
+              <div class="field">
+                <label>Chi è il cliente e in che settore opera?</label>
+                <textarea id="ai-q1" rows="2" placeholder="Es. Studio dentistico a Treviso con 3 sedi, target famiglie e professionisti"></textarea>
+              </div>
+              <div class="field">
+                <label>Quali erano gli obiettivi e cosa avete ottenuto?</label>
+                <textarea id="ai-q2" rows="2" placeholder="Es. Aumentare le prenotazioni online, migliorare la presenza social, raggiunto +40% contatti in 4 mesi"></textarea>
+              </div>
+              <div style="display:flex;align-items:center;gap:14px;">
+                <button type="button" class="btn-ai" id="btn-ai-generate">Genera contenuti</button>
+                <span class="ai-status" id="ai-status"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Tagline -->
         <div class="field form-full">
           <label>Tagline</label>
-          <input type="text" name="tagline" value={v('tagline')} placeholder="Una frase breve che riassume il progetto"/>
+          <input type="text" name="tagline" id="input-tagline" value={v('tagline')} placeholder="Una frase breve che riassume il progetto"/>
         </div>
 
         <!-- Description -->
         <div class="field form-full">
           <label>Descrizione</label>
-          <textarea name="description" rows="5" placeholder="Descrizione del progetto per la pagina interna...">{v('description')}</textarea>
+          <textarea name="description" rows="5" id="input-description" placeholder="Descrizione del progetto per la pagina interna...">{v('description')}</textarea>
         </div>
 
         <!-- What we did -->
@@ -423,6 +463,94 @@ const pageTitle = isNew ? 'Nuovo Progetto' : `Modifica: ${p?.title ?? ''}`;
       const url = urlInput.value.trim();
       if (coverVal) coverVal.value = url;
       if (url && imgPreview) { imgPreview.src = url; imgPreview.classList.add('has-img'); }
+    });
+
+    // ── AI generation panel ────────────────────────────────
+    const aiTrigger  = document.getElementById('ai-trigger');
+    const aiPanel    = document.getElementById('ai-panel');
+    const btnToggle  = document.getElementById('btn-ai-toggle');
+    const btnGenerate = document.getElementById('btn-ai-generate');
+    const aiStatus   = document.getElementById('ai-status');
+    const aiQ1       = document.getElementById('ai-q1');
+    const aiQ2       = document.getElementById('ai-q2');
+
+    function toggleAiPanel() {
+      const open = aiPanel.classList.toggle('open');
+      btnToggle.textContent = open ? 'Chiudi' : 'Apri';
+      aiTrigger.style.borderRadius = open ? '12px 12px 0 0' : '12px';
+    }
+
+    aiTrigger?.addEventListener('click', (e) => {
+      if (e.target !== btnToggle) toggleAiPanel();
+    });
+    btnToggle?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleAiPanel();
+    });
+
+    btnGenerate?.addEventListener('click', async () => {
+      const q1 = aiQ1?.value?.trim();
+      const q2 = aiQ2?.value?.trim();
+      if (!q1 || !q2) {
+        aiStatus.textContent = '⚠ Compila entrambe le domande.';
+        aiStatus.style.color = '#ff6666';
+        return;
+      }
+      const titleVal   = document.getElementById('input-title')?.value?.trim() ?? '';
+      const serviceVal = document.getElementById('input-service')?.value?.trim() ?? '';
+
+      btnGenerate.disabled = true;
+      aiStatus.textContent = '⏳ Generazione in corso...';
+      aiStatus.style.color = 'rgba(255,255,255,.45)';
+
+      try {
+        const res = await fetch('/api/admin/generate-project', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: titleVal || 'Progetto', service: serviceVal, q1, q2 }),
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) {
+          aiStatus.textContent = '✗ ' + (data.error || 'Errore generazione');
+          aiStatus.style.color = '#ff6666';
+          return;
+        }
+
+        // Fill tagline
+        const taglineInp = document.getElementById('input-tagline');
+        if (taglineInp && data.tagline) taglineInp.value = data.tagline;
+
+        // Fill description
+        const descTa = document.getElementById('input-description');
+        if (descTa && data.description) descTa.value = data.description;
+
+        // Fill "what"
+        const whatTa = document.getElementById('what-ta');
+        if (whatTa && Array.isArray(data.what)) whatTa.value = data.what.join('\n');
+
+        // Fill results
+        if (Array.isArray(data.results)) {
+          data.results.slice(0, 3).forEach((r, i) => {
+            const valInp = document.querySelector(`input[name="res_${i}_val"]`);
+            const lblInp = document.querySelector(`input[name="res_${i}_lbl"]`);
+            if (valInp) valInp.value = r.value ?? '';
+            if (lblInp) lblInp.value = r.label ?? '';
+          });
+        }
+
+        aiStatus.textContent = '✓ Contenuti generati — controlla e modifica se necessario.';
+        aiStatus.style.color = '#4caf50';
+        // Auto-close panel after success
+        setTimeout(() => {
+          aiPanel.classList.remove('open');
+          btnToggle.textContent = 'Apri';
+          aiTrigger.style.borderRadius = '12px';
+        }, 1800);
+      } catch {
+        aiStatus.textContent = '✗ Errore di rete. Riprova.';
+        aiStatus.style.color = '#ff6666';
+      }
+      btnGenerate.disabled = false;
     });
   </script>
 </body>
