@@ -152,7 +152,7 @@ const pageTitle = isNew ? 'Nuovo Progetto' : `Modifica: ${p?.title ?? ''}`;
       padding:10px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
       border-radius:9px;color:#fff;font-size:14px;font-family:inherit;outline:none;transition:border-color .15s;
     }
-    .field input:focus,.field select,.field select:focus,.field textarea:focus{border-color:rgba(255,106,0,.5);}
+    .field input:focus,.field select:focus,.field textarea:focus{border-color:rgba(255,106,0,.5);}
     .field input::placeholder,.field textarea::placeholder{color:rgba(255,255,255,.2);}
     .field select option{background:#1a1a1a;color:#fff;}
     .field textarea{resize:vertical;line-height:1.6;}
@@ -189,13 +189,17 @@ const pageTitle = isNew ? 'Nuovo Progetto' : `Modifica: ${p?.title ?? ''}`;
     .ai-status{font-size:12px;padding:0 2px;}
 
     /* Multi-service rows */
-    .svc-row{display:grid;grid-template-columns:1fr 1fr 32px;gap:8px;align-items:center;}
-    @media(max-width:540px){.svc-row{grid-template-columns:1fr 32px;}.svc-name-col{display:none;}}
-    .svc-remove-btn{width:32px;height:32px;background:rgba(255,68,68,.08);border:1px solid rgba(255,68,68,.18);border-radius:7px;color:rgba(255,68,68,.5);font-size:18px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;padding:0;}
-    .svc-remove-btn:hover{background:rgba(255,68,68,.18);color:#ff4444;border-color:rgba(255,68,68,.4);}
-    .btn-svc-add{margin-top:8px;padding:7px 16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.45);font-size:12px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
-    .btn-svc-add:hover{color:#fff;border-color:rgba(255,255,255,.25);}
-    .btn-svc-add:disabled{opacity:.3;cursor:not-allowed;}
+    .svc-list{display:flex;flex-direction:column;gap:8px;margin-top:6px;}
+    .svc-row{display:flex;gap:8px;align-items:center;}
+    .svc-row select{flex:1;min-width:0;width:100%;padding:10px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:9px;color:#fff;font-size:14px;font-family:inherit;outline:none;transition:border-color .15s;appearance:auto;}
+    .svc-row select:focus{border-color:rgba(255,106,0,.5);}
+    .svc-row select option{background:#1a1a1a;color:#fff;}
+    .svc-badge{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,106,0,.6);font-weight:700;white-space:nowrap;min-width:56px;}
+    .svc-remove-btn{width:36px;height:36px;flex-shrink:0;background:rgba(255,68,68,.08);border:1px solid rgba(255,68,68,.18);border-radius:8px;color:rgba(255,68,68,.55);font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;padding:0;}
+    .svc-remove-btn:hover{background:rgba(255,68,68,.18);color:#ff5555;border-color:rgba(255,68,68,.45);}
+    .btn-svc-add{margin-top:6px;padding:8px 18px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:9px;color:rgba(255,255,255,.5);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;letter-spacing:.04em;}
+    .btn-svc-add:hover{color:#fff;border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.08);}
+    .btn-svc-add:disabled{opacity:.3;cursor:not-allowed;pointer-events:none;}
 
     /* Toggle */
     .toggle-row{display:flex;align-items:center;gap:10px;}
@@ -250,10 +254,10 @@ const pageTitle = isNew ? 'Nuovo Progetto' : `Modifica: ${p?.title ?? ''}`;
         <!-- Services (multi) -->
         <div class="field form-full">
           <label>Servizi <span style="font-weight:400;text-transform:none;letter-spacing:0;color:rgba(255,255,255,.25);font-size:11px">— puoi aggiungerne fino a 6</span></label>
-          <div id="svc-list" style="display:flex;flex-direction:column;gap:8px;margin-top:4px;"></div>
+          <div class="svc-list" id="svc-list"></div>
           <input type="hidden" id="svc-count" name="svc_count" value="1"/>
-          <button type="button" id="svc-add" class="btn-svc-add">+ Aggiungi servizio</button>
-          <span class="field-hint">Il primo è il servizio principale — si ordina a piacere</span>
+          <button type="button" id="svc-add" class="btn-svc-add">＋ Aggiungi servizio</button>
+          <span class="field-hint">Il primo è il servizio principale</span>
         </div>
 
         <!-- Year -->
@@ -414,73 +418,83 @@ const pageTitle = isNew ? 'Nuovo Progetto' : `Modifica: ${p?.title ?? ''}`;
     const svcCountInp = document.getElementById('svc-count');
     const svcAddBtn   = document.getElementById('svc-add');
 
+    function renderSvcRows() {
+      const rows = svcList.querySelectorAll('.svc-row');
+      const count = rows.length;
+      rows.forEach((row, i) => {
+        const badge = row.querySelector('.svc-badge');
+        if (badge) badge.textContent = i === 0 ? 'Principale' : `Servizio ${i + 1}`;
+        const rmBtn = row.querySelector('.svc-remove-btn');
+        if (rmBtn) rmBtn.style.visibility = count > 1 ? 'visible' : 'hidden';
+      });
+      svcCountInp.value = String(count);
+      if (svcAddBtn) svcAddBtn.disabled = count >= MAX_SVCS;
+    }
+
     function buildSvcRow(idx, slug, name) {
       const row = document.createElement('div');
       row.className = 'svc-row';
-      row.dataset.idx = String(idx);
+
+      const badge = document.createElement('span');
+      badge.className = 'svc-badge';
+      badge.textContent = idx === 0 ? 'Principale' : `Servizio ${idx + 1}`;
 
       const sel = document.createElement('select');
       sel.name = `svc_slug_${idx}`;
-      let opts = '<option value="">— Seleziona servizio —</option>';
+      let opts = '<option value="">— Seleziona —</option>';
       SVC_OPTIONS.forEach(o => {
         opts += `<option value="${o.slug}"${o.slug === slug ? ' selected' : ''}>${o.label}</option>`;
       });
       sel.innerHTML = opts;
 
-      const inp = document.createElement('input');
-      inp.type = 'text';
-      inp.name = `svc_name_${idx}`;
-      inp.className = 'svc-name-col';
-      inp.value = name || '';
-      inp.placeholder = 'Nome (auto)';
+      // Hidden input carries the display name
+      const hidInp = document.createElement('input');
+      hidInp.type = 'hidden';
+      hidInp.name = `svc_name_${idx}`;
+      hidInp.value = name || (SVC_OPTIONS.find(o => o.slug === slug)?.label ?? '');
+
+      sel.addEventListener('change', () => {
+        const found = SVC_OPTIONS.find(o => o.slug === sel.value);
+        hidInp.value = found ? found.label : '';
+      });
 
       const rmBtn = document.createElement('button');
       rmBtn.type = 'button';
       rmBtn.className = 'svc-remove-btn';
-      rmBtn.title = 'Rimuovi servizio';
+      rmBtn.title = 'Rimuovi';
       rmBtn.textContent = '×';
-
-      sel.addEventListener('change', () => {
-        const found = SVC_OPTIONS.find(o => o.slug === sel.value);
-        if (found) inp.value = found.label;
-      });
       rmBtn.addEventListener('click', () => {
         row.remove();
-        rebuildSvcIndices();
+        // Renumber remaining rows' input names
+        const remaining = svcList.querySelectorAll('.svc-row');
+        remaining.forEach((r, i) => {
+          r.querySelector('select').name = `svc_slug_${i}`;
+          r.querySelector('input[type=hidden]').name = `svc_name_${i}`;
+        });
+        renderSvcRows();
       });
 
+      row.appendChild(badge);
       row.appendChild(sel);
-      row.appendChild(inp);
+      row.appendChild(hidInp);
       row.appendChild(rmBtn);
       return row;
     }
 
-    function rebuildSvcIndices() {
-      const rows = svcList.querySelectorAll('.svc-row');
-      rows.forEach((row, i) => {
-        row.dataset.idx = String(i);
-        row.querySelector('select').name = `svc_slug_${i}`;
-        row.querySelector('input').name  = `svc_name_${i}`;
-        row.querySelector('.svc-remove-btn').style.visibility = rows.length > 1 ? 'visible' : 'hidden';
-      });
-      svcCountInp.value = String(rows.length);
-      svcAddBtn.disabled = rows.length >= MAX_SVCS;
-    }
-
-    function addSvcRow(slug = '', name = '') {
+    function addSvcRow(slug, name) {
       const count = svcList.querySelectorAll('.svc-row').length;
       if (count >= MAX_SVCS) return;
-      svcList.appendChild(buildSvcRow(count, slug, name));
-      rebuildSvcIndices();
+      svcList.appendChild(buildSvcRow(count, slug || '', name || ''));
+      renderSvcRows();
     }
 
-    // Init from existing data
-    const svcs  = Array.isArray(initServices)      ? initServices      : [''];
-    const slugs = Array.isArray(initServiceSlugs)  ? initServiceSlugs  : [''];
+    // Init rows from server data
+    const svcs  = Array.isArray(initServices)     ? initServices     : [''];
+    const slugs = Array.isArray(initServiceSlugs) ? initServiceSlugs : [''];
     const initLen = Math.max(svcs.length, slugs.length, 1);
     for (let i = 0; i < initLen; i++) addSvcRow(slugs[i] || '', svcs[i] || '');
 
-    svcAddBtn.addEventListener('click', () => addSvcRow());
+    svcAddBtn.addEventListener('click', () => addSvcRow('', ''));
 
     // ── Image upload ───────────────────────────────────────
     const fileInput   = document.getElementById('file-input');
