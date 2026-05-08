@@ -7,18 +7,27 @@ function sessionToken(pwd: string) {
   return createHash('sha256').update(`ed-admin-session:${pwd}`).digest('hex');
 }
 
-// ── Auth ──────────────────────────────────────────────────────
 const auth   = Astro.cookies.get('ed-admin');
 const stored = process.env.ADMIN_PASSWORD ?? '';
 if (!stored || auth?.value !== sessionToken(stored)) return Astro.redirect('/admin/login');
 
-// ── Data ──────────────────────────────────────────────────────
 await initDB();
 const db = getPool();
 
+type SubRow = {
+  id: number; name: string; email: string; phone: string; company: string;
+  service: string; message: string; created_at: string;
+  replied_at: string | null; reply_text: string | null;
+};
+type SessionRow = {
+  session_id: string; started_at: string; pageviews: number;
+  time_on_page: number; clicks: number; sections_seen: number; entry_path: string;
+};
+
 const [
   totalViews, todayViews, weekViews, monthViews,
-  topPages, dailyViews, submissions, totalForms,
+  topPages, dailyViews, submissions, totalForms, unrepliedQ,
+  sourcesQ, topClicksQ, topSectionsQ, sessionsQ,
 ] = await Promise.all([
   db.query<{count:number}>('SELECT COUNT(*)::int AS count FROM page_views'),
   db.query<{count:number}>("SELECT COUNT(*)::int AS count FROM page_views WHERE created_at > NOW()-INTERVAL'1 day'"),
@@ -26,23 +35,67 @@ const [
   db.query<{count:number}>("SELECT COUNT(*)::int AS count FROM page_views WHERE created_at > NOW()-INTERVAL'30 days'"),
   db.query<{path:string,count:number}>("SELECT path, COUNT(*)::int AS count FROM page_views WHERE created_at > NOW()-INTERVAL'30 days' GROUP BY path ORDER BY count DESC LIMIT 10"),
   db.query<{day:string,count:number}>("SELECT TO_CHAR(DATE(created_at AT TIME ZONE 'Europe/Rome'),'DD/MM') AS day, COUNT(*)::int AS count FROM page_views WHERE created_at > NOW()-INTERVAL'7 days' GROUP BY DATE(created_at AT TIME ZONE 'Europe/Rome') ORDER BY DATE(created_at AT TIME ZONE 'Europe/Rome')"),
-  db.query<{id:number,name:string,email:string,phone:string,company:string,service:string,message:string,created_at:string}>("SELECT * FROM form_submissions ORDER BY created_at DESC LIMIT 100"),
+  db.query<SubRow>('SELECT * FROM form_submissions ORDER BY created_at DESC LIMIT 200'),
   db.query<{count:number}>('SELECT COUNT(*)::int AS count FROM form_submissions'),
+  db.query<{count:number}>('SELECT COUNT(*)::int AS count FROM form_submissions WHERE replied_at IS NULL'),
+  db.query<{source:string,count:number}>(`
+    SELECT CASE
+      WHEN referrer IS NULL OR referrer='' THEN 'Diretto'
+      WHEN referrer ILIKE '%google%' THEN 'Google'
+      WHEN referrer ILIKE '%facebook%' OR referrer ILIKE '%fb.com%' THEN 'Facebook'
+      WHEN referrer ILIKE '%instagram%' THEN 'Instagram'
+      WHEN referrer ILIKE '%linkedin%' THEN 'LinkedIn'
+      ELSE SPLIT_PART(SPLIT_PART(referrer,'//',2),'/',1)
+    END AS source, COUNT(*)::int AS count
+    FROM page_views WHERE created_at > NOW()-INTERVAL'30 days'
+    GROUP BY source ORDER BY count DESC LIMIT 8`),
+  db.query<{element:string,count:number}>(
+    "SELECT element, COUNT(*)::int AS count FROM user_events WHERE event_type='click' AND created_at > NOW()-INTERVAL'30 days' AND element IS NOT NULL GROUP BY element ORDER BY count DESC LIMIT 12"
+  ).catch(() => ({ rows: [] as {element:string,count:number}[] })),
+  db.query<{element:string,count:number}>(
+    "SELECT element, COUNT(*)::int AS count FROM user_events WHERE event_type='section' AND created_at > NOW()-INTERVAL'30 days' AND element IS NOT NULL GROUP BY element ORDER BY count DESC LIMIT 10"
+  ).catch(() => ({ rows: [] as {element:string,count:number}[] })),
+  db.query<SessionRow>(
+    `SELECT session_id, MIN(created_at) AS started_at,
+      COUNT(CASE WHEN event_type='pageview' THEN 1 END)::int AS pageviews,
+      COALESCE(MAX(CASE WHEN event_type='timeonpage' THEN value END),0)::int AS time_on_page,
+      COUNT(CASE WHEN event_type='click' THEN 1 END)::int AS clicks,
+      COUNT(CASE WHEN event_type='section' THEN 1 END)::int AS sections_seen,
+      MIN(CASE WHEN event_type='pageview' THEN path END) AS entry_path
+     FROM user_events GROUP BY session_id ORDER BY started_at DESC LIMIT 50`
+  ).catch(() => ({ rows: [] as SessionRow[] })),
 ]);
 
-const tv  = totalViews.rows[0].count;
-const tdy = todayViews.rows[0].count;
-const wk  = weekViews.rows[0].count;
-const mo  = monthViews.rows[0].count;
-const tf  = totalForms.rows[0].count;
-const pages = topPages.rows;
-const daily = dailyViews.rows;
-const forms = submissions.rows;
-const maxPage = pages[0]?.count ?? 1;
-const maxDay  = Math.max(...daily.map(d => d.count), 1);
+const tv       = totalViews.rows[0].count;
+const tdy      = todayViews.rows[0].count;
+const wk       = weekViews.rows[0].count;
+const mo       = monthViews.rows[0].count;
+const tf       = totalForms.rows[0].count;
+const unreplied = unrepliedQ.rows[0].count;
+const forms    = submissions.rows;
+const pages    = topPages.rows;
+const daily    = dailyViews.rows;
+const srcs     = sourcesQ.rows;
+const topClicks   = topClicksQ.rows;
+const topSections = topSectionsQ.rows;
+const sessionList = sessionsQ.rows;
+const maxPage  = pages[0]?.count ?? 1;
+const maxDay   = Math.max(...daily.map(d => d.count), 1);
+const maxSrc   = srcs[0]?.count ?? 1;
+const maxClick = topClicks[0]?.count ?? 1;
+const maxSec   = topSections[0]?.count ?? 1;
 
 function fmt(d: string) {
   return new Date(d).toLocaleString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+function fmtTime(secs: number) {
+  if (!secs) return '—';
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return m > 0 ? `${m}m ${s}s` : `${s}s`;
+}
+function shortSession(id: string) {
+  return id ? id.slice(0, 10) + '…' : '—';
 }
 ---
 <!doctype html>
@@ -57,172 +110,500 @@ function fmt(d: string) {
     body{background:#080808;color:#fff;font-family:system-ui,sans-serif;min-height:100vh;}
     a{color:inherit;text-decoration:none;}
 
-    /* Layout */
-    .topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 32px;border-bottom:1px solid rgba(255,255,255,.07);background:#0f0f0f;position:sticky;top:0;z-index:10;}
-    .topbar-left{display:flex;align-items:center;gap:12px;}
-    .brand{font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.4);}
-    .badge{background:#FF6A00;color:#000;font-size:10px;font-weight:800;padding:3px 8px;border-radius:99px;letter-spacing:.08em;text-transform:uppercase;}
-    .logout-form button{padding:8px 16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.5);font-size:12px;cursor:pointer;}
-    .logout-form button:hover{color:#fff;border-color:rgba(255,255,255,.3);}
+    /* ── Topbar ─────────────────────────────────────── */
+    .topbar{display:flex;align-items:center;gap:16px;padding:0 28px;border-bottom:1px solid rgba(255,255,255,.07);background:#0d0d0d;position:sticky;top:0;z-index:20;height:56px;}
+    .brand{font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.4);white-space:nowrap;}
+    .badge{background:#FF6A00;color:#000;font-size:10px;font-weight:800;padding:3px 8px;border-radius:99px;letter-spacing:.08em;text-transform:uppercase;flex-shrink:0;}
+    .tab-nav{display:flex;gap:4px;flex:1;justify-content:center;}
+    .tab-btn{padding:7px 16px;border-radius:8px;font-size:12px;font-weight:600;letter-spacing:.06em;cursor:pointer;border:none;background:transparent;color:rgba(255,255,255,.4);transition:all .15s;white-space:nowrap;}
+    .tab-btn:hover{color:#fff;background:rgba(255,255,255,.06);}
+    .tab-btn.active{color:#fff;background:rgba(255,255,255,.1);}
+    .logout-form button{padding:7px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.45);font-size:12px;cursor:pointer;white-space:nowrap;}
+    .logout-form button:hover{color:#fff;border-color:rgba(255,255,255,.25);}
 
-    .wrap{max-width:1400px;margin:0 auto;padding:32px;}
+    /* ── Layout ─────────────────────────────────────── */
+    .wrap{max-width:1400px;margin:0 auto;padding:28px 24px;}
+    .pane{display:none;}
+    .pane.active{display:block;}
 
-    /* Stat cards */
-    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:36px;}
-    .stat{background:#111;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:24px 20px;}
-    .stat-label{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.35);margin-bottom:10px;}
-    .stat-value{font-size:36px;font-weight:800;line-height:1;}
+    /* ── Stat cards ─────────────────────────────────── */
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:28px;}
+    .stat{background:#111;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:20px 18px;}
+    .stat-label{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.3);margin-bottom:8px;}
+    .stat-value{font-size:32px;font-weight:800;line-height:1;}
     .stat-value.orange{color:#FF6A00;}
+    .stat-value.red{color:#ff4444;}
 
-    /* Grid 2 col */
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:36px;}
-    @media(max-width:900px){.grid2{grid-template-columns:1fr;}}
+    /* ── Panels ─────────────────────────────────────── */
+    .panel{background:#111;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:22px;}
+    .panel-title{font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.3);margin-bottom:18px;font-weight:600;}
+    .empty{color:rgba(255,255,255,.22);font-size:13px;padding:20px;text-align:center;}
 
-    .panel{background:#111;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:24px;}
-    .panel-title{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.35);margin-bottom:20px;}
+    /* ── Grid layouts ───────────────────────────────── */
+    .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px;}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+    @media(max-width:960px){.grid3,.grid2{grid-template-columns:1fr;}}
 
-    /* Bar chart (daily) */
-    .bars{display:flex;align-items:flex-end;gap:8px;height:80px;}
-    .bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;}
-    .bar{width:100%;background:#FF6A00;border-radius:4px 4px 0 0;min-height:3px;transition:opacity .2s;}
-    .bar:hover{opacity:.8;}
-    .bar-label{font-size:10px;color:rgba(255,255,255,.3);}
-    .bar-val{font-size:10px;color:rgba(255,255,255,.5);}
+    /* ── Bar chart ──────────────────────────────────── */
+    .bars{display:flex;align-items:flex-end;gap:6px;height:72px;}
+    .bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+    .bar{width:100%;background:#FF6A00;border-radius:3px 3px 0 0;min-height:3px;transition:opacity .2s;}
+    .bar:hover{opacity:.75;}
+    .bar-label{font-size:9px;color:rgba(255,255,255,.28);}
+    .bar-val{font-size:9px;color:rgba(255,255,255,.45);}
 
-    /* Top pages */
-    .page-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);}
-    .page-row:last-child{border-bottom:none;}
-    .page-path{flex:1;font-size:13px;color:rgba(255,255,255,.75);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-    .page-bar{flex:2;height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;}
-    .page-fill{height:100%;background:#FF6A00;border-radius:3px;}
-    .page-count{font-size:12px;font-weight:700;color:rgba(255,255,255,.5);width:32px;text-align:right;}
+    /* ── Horizontal bar rows ────────────────────────── */
+    .hbar-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+    .hbar-row:last-child{border-bottom:none;}
+    .hbar-label{flex:0 0 110px;font-size:12px;color:rgba(255,255,255,.65);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .hbar-label.wide{flex:0 0 160px;}
+    .hbar-track{flex:1;height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;}
+    .hbar-fill{height:100%;background:#FF6A00;border-radius:3px;}
+    .hbar-fill.blue{background:#4a9eff;}
+    .hbar-count{font-size:11px;font-weight:700;color:rgba(255,255,255,.4);min-width:28px;text-align:right;}
 
-    /* Submissions table */
-    .table-wrap{overflow-x:auto;}
-    table{width:100%;border-collapse:collapse;font-size:13px;}
-    th{text-align:left;padding:10px 14px;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.3);border-bottom:1px solid rgba(255,255,255,.08);white-space:nowrap;}
-    td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:top;color:rgba(255,255,255,.8);}
-    tr:last-child td{border-bottom:none;}
-    tr:hover td{background:rgba(255,255,255,.02);}
-    .msg{max-width:280px;white-space:normal;font-size:12px;color:rgba(255,255,255,.5);}
-    .svc{background:rgba(255,106,0,.15);color:#FF6A00;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;white-space:nowrap;}
-    .empty{color:rgba(255,255,255,.25);font-size:13px;padding:24px;text-align:center;}
+    /* ── Submission cards ───────────────────────────── */
+    .subs-header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px;}
+    .sub-stat{background:#111;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px 18px;display:flex;flex-direction:column;gap:4px;}
+    .sub-stat-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.3);}
+    .sub-stat-val{font-size:22px;font-weight:800;}
+    .sub-stat-val.orange{color:#FF6A00;}
+    .sub-stat-val.red{color:#ff4444;}
+    .search-wrap{flex:1;min-width:200px;}
+    .search-input{width:100%;padding:9px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:9px;color:#fff;font-size:13px;outline:none;}
+    .search-input:focus{border-color:rgba(255,106,0,.5);}
+    .search-input::placeholder{color:rgba(255,255,255,.25);}
+
+    .sub-card{background:#111;border:1px solid rgba(255,255,255,.07);border-radius:14px;margin-bottom:10px;overflow:hidden;transition:border-color .2s;}
+    .sub-card:hover{border-color:rgba(255,255,255,.14);}
+    .sub-card.is-replied{border-left:3px solid #22c55e;}
+    .sub-card.is-replied.unread{border-left:3px solid #FF6A00;}
+    .sub-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:16px 18px 12px;cursor:pointer;user-select:none;}
+    .sub-left{min-width:0;}
+    .sub-name{font-weight:700;font-size:15px;display:block;margin-bottom:4px;}
+    .sub-meta-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:12px;color:rgba(255,255,255,.4);}
+    .sub-email{color:#FF6A00;font-size:12px;}
+    .sub-email:hover{text-decoration:underline;}
+    .sub-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;}
+    .svc-badge{background:rgba(255,106,0,.15);color:#FF6A00;padding:2px 9px;border-radius:99px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;}
+    .status-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:99px;white-space:nowrap;}
+    .status-badge.pending{background:rgba(255,106,0,.15);color:#FF6A00;}
+    .status-badge.replied{background:rgba(34,197,94,.15);color:#22c55e;}
+    .sub-date{font-size:11px;color:rgba(255,255,255,.25);}
+    .sub-preview{padding:0 18px 14px;font-size:13px;color:rgba(255,255,255,.4);line-height:1.5;cursor:pointer;}
+    .sub-toggle{display:block;width:100%;padding:10px 18px;background:rgba(255,255,255,.03);border:none;border-top:1px solid rgba(255,255,255,.05);color:rgba(255,255,255,.3);font-size:11px;text-align:left;cursor:pointer;transition:all .15s;letter-spacing:.06em;text-transform:uppercase;}
+    .sub-toggle:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.6);}
+    .sub-body{display:none;padding:18px;border-top:1px solid rgba(255,255,255,.06);}
+    .sub-card.open .sub-body{display:block;}
+    .sub-card.open .sub-toggle{color:rgba(255,255,255,.5);}
+    .sub-section-label{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.3);margin-bottom:8px;font-weight:600;}
+    .sub-message{font-size:13px;color:rgba(255,255,255,.75);line-height:1.7;margin-bottom:20px;white-space:pre-wrap;}
+    .sub-reply-sent{font-size:13px;color:rgba(34,197,94,.8);line-height:1.7;white-space:pre-wrap;background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.15);border-radius:8px;padding:12px;}
+    .reply-form{margin-top:4px;}
+    .reply-textarea{width:100%;padding:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#fff;font-size:13px;line-height:1.6;resize:vertical;min-height:100px;font-family:inherit;outline:none;margin-bottom:12px;}
+    .reply-textarea:focus{border-color:rgba(255,106,0,.5);}
+    .reply-actions{display:flex;gap:10px;}
+    .btn-send{padding:9px 20px;background:#FF6A00;color:#000;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:opacity .15s;}
+    .btn-send:hover{opacity:.85;}
+    .btn-send:disabled{opacity:.45;cursor:not-allowed;}
+    .btn-cancel{padding:9px 16px;background:rgba(255,255,255,.07);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1);border-radius:8px;font-size:12px;cursor:pointer;transition:all .15s;}
+    .btn-cancel:hover{color:#fff;border-color:rgba(255,255,255,.25);}
+    .reply-feedback{margin-top:10px;font-size:12px;padding:8px 12px;border-radius:8px;}
+    .reply-feedback.ok{background:rgba(34,197,94,.1);color:#22c55e;border:1px solid rgba(34,197,94,.2);}
+    .reply-feedback.err{background:rgba(255,68,68,.1);color:#ff4444;border:1px solid rgba(255,68,68,.2);}
+
+    /* ── Sessions table ─────────────────────────────── */
+    .sess-table{width:100%;border-collapse:collapse;font-size:13px;}
+    .sess-table th{text-align:left;padding:9px 12px;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.28);border-bottom:1px solid rgba(255,255,255,.07);white-space:nowrap;}
+    .sess-table td{padding:11px 12px;border-bottom:1px solid rgba(255,255,255,.04);color:rgba(255,255,255,.75);vertical-align:middle;}
+    .sess-table tr:last-child td{border-bottom:none;}
+    .sess-table tr:hover td{background:rgba(255,255,255,.02);}
+    .sess-id{font-family:monospace;font-size:11px;color:rgba(255,255,255,.35);}
+    .sess-path{font-size:12px;color:rgba(255,255,255,.5);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .pill-sm{padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700;}
+    .pill-orange{background:rgba(255,106,0,.15);color:#FF6A00;}
+    .pill-blue{background:rgba(74,158,255,.15);color:#4a9eff;}
   </style>
 </head>
 <body>
 
+  <!-- ── Topbar ─────────────────────────────────────────────── -->
   <div class="topbar">
-    <div class="topbar-left">
-      <span class="brand">ED Digital Agency</span>
+    <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+      <span class="brand">ED Digital</span>
       <span class="badge">Admin</span>
     </div>
-    <form class="logout-form" method="POST" action="/api/admin/logout">
+    <nav class="tab-nav">
+      <button class="tab-btn active" data-tab="overview">Overview</button>
+      <button class="tab-btn" data-tab="richieste">Richieste <span style="opacity:.5">({tf})</span></button>
+      <button class="tab-btn" data-tab="sessioni">Sessioni</button>
+    </nav>
+    <form class="logout-form" method="POST" action="/api/admin/logout" style="flex-shrink:0">
       <button type="submit">Esci</button>
     </form>
   </div>
 
   <div class="wrap">
 
-    <!-- Stats cards -->
-    <div class="stats">
-      <div class="stat">
-        <div class="stat-label">Visualizzazioni totali</div>
-        <div class="stat-value orange">{tv.toLocaleString('it-IT')}</div>
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!-- OVERVIEW TAB                                          -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <div id="pane-overview" class="pane active">
+
+      <!-- Stat cards -->
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-label">Visualizzazioni totali</div>
+          <div class="stat-value orange">{tv.toLocaleString('it-IT')}</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Oggi</div>
+          <div class="stat-value">{tdy.toLocaleString('it-IT')}</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">7 giorni</div>
+          <div class="stat-value">{wk.toLocaleString('it-IT')}</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">30 giorni</div>
+          <div class="stat-value">{mo.toLocaleString('it-IT')}</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Richieste form</div>
+          <div class="stat-value orange">{tf.toLocaleString('it-IT')}</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Non risposto</div>
+          <div class={`stat-value ${unreplied > 0 ? 'red' : ''}`}>{unreplied}</div>
+        </div>
       </div>
-      <div class="stat">
-        <div class="stat-label">Oggi</div>
-        <div class="stat-value">{tdy.toLocaleString('it-IT')}</div>
+
+      <!-- Charts row: daily | sources | top pages -->
+      <div class="grid3">
+
+        <!-- Daily bar chart -->
+        <div class="panel">
+          <div class="panel-title">Visite ultimi 7 giorni</div>
+          {daily.length === 0
+            ? <p class="empty">Nessun dato ancora</p>
+            : (
+              <div class="bars">
+                {daily.map(d => (
+                  <div class="bar-wrap">
+                    <span class="bar-val">{d.count}</span>
+                    <div class="bar" style={`height:${Math.round((d.count/maxDay)*62)+8}px`}></div>
+                    <span class="bar-label">{d.day}</span>
+                  </div>
+                ))}
+              </div>
+            )
+          }
+        </div>
+
+        <!-- Traffic sources -->
+        <div class="panel">
+          <div class="panel-title">Sorgenti traffico (30gg)</div>
+          {srcs.length === 0
+            ? <p class="empty">Nessun dato ancora</p>
+            : srcs.map(s => (
+              <div class="hbar-row">
+                <div class="hbar-label">{s.source || 'Altro'}</div>
+                <div class="hbar-track"><div class="hbar-fill" style={`width:${Math.round((s.count/maxSrc)*100)}%`}></div></div>
+                <div class="hbar-count">{s.count}</div>
+              </div>
+            ))
+          }
+        </div>
+
+        <!-- Top pages -->
+        <div class="panel">
+          <div class="panel-title">Pagine più visitate (30gg)</div>
+          {pages.length === 0
+            ? <p class="empty">Nessun dato ancora</p>
+            : pages.map(p => (
+              <div class="hbar-row">
+                <div class="hbar-label">{p.path}</div>
+                <div class="hbar-track"><div class="hbar-fill" style={`width:${Math.round((p.count/maxPage)*100)}%`}></div></div>
+                <div class="hbar-count">{p.count}</div>
+              </div>
+            ))
+          }
+        </div>
       </div>
-      <div class="stat">
-        <div class="stat-label">Ultimi 7 giorni</div>
-        <div class="stat-value">{wk.toLocaleString('it-IT')}</div>
+
+      <!-- Bottom row: top clicked CTAs + top sections -->
+      <div class="grid2">
+
+        <!-- Top clicked CTAs -->
+        <div class="panel">
+          <div class="panel-title">CTA più cliccati (30gg)</div>
+          {topClicks.length === 0
+            ? <p class="empty">Nessun dato ancora — i click verranno registrati man mano</p>
+            : topClicks.map(c => (
+              <div class="hbar-row">
+                <div class="hbar-label wide" title={c.element}>{c.element}</div>
+                <div class="hbar-track"><div class="hbar-fill" style={`width:${Math.round((c.count/maxClick)*100)}%`}></div></div>
+                <div class="hbar-count">{c.count}</div>
+              </div>
+            ))
+          }
+        </div>
+
+        <!-- Top sections viewed -->
+        <div class="panel">
+          <div class="panel-title">Sezioni più viste (30gg)</div>
+          {topSections.length === 0
+            ? <p class="empty">Nessun dato ancora — le sezioni verranno registrate man mano</p>
+            : topSections.map(s => (
+              <div class="hbar-row">
+                <div class="hbar-label wide">{s.element}</div>
+                <div class="hbar-track"><div class="hbar-fill blue" style={`width:${Math.round((s.count/maxSec)*100)}%`}></div></div>
+                <div class="hbar-count">{s.count}</div>
+              </div>
+            ))
+          }
+        </div>
       </div>
-      <div class="stat">
-        <div class="stat-label">Ultimi 30 giorni</div>
-        <div class="stat-value">{mo.toLocaleString('it-IT')}</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">Richieste form</div>
-        <div class="stat-value orange">{tf.toLocaleString('it-IT')}</div>
-      </div>
+
     </div>
 
-    <!-- Charts row -->
-    <div class="grid2">
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!-- RICHIESTE TAB                                         -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <div id="pane-richieste" class="pane">
 
-      <!-- Daily bar chart -->
-      <div class="panel">
-        <div class="panel-title">Visite ultimi 7 giorni</div>
-        {daily.length === 0
-          ? <p class="empty">Nessun dato ancora</p>
-          : (
-            <div class="bars">
-              {daily.map(d => (
-                <div class="bar-wrap">
-                  <span class="bar-val">{d.count}</span>
-                  <div class="bar" style={`height:${Math.round((d.count/maxDay)*70)+10}px`}></div>
-                  <span class="bar-label">{d.day}</span>
+      <!-- Summary + search -->
+      <div class="subs-header">
+        <div class="sub-stat">
+          <span class="sub-stat-label">Totali</span>
+          <span class="sub-stat-val orange">{tf}</span>
+        </div>
+        <div class="sub-stat">
+          <span class="sub-stat-label">Non risposto</span>
+          <span class={`sub-stat-val ${unreplied > 0 ? 'red' : ''}`}>{unreplied}</span>
+        </div>
+        <div class="sub-stat">
+          <span class="sub-stat-label">Risposto</span>
+          <span class="sub-stat-val">{tf - unreplied}</span>
+        </div>
+        <div class="search-wrap">
+          <input id="search-subs" class="search-input" type="search" placeholder="Cerca per nome, email, messaggio…" autocomplete="off"/>
+        </div>
+      </div>
+
+      <!-- Cards -->
+      {forms.length === 0
+        ? <p class="empty" style="margin-top:40px">Nessuna richiesta ricevuta ancora</p>
+        : forms.map(f => (
+          <div class={`sub-card ${f.replied_at ? 'is-replied' : 'unread'}`} data-id={f.id} data-name={f.name}>
+            <div class="sub-head">
+              <div class="sub-left">
+                <span class="sub-name">{f.name}</span>
+                <div class="sub-meta-row">
+                  <a href={`mailto:${f.email}`} class="sub-email" onclick="event.stopPropagation()">{f.email}</a>
+                  {f.phone && <span>· {f.phone}</span>}
+                  {f.company && <span>· {f.company}</span>}
                 </div>
-              ))}
+              </div>
+              <div class="sub-right">
+                {f.service && <span class="svc-badge">{f.service}</span>}
+                <span class={`status-badge ${f.replied_at ? 'replied' : 'pending'}`}>
+                  {f.replied_at ? `✓ Risposto` : '● Nuovo'}
+                </span>
+                <span class="sub-date">{fmt(f.created_at)}</span>
+              </div>
+            </div>
+            <div class="sub-preview">
+              {f.message ? (f.message.length > 130 ? f.message.slice(0, 130) + '…' : f.message) : '—'}
+            </div>
+            <button class="sub-toggle">Espandi ↓</button>
+            <div class="sub-body">
+              <div class="sub-section-label">Messaggio completo</div>
+              <p class="sub-message">{f.message}</p>
+
+              {f.replied_at && f.reply_text && (
+                <Fragment>
+                  <div class="sub-section-label" style="color:rgba(34,197,94,.6)">Risposta inviata · {fmt(f.replied_at)}</div>
+                  <p class="sub-reply-sent">{f.reply_text}</p>
+                </Fragment>
+              )}
+
+              {!f.replied_at && (
+                <div class="reply-form">
+                  <div class="sub-section-label">Rispondi via email</div>
+                  <textarea class="reply-textarea" rows="5" placeholder={`Ciao ${f.name},\n\n`}></textarea>
+                  <div class="reply-actions">
+                    <button class="btn-send">Invia risposta →</button>
+                    <button class="btn-cancel" type="button">Annulla</button>
+                  </div>
+                  <div class="reply-feedback" style="display:none"></div>
+                </div>
+              )}
+            </div>
+          </div>
+        ))
+      }
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!-- SESSIONI TAB                                          -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <div id="pane-sessioni" class="pane">
+      <div class="panel">
+        <div class="panel-title">Sessioni recenti (ultimi 50)</div>
+        {sessionList.length === 0
+          ? <p class="empty">Nessuna sessione registrata ancora — i dati arriveranno man mano</p>
+          : (
+            <div style="overflow-x:auto">
+              <table class="sess-table">
+                <thead>
+                  <tr>
+                    <th>ID Sessione</th>
+                    <th>Data</th>
+                    <th>Pagina entrata</th>
+                    <th>Pag. viste</th>
+                    <th>Tempo</th>
+                    <th>Click</th>
+                    <th>Sezioni</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sessionList.map(s => (
+                    <tr>
+                      <td><span class="sess-id">{shortSession(s.session_id)}</span></td>
+                      <td style="white-space:nowrap;font-size:12px;color:rgba(255,255,255,.4)">{fmt(s.started_at)}</td>
+                      <td><span class="sess-path" title={s.entry_path}>{s.entry_path || '/'}</span></td>
+                      <td><span class="pill-sm pill-orange">{s.pageviews}</span></td>
+                      <td style="font-size:12px;white-space:nowrap">{fmtTime(s.time_on_page)}</td>
+                      <td>
+                        {s.clicks > 0
+                          ? <span class="pill-sm pill-blue">{s.clicks}</span>
+                          : <span style="color:rgba(255,255,255,.2);font-size:12px">—</span>
+                        }
+                      </td>
+                      <td style="font-size:12px;color:rgba(255,255,255,.45)">{s.sections_seen || '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )
         }
       </div>
+    </div>
 
-      <!-- Top pages -->
-      <div class="panel">
-        <div class="panel-title">Pagine più visitate (30gg)</div>
-        {pages.length === 0
-          ? <p class="empty">Nessun dato ancora</p>
-          : pages.map(p => (
-            <div class="page-row">
-              <div class="page-path">{p.path}</div>
-              <div class="page-bar"><div class="page-fill" style={`width:${Math.round((p.count/maxPage)*100)}%`}></div></div>
-              <div class="page-count">{p.count}</div>
-            </div>
-          ))
+  </div><!-- /wrap -->
+
+  <script>
+    // ── Tab switching ──────────────────────────────────────
+    function showTab(name) {
+      document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      const pane = document.getElementById('pane-' + name);
+      if (pane) pane.classList.add('active');
+      const btn = document.querySelector('[data-tab="' + name + '"]');
+      if (btn) btn.classList.add('active');
+      location.hash = name !== 'overview' ? name : '';
+    }
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => showTab(btn.dataset.tab));
+    });
+    const initHash = location.hash.slice(1);
+    if (initHash === 'richieste' || initHash === 'sessioni') showTab(initHash);
+
+    // ── Card expand / collapse ─────────────────────────────
+    document.querySelectorAll('.sub-head, .sub-preview, .sub-toggle').forEach(el => {
+      el.addEventListener('click', function(e) {
+        if (e.target.closest('a')) return; // don't expand on email link click
+        const card = this.closest('.sub-card');
+        const isOpen = card.classList.toggle('open');
+        card.querySelector('.sub-toggle').textContent = isOpen ? 'Chiudi ↑' : 'Espandi ↓';
+        // Pre-fill textarea with greeting
+        if (isOpen) {
+          const ta = card.querySelector('.reply-textarea');
+          if (ta && !ta.value) {
+            const name = card.dataset.name || '';
+            ta.value = 'Ciao ' + name + ',\n\n';
+            ta.focus();
+          }
         }
-      </div>
-    </div>
+      });
+    });
 
-    <!-- Form submissions -->
-    <div class="panel">
-      <div class="panel-title">Richieste dal form ({tf} totali)</div>
-      {forms.length === 0
-        ? <p class="empty">Nessuna richiesta ricevuta ancora</p>
-        : (
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Data</th>
-                  <th>Nome</th>
-                  <th>Email</th>
-                  <th>Telefono</th>
-                  <th>Azienda</th>
-                  <th>Servizio</th>
-                  <th>Messaggio</th>
-                </tr>
-              </thead>
-              <tbody>
-                {forms.map(f => (
-                  <tr>
-                    <td style="white-space:nowrap;color:rgba(255,255,255,.4);font-size:12px">{fmt(f.created_at)}</td>
-                    <td style="font-weight:600">{f.name}</td>
-                    <td><a href={`mailto:${f.email}`} style="color:#FF6A00">{f.email}</a></td>
-                    <td>{f.phone || '—'}</td>
-                    <td>{f.company || '—'}</td>
-                    <td>{f.service ? <span class="svc">{f.service}</span> : '—'}</td>
-                    <td class="msg">{f.message}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )
-      }
-    </div>
+    // ── Reply form ─────────────────────────────────────────
+    document.querySelectorAll('.btn-send').forEach(btn => {
+      btn.addEventListener('click', async function() {
+        const card = this.closest('.sub-card');
+        const ta   = card.querySelector('.reply-textarea');
+        const fb   = card.querySelector('.reply-feedback');
+        const id   = parseInt(card.dataset.id);
+        const text = ta.value.trim();
 
-  </div>
+        if (!text) { ta.focus(); return; }
+
+        btn.disabled = true;
+        btn.textContent = 'Invio…';
+        fb.style.display = 'none';
+        fb.className = 'reply-feedback';
+
+        try {
+          const res = await fetch('/api/admin/reply', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, replyText: text }),
+          });
+          const data = await res.json();
+          if (data.ok) {
+            fb.textContent = '✓ Risposta inviata con successo';
+            fb.className = 'reply-feedback ok';
+            fb.style.display = 'block';
+            // Update card status
+            card.classList.remove('unread');
+            card.classList.add('is-replied');
+            const badge = card.querySelector('.status-badge');
+            if (badge) { badge.textContent = '✓ Risposto'; badge.className = 'status-badge replied'; }
+            // Show sent reply, hide form
+            const form = card.querySelector('.reply-form');
+            const msgArea = card.querySelector('.sub-body');
+            const sentDiv = document.createElement('div');
+            sentDiv.innerHTML = '<div class="sub-section-label" style="color:rgba(34,197,94,.6)">Risposta inviata</div><p class="sub-reply-sent">' + text.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>') + '</p>';
+            form.replaceWith(sentDiv);
+          } else {
+            fb.textContent = '✗ ' + (data.error || 'Errore. Riprova.');
+            fb.className = 'reply-feedback err';
+            fb.style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = 'Invia risposta →';
+          }
+        } catch {
+          fb.textContent = '✗ Errore di rete. Riprova.';
+          fb.className = 'reply-feedback err';
+          fb.style.display = 'block';
+          btn.disabled = false;
+          btn.textContent = 'Invia risposta →';
+        }
+      });
+    });
+
+    document.querySelectorAll('.btn-cancel').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const card = this.closest('.sub-card');
+        card.classList.remove('open');
+        card.querySelector('.sub-toggle').textContent = 'Espandi ↓';
+      });
+    });
+
+    // ── Search / filter submissions ────────────────────────
+    const searchEl = document.getElementById('search-subs');
+    if (searchEl) {
+      searchEl.addEventListener('input', function() {
+        const q = this.value.toLowerCase();
+        document.querySelectorAll('.sub-card').forEach(c => {
+          c.style.display = c.textContent.toLowerCase().includes(q) ? '' : 'none';
+        });
+      });
+    }
+  </script>
+
 </body>
 </html>

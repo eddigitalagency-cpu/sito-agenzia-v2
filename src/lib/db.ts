@@ -27,8 +27,11 @@ export async function initDB(): Promise<void> {
       path       TEXT         NOT NULL,
       referrer   TEXT,
       ua         TEXT,
+      session_id TEXT,
       created_at TIMESTAMPTZ  DEFAULT NOW()
     );
+    ALTER TABLE page_views ADD COLUMN IF NOT EXISTS session_id TEXT;
+
     CREATE TABLE IF NOT EXISTS form_submissions (
       id         SERIAL       PRIMARY KEY,
       name       TEXT         NOT NULL,
@@ -37,8 +40,26 @@ export async function initDB(): Promise<void> {
       company    TEXT,
       service    TEXT,
       message    TEXT,
+      replied_at TIMESTAMPTZ,
+      reply_text TEXT,
       created_at TIMESTAMPTZ  DEFAULT NOW()
     );
+    ALTER TABLE form_submissions ADD COLUMN IF NOT EXISTS replied_at TIMESTAMPTZ;
+    ALTER TABLE form_submissions ADD COLUMN IF NOT EXISTS reply_text TEXT;
+
+    CREATE TABLE IF NOT EXISTS user_events (
+      id         SERIAL       PRIMARY KEY,
+      session_id TEXT         NOT NULL,
+      event_type TEXT         NOT NULL,
+      path       TEXT,
+      element    TEXT,
+      value      INT,
+      referrer   TEXT,
+      ua         TEXT,
+      created_at TIMESTAMPTZ  DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_ue_session ON user_events(session_id);
+    CREATE INDEX IF NOT EXISTS idx_ue_type    ON user_events(event_type, created_at);
   `);
   _ready = true;
 }

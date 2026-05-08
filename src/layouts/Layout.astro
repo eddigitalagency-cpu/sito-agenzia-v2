@@ -454,17 +454,60 @@ const ogImageAbs    = new URL(ogImage, 'https://eddigitalagency.it').toString();
       });
     </script>
 
-    <!-- Page view tracking -->
+    <!-- Analytics tracking: pageview, time on page, clicks, sections -->
     <script is:inline>
       (function(){
         try {
-          fetch('/api/track', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ path: window.location.pathname, referrer: document.referrer || null }),
-            keepalive: true,
-          });
-        } catch(e) {}
+          if (window.location.pathname.startsWith('/admin')) return;
+          var sid = sessionStorage.getItem('_ed_sid');
+          if (!sid) {
+            sid = Math.random().toString(36).slice(2,9) + Date.now().toString(36);
+            sessionStorage.setItem('_ed_sid', sid);
+          }
+          var path = window.location.pathname;
+          var t0 = Date.now();
+          // Pageview
+          fetch('/api/track',{method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({type:'pageview',path:path,referrer:document.referrer||null,sessionId:sid}),keepalive:true});
+          // Time on page via sendBeacon on unload
+          var _sent = false;
+          function sendTime(){
+            if(_sent) return; _sent=true;
+            var secs = Math.round((Date.now()-t0)/1000);
+            if(secs<1) return;
+            navigator.sendBeacon && navigator.sendBeacon('/api/track',
+              new Blob([JSON.stringify({type:'timeonpage',path:path,sessionId:sid,value:secs})],{type:'application/json'}));
+          }
+          window.addEventListener('beforeunload',sendTime);
+          window.addEventListener('pagehide',sendTime);
+          // Click tracking
+          document.addEventListener('click',function(e){
+            var el = e.target && e.target.closest && e.target.closest('a,button,[data-track]');
+            if(!el) return;
+            var label = (el.getAttribute('data-track')||'') ||
+              (el.innerText && el.innerText.trim().slice(0,80)) ||
+              el.getAttribute('aria-label')||'';
+            label = label.trim();
+            if(!label || label.length<2) return;
+            fetch('/api/track',{method:'POST',headers:{'Content-Type':'application/json'},
+              body:JSON.stringify({type:'click',path:path,sessionId:sid,element:label}),keepalive:true});
+          },{passive:true});
+          // Section visibility tracking
+          if(typeof IntersectionObserver!=='undefined'){
+            var seen={};
+            var obs=new IntersectionObserver(function(entries){
+              entries.forEach(function(en){
+                var id=en.target.id||en.target.getAttribute('data-section');
+                if(en.isIntersecting&&id&&!seen[id]){
+                  seen[id]=1;
+                  fetch('/api/track',{method:'POST',headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({type:'section',path:path,sessionId:sid,element:id}),keepalive:true});
+                }
+              });
+            },{threshold:0.3});
+            document.querySelectorAll('section[id],[data-section]').forEach(function(s){obs.observe(s);});
+          }
+        } catch(e){}
       })();
     </script>
 
