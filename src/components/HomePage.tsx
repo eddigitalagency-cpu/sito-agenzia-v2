@@ -134,9 +134,10 @@ const services = [
 const caseStudies = [
   { slug: 'zenia',            title: 'Zenia',            service: 'Web Design',   img: '/Images/Zenia.png' },
   { slug: 'italia-contract',  title: 'Italia Contract',  service: 'Web Design',   img: '/Images/Lavori%20Clienti/Sito%20web%20Italia%20Contract.png' },
+  { slug: 'espansione-immobiliare', title: 'Espansione Immobiliare', service: 'Social Media', img: '/Images/EspansioneImmobiliare.png' },
   { slug: 'espressione-danza',title: 'Espressione Danza',service: 'Social Media', img: '/Images/Lavori%20Clienti/Espressione%20Danza.jpg' },
   { slug: 'cdvi',             title: 'CDVI',             service: 'Video',        img: '/Images/Lavori%20Clienti/CDVI.jpg' },
-  { slug: 'gallo-immobiliare',title: 'Gallo Immobiliare',service: 'Web Design',   img: '/Images/Lavori%20Clienti/Gallo%20Immobiliare.jpg' },
+  { slug: 'gallo-immobiliare',title: 'Gallo Immobiliare',service: 'Web Design',   img: '/Images/GalloImmobiliare.png' },
   { slug: 'disegno-italia',   title: 'Disegno Italia',   service: 'Web Design',   img: '/Images/Lavori%20Clienti/Disegno%20Italia.png' },
   { slug: 'solo-mattia',      title: 'Solo Mattia',      service: 'Web Design',   img: '/Images/Lavori%20Clienti/Sito%20web%20Solo%20Mattia.jpg' },
   { slug: 'upbeat-tattoo',    title: 'UpBeat Tattoo',    service: 'Social Media', img: '/Images/Lavori%20Clienti/UpBeat%20Tattoo.jpg' },
