@@ -88,6 +88,12 @@ export async function initDB(): Promise<void> {
       created_at    TIMESTAMPTZ  DEFAULT NOW(),
       updated_at    TIMESTAMPTZ  DEFAULT NOW()
     );
+    ALTER TABLE projects_db ADD COLUMN IF NOT EXISTS services      text[] NOT NULL DEFAULT '{}';
+    ALTER TABLE projects_db ADD COLUMN IF NOT EXISTS service_slugs text[] NOT NULL DEFAULT '{}';
+    UPDATE projects_db
+      SET services = ARRAY[service], service_slugs = ARRAY[service_slug]
+      WHERE (array_length(services, 1) IS NULL OR array_length(services, 1) = 0)
+        AND service != '';
   `);
 
   // Seed projects_db from static data on first run

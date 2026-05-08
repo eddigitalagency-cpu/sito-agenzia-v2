@@ -3,6 +3,8 @@ export interface Project {
   title: string;
   service: string;
   serviceSlug: string;
+  services?: string[];
+  serviceSlugs?: string[];
   img: string;
   tagline: string;
   description: string;

@@ -131,7 +131,7 @@ const services = [
   { name: 'Integrazioni & Automazioni', slug: 'integrazioni',         tagline: 'Stack connesso, zero sprechi.', span: 'lg:col-span-1', gradient: 'from-teal-500/8 via-transparent' },
 ];
 
-type CaseStudy = { slug: string; title: string; service: string; img: string };
+type CaseStudy = { slug: string; title: string; service: string; services?: string[]; img: string };
 
 const partners = [
   { src: '/Images/shopify-partner.png',                alt: 'Shopify' },
@@ -391,7 +391,9 @@ export default function HomePage({ projects = [] }: { projects?: CaseStudy[] }) 
               <img src={s.img} alt={s.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute inset-0" style={{ background:'linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0) 55%)' }} />
               <div className="absolute bottom-6 left-6 right-6">
-                <p className="text-[#FF6A00] text-[10px] uppercase tracking-[0.25em] font-bold mb-1.5">{s.service}</p>
+                <p className="text-[#FF6A00] text-[10px] uppercase tracking-[0.25em] font-bold mb-1.5">
+                  {(s.services?.length ? s.services : [s.service]).join(' · ')}
+                </p>
                 <h3 className="text-white text-xl md:text-2xl font-black">{s.title}</h3>
               </div>
               <div className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">

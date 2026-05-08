@@ -29,10 +29,12 @@ export default function ProjectDetailPage({ project }: { project: Project }) {
             </a>
 
             <div className="flex flex-wrap items-center gap-3 mb-5">
-              <span className="px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest"
-                style={{ background: 'rgba(255,106,0,0.15)', color: '#FF6A00' }}>
-                {project.service}
-              </span>
+              {(project.services ?? [project.service]).filter(Boolean).map((svc, i) => (
+                <span key={i} className="px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest"
+                  style={{ background: 'rgba(255,106,0,0.15)', color: '#FF6A00' }}>
+                  {svc}
+                </span>
+              ))}
               <span className="text-xs uppercase tracking-widest" style={{ color: 'rgba(var(--c-text),0.3)' }}>
                 {project.year}
               </span>
@@ -104,18 +106,24 @@ export default function ProjectDetailPage({ project }: { project: Project }) {
               </div>
             </div>
 
-            {/* Service pill */}
-            <a href={`/servizi/${project.serviceSlug}`}
-              className="flex items-center justify-between gap-4 rounded-[1.75rem] p-6 group transition-colors duration-300"
-              style={{ background: 'rgb(var(--c-card))', border: '1px solid rgba(var(--c-text),0.07)' }}
-            >
-              <div>
-                <p className="text-xs uppercase tracking-widest mb-1" style={{ color: 'rgba(var(--c-text),0.35)' }}>Servizio</p>
-                <p className="font-semibold text-sm group-hover:text-[#FF6A00] transition-colors">{project.service}</p>
-              </div>
-              <span className="w-9 h-9 rounded-full flex items-center justify-center text-sm flex-shrink-0 group-hover:bg-[#FF6A00] group-hover:text-black transition-all duration-300"
-                style={{ border: '1px solid rgba(var(--c-text),0.15)' }}>→</span>
-            </a>
+            {/* Service pill(s) */}
+            {(project.serviceSlugs ?? [project.serviceSlug]).map((slugItem, i) => (
+              <a key={i} href={`/servizi/${slugItem}`}
+                className="flex items-center justify-between gap-4 rounded-[1.75rem] p-6 group transition-colors duration-300"
+                style={{ background: 'rgb(var(--c-card))', border: '1px solid rgba(var(--c-text),0.07)' }}
+              >
+                <div>
+                  <p className="text-xs uppercase tracking-widest mb-1" style={{ color: 'rgba(var(--c-text),0.35)' }}>
+                    {i === 0 ? 'Servizio' : 'Anche'}
+                  </p>
+                  <p className="font-semibold text-sm group-hover:text-[#FF6A00] transition-colors">
+                    {(project.services ?? [project.service])[i] ?? slugItem}
+                  </p>
+                </div>
+                <span className="w-9 h-9 rounded-full flex items-center justify-center text-sm flex-shrink-0 group-hover:bg-[#FF6A00] group-hover:text-black transition-all duration-300"
+                  style={{ border: '1px solid rgba(var(--c-text),0.15)' }}>→</span>
+              </a>
+            ))}
 
             {/* CTA */}
             <a href="/contatti"

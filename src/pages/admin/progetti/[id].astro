@@ -19,6 +19,7 @@ const projId = isNew ? 0 : parseInt(id ?? '0');
 
 type ProjRow = {
   id: number; slug: string; title: string; service: string; service_slug: string;
+  services: string[]; service_slugs: string[];
   tagline: string; description: string; what: string[];
   results: { value: string; label: string }[]; year: string;
   cover_img: string; display_order: number; published: boolean;
@@ -38,12 +39,22 @@ let errorMsg = '';
 if (Astro.request.method === 'POST') {
   const form = await Astro.request.formData();
 
-  const title       = String(form.get('title')       ?? '').trim();
-  const rawSlug     = String(form.get('slug')        ?? '').trim();
-  const slug        = rawSlug.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-  const service     = String(form.get('service')     ?? '').trim();
-  const serviceSlug = String(form.get('service_slug')  ?? '').trim();
-  const year        = String(form.get('year')        ?? '').trim();
+  const title    = String(form.get('title') ?? '').trim();
+  const rawSlug  = String(form.get('slug')  ?? '').trim();
+  const slug     = rawSlug.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  const year     = String(form.get('year')  ?? '').trim();
+
+  // Multi-service
+  const svcCount = Math.min(parseInt(String(form.get('svc_count') ?? '1')) || 1, 6);
+  const services: string[] = [];
+  const serviceSlugs: string[] = [];
+  for (let i = 0; i < svcCount; i++) {
+    const s = String(form.get(`svc_slug_${i}`) ?? '').trim();
+    const n = String(form.get(`svc_name_${i}`) ?? '').trim();
+    if (s || n) { serviceSlugs.push(s); services.push(n); }
+  }
+  const service     = services[0]     ?? '';
+  const serviceSlug = serviceSlugs[0] ?? '';
   const tagline     = String(form.get('tagline')     ?? '').trim();
   const description = String(form.get('description') ?? '').trim();
   const whatRaw     = String(form.get('what')        ?? '');
@@ -65,16 +76,16 @@ if (Astro.request.method === 'POST') {
     try {
       if (isNew) {
         await db.query(
-          `INSERT INTO projects_db (slug,title,service,service_slug,tagline,description,what,results,year,cover_img,published,display_order)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
-          [slug,title,service,serviceSlug,tagline,description,what,JSON.stringify(results),year,coverImg,published,order],
+          `INSERT INTO projects_db (slug,title,service,service_slug,services,service_slugs,tagline,description,what,results,year,cover_img,published,display_order)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
+          [slug,title,service,serviceSlug,services,serviceSlugs,tagline,description,what,JSON.stringify(results),year,coverImg,published,order],
         );
       } else {
         await db.query(
-          `UPDATE projects_db SET slug=$1,title=$2,service=$3,service_slug=$4,tagline=$5,description=$6,
-           what=$7,results=$8,year=$9,cover_img=$10,published=$11,display_order=$12,updated_at=NOW()
-           WHERE id=$13`,
-          [slug,title,service,serviceSlug,tagline,description,what,JSON.stringify(results),year,coverImg,published,order,projId],
+          `UPDATE projects_db SET slug=$1,title=$2,service=$3,service_slug=$4,services=$5,service_slugs=$6,
+           tagline=$7,description=$8,what=$9,results=$10,year=$11,cover_img=$12,published=$13,display_order=$14,updated_at=NOW()
+           WHERE id=$15`,
+          [slug,title,service,serviceSlug,services,serviceSlugs,tagline,description,what,JSON.stringify(results),year,coverImg,published,order,projId],
         );
       }
       return Astro.redirect('/admin/progetti');
@@ -105,6 +116,9 @@ const serviceOptions = [
   { label: 'App Mobile',         slug: 'app' },
   { label: 'Integrazioni',       slug: 'integrazioni' },
 ];
+
+const initServices     = p ? (Array.isArray(p.services)      && p.services.length      ? p.services      : (p.service      ? [p.service]      : [''])) : [''];
+const initServiceSlugs = p ? (Array.isArray(p.service_slugs) && p.service_slugs.length ? p.service_slugs : (p.service_slug ? [p.service_slug] : [''])) : [''];
 
 const pageTitle = isNew ? 'Nuovo Progetto' : `Modifica: ${p?.title ?? ''}`;
 ---
@@ -174,6 +188,15 @@ const pageTitle = isNew ? 'Nuovo Progetto' : `Modifica: ${p?.title ?? ''}`;
     .ai-panel-desc{font-size:12px;color:rgba(255,255,255,.35);margin-bottom:18px;line-height:1.6;}
     .ai-status{font-size:12px;padding:0 2px;}
 
+    /* Multi-service rows */
+    .svc-row{display:grid;grid-template-columns:1fr 1fr 32px;gap:8px;align-items:center;}
+    @media(max-width:540px){.svc-row{grid-template-columns:1fr 32px;}.svc-name-col{display:none;}}
+    .svc-remove-btn{width:32px;height:32px;background:rgba(255,68,68,.08);border:1px solid rgba(255,68,68,.18);border-radius:7px;color:rgba(255,68,68,.5);font-size:18px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;padding:0;}
+    .svc-remove-btn:hover{background:rgba(255,68,68,.18);color:#ff4444;border-color:rgba(255,68,68,.4);}
+    .btn-svc-add{margin-top:8px;padding:7px 16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.45);font-size:12px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
+    .btn-svc-add:hover{color:#fff;border-color:rgba(255,255,255,.25);}
+    .btn-svc-add:disabled{opacity:.3;cursor:not-allowed;}
+
     /* Toggle */
     .toggle-row{display:flex;align-items:center;gap:10px;}
     .toggle-row input[type=checkbox]{width:18px;height:18px;accent-color:#FF6A00;cursor:pointer;}
@@ -224,22 +247,13 @@ const pageTitle = isNew ? 'Nuovo Progetto' : `Modifica: ${p?.title ?? ''}`;
           <span class="field-hint">Usato nell'URL: /progetti/<strong id="slug-preview">{v('slug', '...')}</strong></span>
         </div>
 
-        <!-- Service select -->
-        <div class="field">
-          <label>Servizio</label>
-          <select name="service_slug" id="sel-service-slug">
-            <option value="">— Seleziona —</option>
-            {serviceOptions.map(o => (
-              <option value={o.slug} selected={v('service_slug') === o.slug}>{o.label}</option>
-            ))}
-          </select>
-        </div>
-
-        <!-- Service label (auto-filled) -->
-        <div class="field">
-          <label>Nome servizio (visualizzato)</label>
-          <input type="text" name="service" id="input-service" value={v('service')} placeholder="Es. Web Design"/>
-          <span class="field-hint">Si compila in automatico dal menu</span>
+        <!-- Services (multi) -->
+        <div class="field form-full">
+          <label>Servizi <span style="font-weight:400;text-transform:none;letter-spacing:0;color:rgba(255,255,255,.25);font-size:11px">— puoi aggiungerne fino a 6</span></label>
+          <div id="svc-list" style="display:flex;flex-direction:column;gap:8px;margin-top:4px;"></div>
+          <input type="hidden" id="svc-count" name="svc_count" value="1"/>
+          <button type="button" id="svc-add" class="btn-svc-add">+ Aggiungi servizio</button>
+          <span class="field-hint">Il primo è il servizio principale — si ordina a piacere</span>
         </div>
 
         <!-- Year -->
@@ -363,7 +377,7 @@ const pageTitle = isNew ? 'Nuovo Progetto' : `Modifica: ${p?.title ?? ''}`;
     </form>
   </div>
 
-  <script define:vars={{ isNew }}>
+  <script define:vars={{ isNew, initServices, initServiceSlugs }}>
     // ── Auto-slug from title ───────────────────────────────
     const titleInput = document.getElementById('input-title');
     const slugInput  = document.getElementById('input-slug');
@@ -383,26 +397,90 @@ const pageTitle = isNew ? 'Nuovo Progetto' : `Modifica: ${p?.title ?? ''}`;
       });
     }
 
-    // ── Service slug → service name ────────────────────────
-    const serviceMap = {
-      'website': 'Web Design',
-      'social-media-management': 'Social Media',
-      'advertising': 'Advertising',
-      'ecommerce': 'E-Commerce',
-      'photo-video': 'Foto & Video',
-      'visual-identity': 'Brand Identity',
-      'mvp-saas': 'MVP / SaaS',
-      'app': 'App Mobile',
-      'integrazioni': 'Integrazioni',
-    };
-    const selSlug = document.getElementById('sel-service-slug');
-    const inpSvc  = document.getElementById('input-service');
-    if (selSlug && inpSvc) {
-      selSlug.addEventListener('change', () => {
-        const label = serviceMap[selSlug.value] || '';
-        if (label) inpSvc.value = label;
+    // ── Multi-service editor ───────────────────────────────
+    const SVC_OPTIONS = [
+      { slug: 'website',                 label: 'Web Design' },
+      { slug: 'social-media-management', label: 'Social Media' },
+      { slug: 'advertising',             label: 'Advertising' },
+      { slug: 'ecommerce',               label: 'E-Commerce' },
+      { slug: 'photo-video',             label: 'Foto & Video' },
+      { slug: 'visual-identity',         label: 'Brand Identity' },
+      { slug: 'mvp-saas',                label: 'MVP / SaaS' },
+      { slug: 'app',                     label: 'App Mobile' },
+      { slug: 'integrazioni',            label: 'Integrazioni' },
+    ];
+    const MAX_SVCS = 6;
+    const svcList     = document.getElementById('svc-list');
+    const svcCountInp = document.getElementById('svc-count');
+    const svcAddBtn   = document.getElementById('svc-add');
+
+    function buildSvcRow(idx, slug, name) {
+      const row = document.createElement('div');
+      row.className = 'svc-row';
+      row.dataset.idx = String(idx);
+
+      const sel = document.createElement('select');
+      sel.name = `svc_slug_${idx}`;
+      let opts = '<option value="">— Seleziona servizio —</option>';
+      SVC_OPTIONS.forEach(o => {
+        opts += `<option value="${o.slug}"${o.slug === slug ? ' selected' : ''}>${o.label}</option>`;
       });
+      sel.innerHTML = opts;
+
+      const inp = document.createElement('input');
+      inp.type = 'text';
+      inp.name = `svc_name_${idx}`;
+      inp.className = 'svc-name-col';
+      inp.value = name || '';
+      inp.placeholder = 'Nome (auto)';
+
+      const rmBtn = document.createElement('button');
+      rmBtn.type = 'button';
+      rmBtn.className = 'svc-remove-btn';
+      rmBtn.title = 'Rimuovi servizio';
+      rmBtn.textContent = '×';
+
+      sel.addEventListener('change', () => {
+        const found = SVC_OPTIONS.find(o => o.slug === sel.value);
+        if (found) inp.value = found.label;
+      });
+      rmBtn.addEventListener('click', () => {
+        row.remove();
+        rebuildSvcIndices();
+      });
+
+      row.appendChild(sel);
+      row.appendChild(inp);
+      row.appendChild(rmBtn);
+      return row;
     }
+
+    function rebuildSvcIndices() {
+      const rows = svcList.querySelectorAll('.svc-row');
+      rows.forEach((row, i) => {
+        row.dataset.idx = String(i);
+        row.querySelector('select').name = `svc_slug_${i}`;
+        row.querySelector('input').name  = `svc_name_${i}`;
+        row.querySelector('.svc-remove-btn').style.visibility = rows.length > 1 ? 'visible' : 'hidden';
+      });
+      svcCountInp.value = String(rows.length);
+      svcAddBtn.disabled = rows.length >= MAX_SVCS;
+    }
+
+    function addSvcRow(slug = '', name = '') {
+      const count = svcList.querySelectorAll('.svc-row').length;
+      if (count >= MAX_SVCS) return;
+      svcList.appendChild(buildSvcRow(count, slug, name));
+      rebuildSvcIndices();
+    }
+
+    // Init from existing data
+    const svcs  = Array.isArray(initServices)      ? initServices      : [''];
+    const slugs = Array.isArray(initServiceSlugs)  ? initServiceSlugs  : [''];
+    const initLen = Math.max(svcs.length, slugs.length, 1);
+    for (let i = 0; i < initLen; i++) addSvcRow(slugs[i] || '', svcs[i] || '');
+
+    svcAddBtn.addEventListener('click', () => addSvcRow());
 
     // ── Image upload ───────────────────────────────────────
     const fileInput   = document.getElementById('file-input');

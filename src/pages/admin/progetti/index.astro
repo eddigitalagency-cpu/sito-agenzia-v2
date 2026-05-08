@@ -21,9 +21,9 @@ if (Astro.request.method === 'POST') {
   return Astro.redirect('/admin/progetti');
 }
 
-type Row = { id: number; slug: string; title: string; service: string; year: string; cover_img: string; published: boolean; display_order: number };
+type Row = { id: number; slug: string; title: string; service: string; services: string[]; year: string; cover_img: string; published: boolean; display_order: number };
 const rows = (await db.query<Row>(
-  'SELECT id,slug,title,service,year,cover_img,published,display_order FROM projects_db ORDER BY display_order,created_at DESC'
+  'SELECT id,slug,title,service,services,year,cover_img,published,display_order FROM projects_db ORDER BY display_order,created_at DESC'
 )).rows;
 ---
 <!doctype html>
@@ -104,7 +104,9 @@ const rows = (await db.query<Row>(
               <div class="proj-info">
                 <div class="proj-title">{p.title}</div>
                 <div class="proj-meta">
-                  <span class="svc-pill">{p.service || '—'}</span>
+                  {(Array.isArray(p.services) && p.services.length ? p.services : [p.service]).filter(Boolean).map(s => (
+                    <span class="svc-pill">{s}</span>
+                  ))}
                   <span>{p.year || '—'}</span>
                   <span>
                     <span class={`status-dot ${p.published ? 'on' : 'off'}`}></span>

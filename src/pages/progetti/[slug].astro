@@ -12,6 +12,7 @@ const { slug } = Astro.params;
 await initDB();
 type ProjRow = {
   slug: string; title: string; service: string; service_slug: string;
+  services: string[]; service_slugs: string[];
   cover_img: string; tagline: string; description: string;
   what: string[]; results: { value: string; label: string }[]; year: string;
 };
@@ -22,17 +23,21 @@ const res = await getPool().query<ProjRow>(
 let project: Project | undefined;
 if (res.rowCount) {
   const r = res.rows[0];
+  const services     = Array.isArray(r.services)      && r.services.length      ? r.services      : [r.service];
+  const serviceSlugs = Array.isArray(r.service_slugs) && r.service_slugs.length ? r.service_slugs : [r.service_slug];
   project = {
-    slug:        r.slug,
-    title:       r.title,
-    service:     r.service,
-    serviceSlug: r.service_slug,
-    img:         r.cover_img,
-    tagline:     r.tagline,
-    description: r.description,
-    what:        Array.isArray(r.what) ? r.what : [],
-    results:     Array.isArray(r.results) ? r.results : [],
-    year:        r.year,
+    slug:         r.slug,
+    title:        r.title,
+    service:      services[0] ?? r.service,
+    serviceSlug:  serviceSlugs[0] ?? r.service_slug,
+    services,
+    serviceSlugs,
+    img:          r.cover_img,
+    tagline:      r.tagline,
+    description:  r.description,
+    what:         Array.isArray(r.what) ? r.what : [],
+    results:      Array.isArray(r.results) ? r.results : [],
+    year:         r.year,
   };
 } else {
   project = getProject(slug!);
