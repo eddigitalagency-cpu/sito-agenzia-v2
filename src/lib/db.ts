@@ -46,6 +46,7 @@ export async function initDB(): Promise<void> {
     );
     ALTER TABLE form_submissions ADD COLUMN IF NOT EXISTS replied_at TIMESTAMPTZ;
     ALTER TABLE form_submissions ADD COLUMN IF NOT EXISTS reply_text TEXT;
+    ALTER TABLE form_submissions ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ;
 
     CREATE TABLE IF NOT EXISTS user_events (
       id         SERIAL       PRIMARY KEY,

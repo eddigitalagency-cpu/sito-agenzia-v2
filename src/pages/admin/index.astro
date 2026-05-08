@@ -17,7 +17,7 @@ const db = getPool();
 type SubRow = {
   id: number; name: string; email: string; phone: string; company: string;
   service: string; message: string; created_at: string;
-  replied_at: string | null; reply_text: string | null;
+  replied_at: string | null; reply_text: string | null; archived_at: string | null;
 };
 type SessionRow = {
   session_id: string; started_at: string; pageviews: number;
@@ -37,7 +37,7 @@ const [
   db.query<{day:string,count:number}>("SELECT TO_CHAR(DATE(created_at AT TIME ZONE 'Europe/Rome'),'DD/MM') AS day, COUNT(*)::int AS count FROM page_views WHERE created_at > NOW()-INTERVAL'7 days' GROUP BY DATE(created_at AT TIME ZONE 'Europe/Rome') ORDER BY DATE(created_at AT TIME ZONE 'Europe/Rome')"),
   db.query<SubRow>('SELECT * FROM form_submissions ORDER BY created_at DESC LIMIT 200'),
   db.query<{count:number}>('SELECT COUNT(*)::int AS count FROM form_submissions'),
-  db.query<{count:number}>('SELECT COUNT(*)::int AS count FROM form_submissions WHERE replied_at IS NULL'),
+  db.query<{count:number}>('SELECT COUNT(*)::int AS count FROM form_submissions WHERE replied_at IS NULL AND archived_at IS NULL'),
   db.query<{source:string,count:number}>(`
     SELECT CASE
       WHEN referrer IS NULL OR referrer='' THEN 'Diretto'
@@ -72,7 +72,8 @@ const wk       = weekViews.rows[0].count;
 const mo       = monthViews.rows[0].count;
 const tf       = totalForms.rows[0].count;
 const unreplied = unrepliedQ.rows[0].count;
-const forms    = submissions.rows;
+const forms         = submissions.rows;
+const archivedCount = forms.filter(f => f.archived_at).length;
 const pages    = topPages.rows;
 const daily    = dailyViews.rows;
 const srcs     = sourcesQ.rows;
@@ -211,6 +212,19 @@ function shortSession(id: string) {
     .reply-feedback{margin-top:10px;font-size:12px;padding:8px 12px;border-radius:8px;}
     .reply-feedback.ok{background:rgba(34,197,94,.1);color:#22c55e;border:1px solid rgba(34,197,94,.2);}
     .reply-feedback.err{background:rgba(255,68,68,.1);color:#ff4444;border:1px solid rgba(255,68,68,.2);}
+
+    /* ── Filter tabs + card actions ────────────────── */
+    .filter-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+    .filter-tab{padding:6px 16px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,.1);background:transparent;color:rgba(255,255,255,.4);transition:all .15s;white-space:nowrap;}
+    .filter-tab:hover{color:#fff;border-color:rgba(255,255,255,.25);}
+    .filter-tab.active{background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.2);}
+    .card-actions{display:flex;gap:6px;margin-top:6px;}
+    .action-btn{padding:4px 11px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,.09);background:transparent;color:rgba(255,255,255,.3);transition:all .15s;white-space:nowrap;letter-spacing:.02em;}
+    .action-btn:hover{border-color:rgba(255,255,255,.22);color:rgba(255,255,255,.75);}
+    .action-btn:disabled{opacity:.4;cursor:not-allowed;}
+    .action-btn.del{color:rgba(255,68,68,.5);border-color:rgba(255,68,68,.15);}
+    .action-btn.del:hover{color:#ff4444;border-color:rgba(255,68,68,.4);background:rgba(255,68,68,.06);}
+    .sub-card.is-archived{opacity:.5;border-left:3px solid rgba(255,255,255,.08) !important;}
 
     /* ── Sessions table ─────────────────────────────── */
     .sess-table{width:100%;border-collapse:collapse;font-size:13px;}
@@ -383,19 +397,25 @@ function shortSession(id: string) {
           <span class={`sub-stat-val ${unreplied > 0 ? 'red' : ''}`}>{unreplied}</span>
         </div>
         <div class="sub-stat">
-          <span class="sub-stat-label">Risposto</span>
-          <span class="sub-stat-val">{tf - unreplied}</span>
+          <span class="sub-stat-label">Archiviate</span>
+          <span class="sub-stat-val">{archivedCount}</span>
         </div>
         <div class="search-wrap">
           <input id="search-subs" class="search-input" type="search" placeholder="Cerca per nome, email, messaggio…" autocomplete="off"/>
         </div>
       </div>
 
+      <!-- Filter tabs -->
+      <div class="filter-row">
+        <button class="filter-tab active" data-filter="active">Attive ({tf - archivedCount})</button>
+        <button class="filter-tab" data-filter="archived">Archiviate ({archivedCount})</button>
+      </div>
+
       <!-- Cards -->
       {forms.length === 0
         ? <p class="empty" style="margin-top:40px">Nessuna richiesta ricevuta ancora</p>
         : forms.map(f => (
-          <div class={`sub-card ${f.replied_at ? 'is-replied' : 'unread'}`} data-id={f.id} data-name={f.name}>
+          <div class={`sub-card ${f.replied_at ? 'is-replied' : 'unread'} ${f.archived_at ? 'is-archived' : ''}`} data-id={f.id} data-name={f.name} data-archived={f.archived_at ? '1' : '0'}>
             <div class="sub-head">
               <div class="sub-left">
                 <span class="sub-name">{f.name}</span>
@@ -411,6 +431,12 @@ function shortSession(id: string) {
                   {f.replied_at ? `✓ Risposto` : '● Nuovo'}
                 </span>
                 <span class="sub-date">{fmt(f.created_at)}</span>
+                <div class="card-actions" onclick="event.stopPropagation()">
+                  <button class="action-btn archive-btn" data-id={f.id} data-archived={f.archived_at ? '1' : '0'}>
+                    {f.archived_at ? 'Ripristina' : 'Archivia'}
+                  </button>
+                  <button class="action-btn del delete-btn" data-id={f.id}>Elimina</button>
+                </div>
               </div>
             </div>
             <div class="sub-preview">
@@ -593,16 +619,98 @@ function shortSession(id: string) {
       });
     });
 
-    // ── Search / filter submissions ────────────────────────
+    // ── Filter tabs (Attive / Archiviate) ─────────────────
+    var currentFilter = 'active';
+    function applyFilter(filter) {
+      currentFilter = filter;
+      const q = (document.getElementById('search-subs')?.value || '').toLowerCase();
+      document.querySelectorAll('.sub-card').forEach(c => {
+        const archived = c.dataset.archived === '1';
+        const matchFilter = filter === 'archived' ? archived : !archived;
+        const matchSearch = !q || c.textContent.toLowerCase().includes(q);
+        c.style.display = (matchFilter && matchSearch) ? '' : 'none';
+      });
+      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      const btn = document.querySelector('[data-filter="' + filter + '"]');
+      if (btn) btn.classList.add('active');
+    }
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+      tab.addEventListener('click', () => applyFilter(tab.dataset.filter));
+    });
+    applyFilter('active');
+
+    // ── Search submissions ─────────────────────────────────
     const searchEl = document.getElementById('search-subs');
     if (searchEl) {
-      searchEl.addEventListener('input', function() {
-        const q = this.value.toLowerCase();
-        document.querySelectorAll('.sub-card').forEach(c => {
-          c.style.display = c.textContent.toLowerCase().includes(q) ? '' : 'none';
-        });
-      });
+      searchEl.addEventListener('input', function() { applyFilter(currentFilter); });
     }
+
+    // ── Archive / Unarchive ────────────────────────────────
+    document.querySelectorAll('.archive-btn').forEach(btn => {
+      btn.addEventListener('click', async function(e) {
+        e.stopPropagation();
+        const id = parseInt(this.dataset.id);
+        const isArchived = this.dataset.archived === '1';
+        const card = this.closest('.sub-card');
+        const prev = this.textContent;
+        this.disabled = true;
+        try {
+          const res = await fetch('/api/admin/submission', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, archive: !isArchived }),
+          });
+          const data = await res.json();
+          if (data.ok) {
+            const nowArchived = !isArchived;
+            card.dataset.archived = nowArchived ? '1' : '0';
+            this.dataset.archived = nowArchived ? '1' : '0';
+            this.textContent = nowArchived ? 'Ripristina' : 'Archivia';
+            nowArchived ? card.classList.add('is-archived') : card.classList.remove('is-archived');
+            // Fade out if no longer matches current filter
+            const shouldHide = currentFilter === 'archived' ? !nowArchived : nowArchived;
+            if (shouldHide) {
+              card.style.transition = 'opacity .2s';
+              card.style.opacity = '0';
+              setTimeout(() => { card.style.display = 'none'; card.style.opacity = ''; card.style.transition = ''; }, 220);
+            }
+          } else {
+            this.textContent = prev;
+          }
+        } catch { this.textContent = prev; }
+        this.disabled = false;
+      });
+    });
+
+    // ── Delete permanently ─────────────────────────────────
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', async function(e) {
+        e.stopPropagation();
+        if (!confirm('Eliminare definitivamente questa richiesta?\nL\'azione non può essere annullata.')) return;
+        const id = parseInt(this.dataset.id);
+        const card = this.closest('.sub-card');
+        this.disabled = true;
+        try {
+          const res = await fetch('/api/admin/submission', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id }),
+          });
+          const data = await res.json();
+          if (data.ok) {
+            card.style.transition = 'opacity .2s';
+            card.style.opacity = '0';
+            setTimeout(() => card.remove(), 220);
+          } else {
+            this.disabled = false;
+            alert('Errore: ' + (data.error || 'Riprova.'));
+          }
+        } catch {
+          this.disabled = false;
+          alert('Errore di rete. Riprova.');
+        }
+      });
+    });
   </script>
 
 </body>
