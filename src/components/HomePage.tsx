@@ -137,6 +137,7 @@ const partners = [
   { src: '/Images/shopify-partner.png',                alt: 'Shopify' },
   { src: '/Images/wordpress-logo-png-transparent.png', alt: 'WordPress' },
   { src: '/Images/keliweb-logo-e1522914795801.png',     alt: 'Keliweb' },
+  { src: '/Images/Logo%20litchi.png',                   alt: 'Litchi' },
 ];
 
 // ── Stats ──────────────────────────────────────────────────
