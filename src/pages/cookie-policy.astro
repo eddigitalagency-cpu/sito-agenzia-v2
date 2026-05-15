@@ -1,0 +1,129 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+export const prerender = true;
+---
+
+<Layout
+  title="Cookie Policy"
+  description="Informativa sull'uso dei cookie nel sito di ED Digital Agency, ai sensi del GDPR e del Provvedimento del Garante Privacy."
+>
+  <section class="max-w-3xl mx-auto px-6 md:px-12 py-24 md:py-32">
+
+    <p class="text-xs font-semibold uppercase tracking-widest mb-4" style="color:#FF6A00;">Documento legale</p>
+    <h1 class="text-3xl md:text-4xl font-bold mb-3 t-text" style="font-family:'CalSans',sans-serif;">Cookie Policy</h1>
+    <p class="text-sm mb-12 t-muted">Ultimo aggiornamento: 15 maggio 2026</p>
+
+    <div class="prose-content space-y-10 text-sm leading-relaxed" style="color:rgba(var(--c-text),0.75);">
+
+      <!-- 1 -->
+      <div>
+        <h2 class="text-base font-semibold mb-3 t-text">1. Cosa sono i cookie</h2>
+        <p>I cookie sono piccoli file di testo che i siti web visitati inviano al terminale dell'utente (computer, tablet, smartphone), dove vengono memorizzati per essere poi ritrasmessi agli stessi siti alla visita successiva. I cookie permettono a un sito di riconoscere il dispositivo, ricordare le preferenze e raccogliere informazioni su come il sito viene utilizzato.</p>
+      </div>
+
+      <!-- 2 -->
+      <div>
+        <h2 class="text-base font-semibold mb-3 t-text">2. Cookie utilizzati da questo sito</h2>
+
+        <div class="rounded-xl overflow-hidden mb-6" style="border:1px solid rgba(var(--c-text),0.08);">
+          <table class="w-full text-xs">
+            <thead>
+              <tr style="background:rgba(var(--c-text),0.04); border-bottom:1px solid rgba(var(--c-text),0.08);">
+                <th class="text-left px-4 py-3 t-text font-semibold">Nome</th>
+                <th class="text-left px-4 py-3 t-text font-semibold">Tipo</th>
+                <th class="text-left px-4 py-3 t-text font-semibold">Scopo</th>
+                <th class="text-left px-4 py-3 t-text font-semibold">Durata</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom:1px solid rgba(var(--c-text),0.05);">
+                <td class="px-4 py-3 font-mono" style="color:rgba(var(--c-text),0.6);">ed-theme</td>
+                <td class="px-4 py-3">Tecnico</td>
+                <td class="px-4 py-3">Ricorda la preferenza tema chiaro/scuro dell'utente.</td>
+                <td class="px-4 py-3">Persistente (localStorage)</td>
+              </tr>
+              <tr style="border-bottom:1px solid rgba(var(--c-text),0.05);">
+                <td class="px-4 py-3 font-mono" style="color:rgba(var(--c-text),0.6);">ed-cookie-consent</td>
+                <td class="px-4 py-3">Tecnico</td>
+                <td class="px-4 py-3">Memorizza la scelta dell'utente relativa al consenso cookie.</td>
+                <td class="px-4 py-3">12 mesi (localStorage)</td>
+              </tr>
+              <tr style="border-bottom:1px solid rgba(var(--c-text),0.05);">
+                <td class="px-4 py-3 font-mono" style="color:rgba(var(--c-text),0.6);">_ed_sid</td>
+                <td class="px-4 py-3">Analitico (1° parte)</td>
+                <td class="px-4 py-3">Identifica in modo anonimo la sessione di navigazione per raccogliere statistiche sull'uso del sito (pagine visitate, tempo, click).</td>
+                <td class="px-4 py-3">Sessione (sessionStorage)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>I cookie tecnici non richiedono consenso perché strettamente necessari al funzionamento del sito. Il cookie analitico <span class="font-mono" style="color:rgba(var(--c-text),0.6);">_ed_sid</span> viene attivato solo dopo aver prestato il consenso.</p>
+      </div>
+
+      <!-- 3 -->
+      <div>
+        <h2 class="text-base font-semibold mb-3 t-text">3. Cookie di terze parti</h2>
+        <p>Questo sito non installa cookie di profilazione di terze parti e non utilizza strumenti di tracciamento come Google Analytics, Meta Pixel o similari. Tutte le statistiche sono raccolte con sistemi di prima parte.</p>
+      </div>
+
+      <!-- 4 -->
+      <div>
+        <h2 class="text-base font-semibold mb-3 t-text">4. Gestione del consenso</h2>
+        <p class="mb-3">Al primo accesso al sito viene mostrato un banner che consente di scegliere tra:</p>
+        <ul class="list-disc pl-5 space-y-1">
+          <li><strong class="t-text">Accetta tutti</strong> — abilita sia i cookie tecnici che quelli analitici;</li>
+          <li><strong class="t-text">Solo necessari</strong> — disabilita i cookie analitici, mantenendo solo quelli tecnici.</li>
+        </ul>
+        <p class="mt-3">Puoi modificare le tue preferenze in qualsiasi momento cliccando sul pulsante qui sotto.</p>
+
+        <button
+          id="reset-cookie-consent"
+          class="mt-4 px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-widest transition-all duration-200 active:scale-95"
+          style="border:1px solid rgba(var(--c-text),0.2); color:rgb(var(--c-text));">
+          Gestisci preferenze cookie
+        </button>
+      </div>
+
+      <!-- 5 -->
+      <div>
+        <h2 class="text-base font-semibold mb-3 t-text">5. Come disabilitare i cookie tramite il browser</h2>
+        <p class="mb-3">Puoi disabilitare i cookie anche tramite le impostazioni del tuo browser. Di seguito i link alle guide dei principali browser:</p>
+        <ul class="space-y-2 list-none pl-0">
+          <li><a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener noreferrer" class="underline" style="color:#FF6A00;">Google Chrome</a></li>
+          <li><a href="https://support.mozilla.org/it/kb/protezione-antitracciamento-avanzata-firefox" target="_blank" rel="noopener noreferrer" class="underline" style="color:#FF6A00;">Mozilla Firefox</a></li>
+          <li><a href="https://support.apple.com/it-it/guide/safari/sfri11471/mac" target="_blank" rel="noopener noreferrer" class="underline" style="color:#FF6A00;">Safari</a></li>
+          <li><a href="https://support.microsoft.com/it-it/microsoft-edge/eliminare-i-cookie-in-microsoft-edge-63947406-40ac-c3b8-57b9-2a946a29ae09" target="_blank" rel="noopener noreferrer" class="underline" style="color:#FF6A00;">Microsoft Edge</a></li>
+        </ul>
+        <p class="mt-3">Attenzione: disabilitare i cookie potrebbe compromettere alcune funzionalità del sito (es. il tema chiaro/scuro non verrà ricordato).</p>
+      </div>
+
+      <!-- 6 -->
+      <div>
+        <h2 class="text-base font-semibold mb-3 t-text">6. Titolare del trattamento</h2>
+        <p>
+          <strong class="t-text">ED Digital Agency</strong><br/>
+          Via Carlo Torres 17/Interno 13, 31029 Vittorio Veneto (TV)<br/>
+          <a href="mailto:info@eddigitalagency.it" class="underline" style="color:#FF6A00;">info@eddigitalagency.it</a>
+        </p>
+        <p class="mt-3">Per ulteriori informazioni sul trattamento dei dati personali, consulta la nostra <a href="/privacy-policy" class="underline" style="color:#FF6A00;">Privacy Policy</a>.</p>
+      </div>
+
+    </div>
+
+    <div class="mt-16 pt-8" style="border-top:1px solid rgba(var(--c-text),0.07);">
+      <a href="/" class="text-sm footer-link">← Torna alla home</a>
+      <span class="mx-3 footer-dot">·</span>
+      <a href="/privacy-policy" class="text-sm footer-link">Privacy Policy</a>
+    </div>
+
+  </section>
+</Layout>
+
+<script is:inline>
+  document.getElementById('reset-cookie-consent')?.addEventListener('click', function() {
+    localStorage.removeItem('ed-cookie-consent');
+    window.location.reload();
+  });
+</script>

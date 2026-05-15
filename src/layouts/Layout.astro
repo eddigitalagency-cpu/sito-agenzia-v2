@@ -1,6 +1,7 @@
 ---
 import Navbar from '../components/Navbar';
 import CustomCursor from '../components/CustomCursor';
+import CookieBanner from '../components/CookieBanner';
 
 interface Props {
   title: string;
@@ -410,6 +411,11 @@ const ogImageAbs    = new URL(ogImage, 'https://eddigitalagency.it').toString();
           <p class="text-xs" style="color:rgba(var(--c-text),0.25);">
             © 2026 ED Digital Agency. Tutti i diritti riservati.
           </p>
+          <div class="flex items-center gap-4 text-xs">
+            <a href="/privacy-policy" class="footer-link">Privacy Policy</a>
+            <span class="footer-dot">·</span>
+            <a href="/cookie-policy" class="footer-link">Cookie Policy</a>
+          </div>
           <p class="text-xs" style="color:rgba(var(--c-text),0.20);">
             Vittorio Veneto (TV) · Italia
           </p>
@@ -459,6 +465,14 @@ const ogImageAbs    = new URL(ogImage, 'https://eddigitalagency.it').toString();
       (function(){
         try {
           if (window.location.pathname.startsWith('/admin')) return;
+          if (localStorage.getItem('ed-cookie-consent') !== 'all') {
+            window.addEventListener('ed-cookie-consent', function(e) {
+              if (e.detail === 'all') initTracking();
+            }, { once: true });
+            return;
+          }
+          initTracking();
+          function initTracking() {
           var sid = sessionStorage.getItem('_ed_sid');
           if (!sid) {
             sid = Math.random().toString(36).slice(2,9) + Date.now().toString(36);
@@ -507,11 +521,13 @@ const ogImageAbs    = new URL(ogImage, 'https://eddigitalagency.it').toString();
             },{threshold:0.3});
             document.querySelectorAll('section[id],[data-section]').forEach(function(s){obs.observe(s);});
           }
+          } // end initTracking
         } catch(e){}
       })();
     </script>
 
     <CustomCursor client:load />
+    <CookieBanner client:load />
 
   </body>
 </html>
