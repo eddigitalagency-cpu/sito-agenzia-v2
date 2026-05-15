@@ -32,7 +32,7 @@ export default function CookieBanner() {
         left: '50%',
         transform: 'translateX(-50%)',
         width: 'min(92vw, 560px)',
-        zIndex: 9999,
+        zIndex: 10000,
         background: 'rgb(var(--c-card))',
         border: '1px solid rgba(var(--c-text),0.1)',
         borderRadius: '1rem',
