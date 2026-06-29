@@ -1,0 +1,131 @@
+---
+export const prerender = false;
+import { getPool, initDB } from '../../../lib/db';
+import { createHash } from 'node:crypto';
+
+function sessionToken(pwd: string) {
+  return createHash('sha256').update(`ed-admin-session:${pwd}`).digest('hex');
+}
+const auth   = Astro.cookies.get('ed-admin');
+const stored = process.env.ADMIN_PASSWORD ?? '';
+if (!stored || auth?.value !== sessionToken(stored)) return Astro.redirect('/admin/login');
+
+await initDB();
+const db = getPool();
+
+// Handle delete
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const id = parseInt(String(form.get('id') ?? '0'));
+  if (id) await db.query('DELETE FROM blog_posts WHERE id=$1', [id]);
+  return Astro.redirect('/admin/blog');
+}
+
+type Row = { id: number; slug: string; title: string; category: string; cover_img: string; published: boolean; display_order: number; created_at: string };
+const rows = (await db.query<Row>(
+  'SELECT id,slug,title,category,cover_img,published,display_order,created_at FROM blog_posts ORDER BY display_order ASC, created_at DESC'
+)).rows;
+---
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Gestione Blog — Admin</title>
+  <meta name="robots" content="noindex,nofollow"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#080808;color:#fff;font-family:system-ui,sans-serif;min-height:100vh;}
+    a{color:inherit;text-decoration:none;}
+    .topbar{display:flex;align-items:center;gap:16px;padding:0 28px;border-bottom:1px solid rgba(255,255,255,.07);background:#0d0d0d;position:sticky;top:0;z-index:20;height:56px;}
+    .brand{font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.4);}
+    .badge{background:#FF6A00;color:#000;font-size:10px;font-weight:800;padding:3px 8px;border-radius:99px;letter-spacing:.08em;text-transform:uppercase;}
+    .btn-back{padding:7px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.45);font-size:12px;cursor:pointer;white-space:nowrap;text-decoration:none;}
+    .btn-back:hover{color:#fff;border-color:rgba(255,255,255,.25);}
+    .btn-add{padding:8px 18px;background:#FF6A00;color:#000;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;text-decoration:none;}
+    .btn-add:hover{opacity:.85;}
+    .wrap{max-width:1200px;margin:0 auto;padding:32px 24px;}
+    .page-header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px;flex-wrap:wrap;}
+    .page-title{font-size:22px;font-weight:800;}
+    .page-subtitle{font-size:13px;color:rgba(255,255,255,.35);margin-top:4px;}
+    .post-grid{display:flex;flex-direction:column;gap:10px;}
+    .post-row{background:#111;border:1px solid rgba(255,255,255,.07);border-radius:14px;display:flex;align-items:center;gap:16px;padding:14px 18px;transition:border-color .15s;}
+    .post-row:hover{border-color:rgba(255,255,255,.15);}
+    .post-thumb{width:80px;height:52px;border-radius:8px;object-fit:cover;background:#1a1a1a;flex-shrink:0;}
+    .post-thumb-placeholder{width:80px;height:52px;border-radius:8px;background:#1a1a1a;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px;color:rgba(255,255,255,.12);}
+    .post-info{flex:1;min-width:0;}
+    .post-title{font-weight:700;font-size:15px;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .post-meta{font-size:12px;color:rgba(255,255,255,.35);display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+    .cat-pill{background:rgba(255,106,0,.12);color:#FF6A00;padding:1px 8px;border-radius:99px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;}
+    .status-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px;}
+    .status-dot.on{background:#22c55e;}
+    .status-dot.off{background:#555;}
+    .post-actions{display:flex;gap:8px;flex-shrink:0;}
+    .btn-edit{padding:6px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:7px;color:rgba(255,255,255,.6);font-size:12px;cursor:pointer;text-decoration:none;transition:all .15s;white-space:nowrap;}
+    .btn-edit:hover{color:#fff;border-color:rgba(255,255,255,.25);}
+    .btn-del{padding:6px 14px;background:transparent;border:1px solid rgba(255,68,68,.2);border-radius:7px;color:rgba(255,68,68,.5);font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+    .btn-del:hover{color:#ff4444;border-color:rgba(255,68,68,.5);background:rgba(255,68,68,.06);}
+    .empty{text-align:center;padding:60px 24px;color:rgba(255,255,255,.25);font-size:14px;}
+    .order-badge{font-size:11px;color:rgba(255,255,255,.2);min-width:20px;}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="brand">ED Digital</span>
+      <span class="badge">Admin</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
+      <a href="/admin" class="btn-back">← Dashboard</a>
+      <a href="/admin/blog/nuovo" class="btn-add">+ Nuovo Articolo</a>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Gestione Blog</div>
+        <div class="page-subtitle">{rows.length} articol{rows.length === 1 ? 'o' : 'i'} nel database</div>
+      </div>
+      <a href="/admin/blog/nuovo" class="btn-add">+ Nuovo Articolo</a>
+    </div>
+
+    {rows.length === 0
+      ? <div class="empty">Nessun articolo ancora. Scrivi il primo!</div>
+      : (
+        <div class="post-grid">
+          {rows.map(p => (
+            <div class="post-row">
+              <span class="order-badge">{p.display_order}</span>
+              {p.cover_img
+                ? <img class="post-thumb" src={p.cover_img} alt={p.title} loading="lazy"/>
+                : <div class="post-thumb-placeholder">✦</div>
+              }
+              <div class="post-info">
+                <div class="post-title">{p.title}</div>
+                <div class="post-meta">
+                  {p.category && <span class="cat-pill">{p.category}</span>}
+                  <span>
+                    <span class={`status-dot ${p.published ? 'on' : 'off'}`}></span>
+                    {p.published ? 'Pubblicato' : 'Bozza'}
+                  </span>
+                  <span style="color:rgba(255,255,255,.2)">/blog/{p.slug}</span>
+                  <span style="color:rgba(255,255,255,.18)">{new Date(p.created_at).toLocaleDateString('it-IT')}</span>
+                </div>
+              </div>
+              <div class="post-actions">
+                <a href={`/blog/${p.slug}`} target="_blank" class="btn-edit" rel="noopener">Visualizza</a>
+                <a href={`/admin/blog/${p.id}`} class="btn-edit">Modifica</a>
+                <form method="POST" style="display:inline" onsubmit={`return confirm('Eliminare l\\'articolo «${p.title}»?\\nQuesta azione non può essere annullata.')`}>
+                  <input type="hidden" name="id" value={p.id}/>
+                  <button type="submit" class="btn-del">Elimina</button>
+                </form>
+              </div>
+            </div>
+          ))}
+        </div>
+      )
+    }
+  </div>
+</body>
+</html>

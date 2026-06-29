@@ -94,6 +94,23 @@ export async function initDB(): Promise<void> {
       SET services = ARRAY[service], service_slugs = ARRAY[service_slug]
       WHERE (array_length(services, 1) IS NULL OR array_length(services, 1) = 0)
         AND service != '';
+
+    CREATE TABLE IF NOT EXISTS blog_posts (
+      id            SERIAL       PRIMARY KEY,
+      slug          TEXT         UNIQUE NOT NULL,
+      title         TEXT         NOT NULL,
+      excerpt       TEXT         NOT NULL DEFAULT '',
+      content       TEXT         NOT NULL DEFAULT '',
+      category      TEXT         NOT NULL DEFAULT '',
+      cover_img     TEXT         NOT NULL DEFAULT '',
+      author        TEXT         NOT NULL DEFAULT 'ED Digital Agency',
+      read_time     INT          NOT NULL DEFAULT 5,
+      published     BOOLEAN      NOT NULL DEFAULT false,
+      display_order INT          NOT NULL DEFAULT 0,
+      created_at    TIMESTAMPTZ  DEFAULT NOW(),
+      updated_at    TIMESTAMPTZ  DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_blog_published ON blog_posts(published, display_order);
   `);
 
   // Seed projects_db from static data on first run

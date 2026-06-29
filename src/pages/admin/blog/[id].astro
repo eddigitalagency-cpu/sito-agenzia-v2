@@ -1,0 +1,629 @@
+---
+export const prerender = false;
+import { getPool, initDB } from '../../../lib/db';
+import { createHash } from 'node:crypto';
+
+function sessionToken(pwd: string) {
+  return createHash('sha256').update(`ed-admin-session:${pwd}`).digest('hex');
+}
+const auth   = Astro.cookies.get('ed-admin');
+const stored = process.env.ADMIN_PASSWORD ?? '';
+if (!stored || auth?.value !== sessionToken(stored)) return Astro.redirect('/admin/login');
+
+await initDB();
+const db = getPool();
+
+const { id } = Astro.params;
+const isNew  = id === 'nuovo';
+const postId = isNew ? 0 : parseInt(id ?? '0');
+
+type PostRow = {
+  id: number; slug: string; title: string; excerpt: string; content: string;
+  category: string; cover_img: string; author: string; read_time: number;
+  published: boolean; display_order: number;
+};
+
+let post: PostRow | null = null;
+if (!isNew) {
+  if (!postId) return Astro.redirect('/admin/blog');
+  const res = await db.query<PostRow>('SELECT * FROM blog_posts WHERE id=$1', [postId]);
+  if (!res.rowCount) return Astro.redirect('/admin/blog');
+  post = res.rows[0];
+}
+
+let errorMsg = '';
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+
+  const title    = String(form.get('title')    ?? '').trim();
+  const rawSlug  = String(form.get('slug')     ?? '').trim();
+  const slug     = rawSlug.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  const excerpt  = String(form.get('excerpt')  ?? '').trim();
+  const content  = String(form.get('content')  ?? '').trim();
+  const category = String(form.get('category') ?? '').trim();
+  const coverImg = String(form.get('cover_img')  ?? '').trim();
+  const author   = String(form.get('author')   ?? 'ED Digital Agency').trim() || 'ED Digital Agency';
+  const readTime = parseInt(String(form.get('read_time') ?? '5')) || 5;
+  const published  = form.get('published')  === 'on';
+  const order      = parseInt(String(form.get('display_order') ?? '0')) || 0;
+
+  if (!title || !slug) {
+    errorMsg = 'Titolo e slug sono obbligatori.';
+  } else {
+    try {
+      if (isNew) {
+        await db.query(
+          `INSERT INTO blog_posts (slug,title,excerpt,content,category,cover_img,author,read_time,published,display_order)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+          [slug, title, excerpt, content, category, coverImg, author, readTime, published, order],
+        );
+      } else {
+        await db.query(
+          `UPDATE blog_posts SET slug=$1,title=$2,excerpt=$3,content=$4,category=$5,cover_img=$6,
+           author=$7,read_time=$8,published=$9,display_order=$10,updated_at=NOW() WHERE id=$11`,
+          [slug, title, excerpt, content, category, coverImg, author, readTime, published, order, postId],
+        );
+      }
+      return Astro.redirect('/admin/blog');
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      errorMsg = msg.includes('unique') ? 'Slug già esistente. Scegli uno slug diverso.' : 'Errore nel salvataggio.';
+    }
+  }
+}
+
+const p = post;
+const v = (field: string, fallback = '') => p ? String((p as Record<string, unknown>)[field] ?? fallback) : fallback;
+const pageTitle = isNew ? 'Nuovo Articolo' : `Modifica: ${p?.title ?? ''}`;
+
+const CATEGORIES = ['Social Media', 'Advertising', 'Web Design', 'E-Commerce', 'SEO', 'Brand Identity', 'AI & Automazioni', 'Foto & Video', 'News'];
+---
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>{pageTitle} — Admin</title>
+  <meta name="robots" content="noindex,nofollow"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#080808;color:#fff;font-family:system-ui,sans-serif;min-height:100vh;}
+    a{color:inherit;text-decoration:none;}
+    .topbar{display:flex;align-items:center;gap:12px;padding:0 28px;border-bottom:1px solid rgba(255,255,255,.07);background:#0d0d0d;position:sticky;top:0;z-index:20;height:56px;}
+    .brand{font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.4);}
+    .badge{background:#FF6A00;color:#000;font-size:10px;font-weight:800;padding:3px 8px;border-radius:99px;}
+    .btn-back{padding:7px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.45);font-size:12px;text-decoration:none;white-space:nowrap;}
+    .btn-back:hover{color:#fff;border-color:rgba(255,255,255,.25);}
+    .wrap{max-width:960px;margin:0 auto;padding:32px 24px 60px;}
+    .page-title{font-size:22px;font-weight:800;margin-bottom:28px;}
+    .error-box{background:rgba(255,68,68,.1);border:1px solid rgba(255,68,68,.3);border-radius:10px;padding:12px 16px;color:#ff6666;font-size:13px;margin-bottom:20px;}
+
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+    @media(max-width:640px){.form-grid{grid-template-columns:1fr;}}
+    .form-full{grid-column:1/-1;}
+    .field{display:flex;flex-direction:column;gap:6px;}
+    .field label{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.35);font-weight:600;}
+    .field input,.field select,.field textarea{
+      padding:10px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
+      border-radius:9px;color:#fff;font-size:14px;font-family:inherit;outline:none;transition:border-color .15s;
+    }
+    .field input:focus,.field select:focus,.field textarea:focus{border-color:rgba(255,106,0,.5);}
+    .field input::placeholder,.field textarea::placeholder{color:rgba(255,255,255,.2);}
+    .field select option{background:#1a1a1a;color:#fff;}
+    .field textarea{resize:vertical;line-height:1.6;}
+    .field-hint{font-size:11px;color:rgba(255,255,255,.25);margin-top:2px;}
+
+    /* Editor toolbar */
+    .editor-wrap{display:flex;flex-direction:column;gap:0;}
+    .editor-toolbar{display:flex;flex-wrap:wrap;gap:4px;padding:8px 10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-bottom:none;border-radius:9px 9px 0 0;}
+    .tb-btn{padding:4px 10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:5px;color:rgba(255,255,255,.65);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;}
+    .tb-btn:hover{background:rgba(255,106,0,.2);border-color:rgba(255,106,0,.4);color:#FF6A00;}
+    .tb-sep{width:1px;height:20px;background:rgba(255,255,255,.1);align-self:center;margin:0 2px;}
+    #content-ta{border-radius:0 0 9px 9px;font-family:monospace;font-size:13px;min-height:380px;}
+
+    /* Preview panel */
+    .preview-toggle{display:flex;gap:6px;margin-bottom:0;}
+    .preview-btn{padding:6px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:7px 7px 0 0;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;transition:all .15s;}
+    .preview-btn.active{background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.2);}
+    .preview-frame{display:none;min-height:300px;padding:20px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);border-radius:0 9px 9px 9px;line-height:1.85;font-size:14px;color:rgba(255,255,255,.8);}
+    .preview-frame.active{display:block;}
+    .preview-frame h1,.preview-frame h2,.preview-frame h3{font-weight:700;margin-top:1.5em;margin-bottom:.5em;color:#fff;}
+    .preview-frame h2{font-size:1.4em;}
+    .preview-frame h3{font-size:1.15em;}
+    .preview-frame p{margin-bottom:1em;}
+    .preview-frame ul,.preview-frame ol{margin:1em 0 1em 1.5em;}
+    .preview-frame li{margin-bottom:.4em;}
+    .preview-frame strong{font-weight:700;color:#fff;}
+    .preview-frame a{color:#FF6A00;}
+    .preview-frame blockquote{border-left:3px solid #FF6A00;padding:.5em 1em;margin:1.2em 0;background:rgba(255,106,0,.06);border-radius:0 8px 8px 0;font-style:italic;color:rgba(255,255,255,.65);}
+    .preview-frame code{background:rgba(255,255,255,.08);padding:2px 5px;border-radius:4px;font-family:monospace;font-size:.88em;}
+    .preview-frame hr{border:none;border-top:1px solid rgba(255,255,255,.1);margin:2em 0;}
+
+    /* Image upload */
+    .img-upload-area{border:2px dashed rgba(255,255,255,.15);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:border-color .15s;position:relative;}
+    .img-upload-area:hover{border-color:rgba(255,106,0,.4);}
+    .img-preview{width:100%;max-height:200px;object-fit:cover;border-radius:8px;margin-bottom:12px;display:none;}
+    .img-preview.has-img{display:block;}
+    .upload-label{font-size:13px;color:rgba(255,255,255,.4);cursor:pointer;}
+    .upload-label strong{color:#FF6A00;}
+    .upload-btn{margin-top:8px;padding:7px 16px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:7px;color:rgba(255,255,255,.6);font-size:12px;cursor:pointer;transition:all .15s;}
+    .upload-btn:hover{color:#fff;border-color:rgba(255,255,255,.3);}
+    .upload-spinner{display:none;font-size:12px;color:rgba(255,255,255,.35);margin-top:8px;}
+    .upload-err{display:none;font-size:12px;color:#ff6666;margin-top:6px;}
+
+    /* AI panel */
+    .ai-trigger{display:flex;align-items:center;gap:12px;padding:14px 18px;background:rgba(255,106,0,.06);border:1px solid rgba(255,106,0,.18);border-radius:12px;cursor:pointer;transition:border-color .15s;}
+    .ai-trigger:hover{border-color:rgba(255,106,0,.4);}
+    .ai-trigger-label{flex:1;font-size:13px;color:rgba(255,255,255,.6);}
+    .ai-trigger-label strong{color:#FF6A00;}
+    .btn-ai{padding:8px 18px;background:rgba(255,106,0,.15);border:1px solid rgba(255,106,0,.35);border-radius:8px;color:#FF6A00;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;flex-shrink:0;}
+    .btn-ai:hover{background:rgba(255,106,0,.28);border-color:rgba(255,106,0,.6);}
+    .btn-ai:disabled{opacity:.45;cursor:not-allowed;}
+    .ai-panel{background:rgba(12,12,12,1);border:1px solid rgba(255,106,0,.2);border-top:none;border-radius:0 0 12px 12px;padding:22px;display:none;}
+    .ai-panel.open{display:block;}
+    .ai-status{font-size:12px;padding:0 2px;margin-top:6px;}
+    .ai-url-list{display:flex;flex-direction:column;gap:6px;margin-top:6px;}
+    .ai-url-row{display:flex;gap:6px;}
+    .ai-url-row input{flex:1;padding:8px 12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:7px;color:#fff;font-size:13px;outline:none;}
+    .ai-url-row input:focus{border-color:rgba(255,106,0,.5);}
+    .btn-url-add{padding:7px 12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:7px;color:rgba(255,255,255,.5);font-size:12px;cursor:pointer;white-space:nowrap;}
+    .btn-url-add:hover{color:#fff;border-color:rgba(255,255,255,.25);}
+    .btn-url-rem{width:30px;height:36px;background:rgba(255,68,68,.08);border:1px solid rgba(255,68,68,.15);border-radius:7px;color:rgba(255,68,68,.5);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .btn-url-rem:hover{background:rgba(255,68,68,.18);color:#ff5555;}
+    .ai-options-row{display:flex;flex-wrap:wrap;gap:16px;margin-top:4px;align-items:center;}
+    .ai-check-row{display:flex;align-items:center;gap:7px;}
+    .ai-check-row input[type=checkbox]{accent-color:#FF6A00;width:15px;height:15px;}
+    .ai-check-row label{font-size:12px;color:rgba(255,255,255,.55);cursor:pointer;}
+    .ai-inner-field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+    .ai-inner-label{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.3);font-weight:600;}
+    .ai-inner-input{padding:9px 12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;font-size:13px;font-family:inherit;outline:none;}
+    .ai-inner-input:focus{border-color:rgba(255,106,0,.5);}
+    .ai-inner-ta{padding:9px 12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;font-size:13px;font-family:inherit;outline:none;resize:vertical;min-height:70px;line-height:1.55;}
+    .ai-inner-ta:focus{border-color:rgba(255,106,0,.5);}
+
+    .toggle-row{display:flex;align-items:center;gap:10px;}
+    .toggle-row input[type=checkbox]{width:18px;height:18px;accent-color:#FF6A00;cursor:pointer;}
+    .toggle-row label{font-size:14px;color:rgba(255,255,255,.75);cursor:pointer;}
+    .divider{border:none;border-top:1px solid rgba(255,255,255,.06);margin:8px 0;}
+    .form-actions{display:flex;gap:12px;align-items:center;margin-top:8px;}
+    .btn-save{padding:12px 28px;background:#FF6A00;color:#000;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.07em;transition:opacity .15s;}
+    .btn-save:hover{opacity:.85;}
+    .btn-cancel-link{padding:12px 20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:9px;color:rgba(255,255,255,.5);font-size:13px;text-decoration:none;transition:all .15s;}
+    .btn-cancel-link:hover{color:#fff;border-color:rgba(255,255,255,.25);}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="brand">ED Digital</span>
+      <span class="badge">Admin</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
+      <a href="/admin/blog" class="btn-back">← Blog</a>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="page-title">{pageTitle}</div>
+
+    {errorMsg && <div class="error-box">{errorMsg}</div>}
+
+    <form method="POST" id="post-form">
+
+      <div class="form-grid">
+
+        <!-- Title -->
+        <div class="field">
+          <label>Titolo *</label>
+          <input type="text" name="title" required value={v('title')} placeholder="Es. Come aumentare i follower su Instagram" id="input-title"/>
+        </div>
+
+        <!-- Slug -->
+        <div class="field">
+          <label>Slug URL *</label>
+          <input type="text" name="slug" required value={v('slug')} placeholder="es. come-aumentare-follower-instagram" id="input-slug" pattern="[a-z0-9\-]+" title="Solo lettere minuscole, numeri e trattini"/>
+          <span class="field-hint">URL: /blog/<strong id="slug-preview">{v('slug', '...')}</strong></span>
+        </div>
+
+        <!-- Category -->
+        <div class="field">
+          <label>Categoria</label>
+          <select name="category" id="input-category">
+            <option value="">— Nessuna categoria —</option>
+            {CATEGORIES.map(cat => (
+              <option value={cat} selected={v('category') === cat}>{cat}</option>
+            ))}
+          </select>
+        </div>
+
+        <!-- Author + Read time -->
+        <div class="field">
+          <label>Autore</label>
+          <input type="text" name="author" value={v('author', 'ED Digital Agency')} placeholder="ED Digital Agency"/>
+        </div>
+
+        <div class="field">
+          <label>Tempo di lettura (minuti)</label>
+          <input type="number" name="read_time" value={p?.read_time ?? 5} min="1" max="60"/>
+        </div>
+
+        <!-- Order + Published -->
+        <div class="field">
+          <label>Ordine visualizzazione</label>
+          <input type="number" name="display_order" value={p?.display_order ?? 0} min="0" max="999"/>
+          <span class="field-hint">Numeri più bassi appaiono prima</span>
+        </div>
+
+        <div class="field" style="justify-content:flex-end;padding-bottom:4px;">
+          <div class="toggle-row">
+            <input type="checkbox" name="published" id="chk-published" checked={p?.published !== false}/>
+            <label for="chk-published">Pubblicato (visibile sul sito)</label>
+          </div>
+        </div>
+
+        <hr class="divider form-full"/>
+
+        <!-- AI generation panel -->
+        <div class="form-full">
+          <div class="ai-trigger" id="ai-trigger">
+            <div class="ai-trigger-label">
+              <strong>✦ Genera con AI</strong> — scrivi topic e keyword, l'AI crea l'articolo SEO-ottimizzato in italiano
+            </div>
+            <button type="button" class="btn-ai" id="btn-ai-toggle">Apri</button>
+          </div>
+          <div class="ai-panel" id="ai-panel">
+            <div class="ai-inner-field">
+              <div class="ai-inner-label">Topic / Argomento *</div>
+              <input class="ai-inner-input" id="ai-topic" placeholder="Es. Come fare social media marketing per un ristorante locale"/>
+            </div>
+            <div class="ai-inner-field">
+              <div class="ai-inner-label">Keyword target</div>
+              <input class="ai-inner-input" id="ai-keywords" placeholder="Es. social media ristorante, marketing ristorante Treviso"/>
+            </div>
+            <div class="ai-inner-field">
+              <div class="ai-inner-label">Note aggiuntive / Angolazione</div>
+              <textarea class="ai-inner-ta" id="ai-notes" placeholder="Es. Focus su budget limitato, esempi pratici per piccole attività, includi statistiche reali..."></textarea>
+            </div>
+            <div class="ai-inner-field">
+              <div class="ai-inner-label">URL di ispirazione (facoltativo — l'AI analizzerà la struttura, non copierà)</div>
+              <div class="ai-url-list" id="ai-url-list">
+                <div class="ai-url-row">
+                  <input type="url" placeholder="https://..." />
+                  <button type="button" class="btn-url-rem" title="Rimuovi">×</button>
+                </div>
+              </div>
+              <button type="button" class="btn-url-add" id="btn-url-add" style="margin-top:6px">＋ Aggiungi URL</button>
+            </div>
+            <div class="ai-options-row">
+              <div class="ai-check-row">
+                <input type="checkbox" id="ai-geo" checked/>
+                <label for="ai-geo">Aggiungi riferimenti geo (Treviso, Veneto, PMI italiane) per SEO locale</label>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px;margin-top:18px;">
+              <button type="button" class="btn-ai" id="btn-ai-generate">✦ Genera articolo</button>
+              <span class="ai-status" id="ai-status"></span>
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider form-full"/>
+
+        <!-- Excerpt -->
+        <div class="field form-full">
+          <label>Anteprima / Excerpt</label>
+          <textarea name="excerpt" rows="3" placeholder="Breve descrizione dell'articolo (appare nella lista del blog e nei meta tag SEO)...">{v('excerpt')}</textarea>
+          <span class="field-hint">Idealmente 120-160 caratteri per la SEO</span>
+        </div>
+
+        <!-- Content -->
+        <div class="field form-full">
+          <label>Contenuto (HTML)</label>
+          <div class="preview-toggle">
+            <button type="button" class="preview-btn active" id="btn-edit-mode">✏ Scrivi</button>
+            <button type="button" class="preview-btn" id="btn-preview-mode">👁 Anteprima</button>
+          </div>
+          <div class="editor-wrap">
+            <div class="editor-toolbar" id="editor-toolbar">
+              <button type="button" class="tb-btn" data-tag="h2">H2</button>
+              <button type="button" class="tb-btn" data-tag="h3">H3</button>
+              <button type="button" class="tb-btn" data-tag="h4">H4</button>
+              <div class="tb-sep"></div>
+              <button type="button" class="tb-btn" data-wrap="strong">B</button>
+              <button type="button" class="tb-btn" data-wrap="em"><em>I</em></button>
+              <div class="tb-sep"></div>
+              <button type="button" class="tb-btn" data-tag="p">¶ Par.</button>
+              <button type="button" class="tb-btn" data-tag="ul">• Lista</button>
+              <button type="button" class="tb-btn" data-tag="ol">1. Lista num.</button>
+              <button type="button" class="tb-btn" data-tag="blockquote">❝ Citazione</button>
+              <div class="tb-sep"></div>
+              <button type="button" class="tb-btn" data-tag="hr">— Riga</button>
+              <button type="button" class="tb-btn" data-insert-link>🔗 Link</button>
+            </div>
+            <textarea id="content-ta" name="content" rows="22" placeholder="Scrivi il contenuto dell'articolo in HTML...
+Puoi usare i pulsanti della toolbar per inserire tag comuni.
+
+Esempi:
+<h2>Titolo sezione</h2>
+<p>Paragrafo di testo...</p>
+<ul><li>Punto uno</li><li>Punto due</li></ul>
+<strong>testo in grassetto</strong>
+<blockquote>Una citazione importante</blockquote>">{v('content')}</textarea>
+          </div>
+          <div class="preview-frame" id="preview-frame"></div>
+          <span class="field-hint">Usa HTML standard. La toolbar inserisce i tag più comuni.</span>
+        </div>
+
+        <hr class="divider form-full"/>
+
+        <!-- Cover image -->
+        <div class="field form-full">
+          <label>Immagine copertina</label>
+          <input type="hidden" name="cover_img" id="cover-img-val" value={v('cover_img')}/>
+
+          <div class="img-upload-area" id="upload-area">
+            <img class={`img-preview${v('cover_img') ? ' has-img' : ''}`} id="img-preview"
+              src={v('cover_img') || undefined} alt="Anteprima"/>
+            <div class="upload-label">
+              Trascina qui un'immagine o <strong>clicca per caricare</strong>
+            </div>
+            <input type="file" id="file-input" accept="image/*" style="display:none"/>
+            <button type="button" class="upload-btn" id="upload-btn">Scegli file</button>
+            <div class="upload-spinner" id="upload-spinner">Caricamento in corso...</div>
+            <div class="upload-err" id="upload-err"></div>
+          </div>
+          <span class="field-hint">JPG, PNG, WebP — max 8 MB. O incolla un URL:</span>
+          <input type="text" id="cover-url-input" placeholder="Oppure incolla URL immagine..." value={v('cover_img')} style="margin-top:6px"/>
+        </div>
+
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-save">{isNew ? 'Pubblica Articolo' : 'Salva Modifiche'}</button>
+        <a href="/admin/blog" class="btn-cancel-link">Annulla</a>
+      </div>
+    </form>
+  </div>
+
+  <script define:vars={{ isNew }}>
+    // ── Auto-slug from title ─────────────────────────────
+    const titleInput = document.getElementById('input-title');
+    const slugInput  = document.getElementById('input-slug');
+    const slugPrev   = document.getElementById('slug-preview');
+    if (isNew && titleInput && slugInput) {
+      titleInput.addEventListener('input', () => {
+        const s = titleInput.value.toLowerCase().trim()
+          .replace(/[àáâãäå]/g,'a').replace(/[èéêë]/g,'e').replace(/[ìíîï]/g,'i')
+          .replace(/[òóôõö]/g,'o').replace(/[ùúûü]/g,'u').replace(/[ñ]/g,'n')
+          .replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-');
+        slugInput.value = s;
+        if (slugPrev) slugPrev.textContent = s || '...';
+      });
+    }
+    if (slugInput && slugPrev) {
+      slugInput.addEventListener('input', () => {
+        slugPrev.textContent = slugInput.value || '...';
+      });
+    }
+
+    // ── Editor toolbar ───────────────────────────────────
+    const ta = document.getElementById('content-ta');
+
+    function insertAtCursor(before, after = '') {
+      const start = ta.selectionStart;
+      const end   = ta.selectionEnd;
+      const sel   = ta.value.slice(start, end);
+      const text  = before + sel + after;
+      ta.setRangeText(text, start, end, 'end');
+      ta.focus();
+      if (sel === '' && after) {
+        ta.selectionStart = ta.selectionEnd = start + before.length;
+      }
+    }
+
+    document.querySelectorAll('.tb-btn[data-tag]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tag = btn.dataset.tag;
+        if (tag === 'hr') { insertAtCursor('\n<hr />\n'); return; }
+        if (tag === 'p')  { insertAtCursor('\n<p>', '</p>\n'); return; }
+        if (tag === 'h2') { insertAtCursor('\n<h2>', '</h2>\n'); return; }
+        if (tag === 'h3') { insertAtCursor('\n<h3>', '</h3>\n'); return; }
+        if (tag === 'h4') { insertAtCursor('\n<h4>', '</h4>\n'); return; }
+        if (tag === 'blockquote') { insertAtCursor('\n<blockquote>', '</blockquote>\n'); return; }
+        if (tag === 'ul')  { insertAtCursor('\n<ul>\n  <li>', '</li>\n</ul>\n'); return; }
+        if (tag === 'ol')  { insertAtCursor('\n<ol>\n  <li>', '</li>\n</ol>\n'); return; }
+      });
+    });
+
+    document.querySelectorAll('.tb-btn[data-wrap]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tag = btn.dataset.wrap;
+        insertAtCursor(`<${tag}>`, `</${tag}>`);
+      });
+    });
+
+    document.querySelector('.tb-btn[data-insert-link]')?.addEventListener('click', () => {
+      const url   = prompt('URL del link:');
+      if (!url) return;
+      const label = prompt('Testo del link:', ta.value.slice(ta.selectionStart, ta.selectionEnd) || 'Clicca qui');
+      if (label) insertAtCursor(`<a href="${url}">`, `${label}</a>`.replace(`<a href="${url}">`, ''));
+      else insertAtCursor(`<a href="${url}">`, '</a>');
+    });
+
+    // ── Write / Preview toggle ───────────────────────────
+    const btnEdit    = document.getElementById('btn-edit-mode');
+    const btnPreview = document.getElementById('btn-preview-mode');
+    const toolbar    = document.getElementById('editor-toolbar');
+    const preview    = document.getElementById('preview-frame');
+
+    btnEdit?.addEventListener('click', () => {
+      ta.style.display = '';
+      toolbar.style.display = '';
+      preview.classList.remove('active');
+      btnEdit.classList.add('active');
+      btnPreview.classList.remove('active');
+    });
+
+    btnPreview?.addEventListener('click', () => {
+      preview.innerHTML = ta.value || '<p style="color:rgba(255,255,255,.3)">Nessun contenuto ancora…</p>';
+      ta.style.display = 'none';
+      toolbar.style.display = 'none';
+      preview.classList.add('active');
+      btnPreview.classList.add('active');
+      btnEdit.classList.remove('active');
+    });
+
+    // ── AI generation panel ──────────────────────────────
+    const aiTrigger  = document.getElementById('ai-trigger');
+    const aiPanel    = document.getElementById('ai-panel');
+    const btnToggle  = document.getElementById('btn-ai-toggle');
+    const btnGenerate = document.getElementById('btn-ai-generate');
+    const aiStatus   = document.getElementById('ai-status');
+
+    function toggleAiPanel() {
+      const open = aiPanel.classList.toggle('open');
+      btnToggle.textContent = open ? 'Chiudi' : 'Apri';
+      aiTrigger.style.borderRadius = open ? '12px 12px 0 0' : '12px';
+    }
+    aiTrigger?.addEventListener('click', e => { if (e.target !== btnToggle) toggleAiPanel(); });
+    btnToggle?.addEventListener('click', e => { e.stopPropagation(); toggleAiPanel(); });
+
+    // URL list management
+    const urlList = document.getElementById('ai-url-list');
+    document.getElementById('btn-url-add')?.addEventListener('click', () => {
+      const row = document.createElement('div');
+      row.className = 'ai-url-row';
+      row.innerHTML = '<input type="url" placeholder="https://..." /><button type="button" class="btn-url-rem" title="Rimuovi">×</button>';
+      row.querySelector('.btn-url-rem').addEventListener('click', () => row.remove());
+      urlList.appendChild(row);
+    });
+    // First row remove
+    urlList?.querySelector('.btn-url-rem')?.addEventListener('click', function() { this.closest('.ai-url-row').remove(); });
+
+    btnGenerate?.addEventListener('click', async () => {
+      const topic    = document.getElementById('ai-topic')?.value?.trim();
+      const keywords = document.getElementById('ai-keywords')?.value?.trim();
+      const notes    = document.getElementById('ai-notes')?.value?.trim();
+      const geoTarget = document.getElementById('ai-geo')?.checked ?? true;
+
+      const urls = Array.from(urlList?.querySelectorAll('input[type=url]') || [])
+        .map(i => i.value.trim())
+        .filter(u => u.startsWith('http'));
+
+      if (!topic) {
+        aiStatus.textContent = '⚠ Inserisci il topic dell\'articolo.';
+        aiStatus.style.color = '#ff6666';
+        return;
+      }
+
+      const categoryVal = document.getElementById('input-category')?.value || '';
+
+      btnGenerate.disabled = true;
+      aiStatus.textContent = urls.length > 0 ? '⏳ Analizzo gli URL e scrivo l\'articolo…' : '⏳ Scrivo l\'articolo…';
+      aiStatus.style.color = 'rgba(255,255,255,.45)';
+
+      try {
+        const res = await fetch('/api/admin/generate-blog', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ topic, keywords, notes, inspirationUrls: urls, geoTarget, category: categoryVal }),
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) {
+          aiStatus.textContent = '✗ ' + (data.error || 'Errore generazione');
+          aiStatus.style.color = '#ff6666';
+          btnGenerate.disabled = false;
+          return;
+        }
+
+        // Fill title
+        const titleInp = document.getElementById('input-title');
+        if (titleInp && data.title) { titleInp.value = data.title; titleInp.dispatchEvent(new Event('input')); }
+
+        // Fill slug
+        if (data.slug && isNew) {
+          const slugInp = document.getElementById('input-slug');
+          if (slugInp) { slugInp.value = data.slug; if (slugPrev) slugPrev.textContent = data.slug; }
+        }
+
+        // Fill excerpt
+        const excerptTa = document.querySelector('textarea[name="excerpt"]');
+        if (excerptTa && data.excerpt) excerptTa.value = data.excerpt;
+
+        // Fill content
+        const contentTa = document.getElementById('content-ta');
+        if (contentTa && data.content) contentTa.value = data.content;
+
+        // Fill category
+        const catSel = document.getElementById('input-category');
+        if (catSel && data.category) {
+          const opt = Array.from(catSel.options).find(o => o.value === data.category);
+          if (opt) catSel.value = data.category;
+        }
+
+        // Fill read_time
+        const rtInp = document.querySelector('input[name="read_time"]');
+        if (rtInp && data.read_time) rtInp.value = String(data.read_time);
+
+        aiStatus.textContent = '✓ Articolo generato — controlla e modifica prima di salvare.';
+        aiStatus.style.color = '#4caf50';
+        setTimeout(() => {
+          aiPanel.classList.remove('open');
+          btnToggle.textContent = 'Apri';
+          aiTrigger.style.borderRadius = '12px';
+        }, 2200);
+      } catch {
+        aiStatus.textContent = '✗ Errore di rete. Riprova.';
+        aiStatus.style.color = '#ff6666';
+      }
+      btnGenerate.disabled = false;
+    });
+
+    // ── Image upload ─────────────────────────────────────
+    const fileInput  = document.getElementById('file-input');
+    const uploadBtn  = document.getElementById('upload-btn');
+    const uploadArea = document.getElementById('upload-area');
+    const imgPreview = document.getElementById('img-preview');
+    const coverVal   = document.getElementById('cover-img-val');
+    const spinner    = document.getElementById('upload-spinner');
+    const uploadErr  = document.getElementById('upload-err');
+    const urlInput   = document.getElementById('cover-url-input');
+
+    uploadBtn?.addEventListener('click', () => fileInput?.click());
+    uploadArea?.addEventListener('click', e => { if (e.target === uploadArea) fileInput?.click(); });
+    uploadArea?.addEventListener('dragover', e => { e.preventDefault(); uploadArea.style.borderColor='rgba(255,106,0,.6)'; });
+    uploadArea?.addEventListener('dragleave', () => { uploadArea.style.borderColor=''; });
+    uploadArea?.addEventListener('drop', e => {
+      e.preventDefault(); uploadArea.style.borderColor='';
+      const f = e.dataTransfer?.files[0];
+      if (f) uploadFile(f);
+    });
+    fileInput?.addEventListener('change', () => { if (fileInput.files[0]) uploadFile(fileInput.files[0]); });
+
+    async function uploadFile(file) {
+      uploadErr.style.display='none'; spinner.style.display='block'; uploadBtn.disabled=true;
+      try {
+        const fd = new FormData();
+        fd.append('file', file);
+        const res  = await fetch('/api/admin/upload', { method:'POST', body:fd });
+        const data = await res.json();
+        if (data.url) setImage(data.url);
+        else showErr(data.error || 'Errore upload');
+      } catch { showErr('Errore di rete'); }
+      spinner.style.display='none'; uploadBtn.disabled=false;
+    }
+    function setImage(url) {
+      if (imgPreview) { imgPreview.src=url; imgPreview.classList.add('has-img'); }
+      if (coverVal)   coverVal.value=url;
+      if (urlInput)   urlInput.value=url;
+    }
+    function showErr(msg) { uploadErr.textContent=msg; uploadErr.style.display='block'; }
+    urlInput?.addEventListener('input', () => {
+      const url=urlInput.value.trim();
+      if (coverVal) coverVal.value=url;
+      if (url && imgPreview) { imgPreview.src=url; imgPreview.classList.add('has-img'); }
+    });
+  </script>
+</body>
+</html>

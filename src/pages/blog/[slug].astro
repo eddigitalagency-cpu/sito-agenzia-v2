@@ -1,0 +1,33 @@
+---
+export const prerender = false;
+import Layout from '../../layouts/Layout.astro';
+import BlogPostPage from '../../components/BlogPostPage';
+import { getPool, initDB } from '../../lib/db';
+
+const { slug } = Astro.params;
+if (!slug) return Astro.redirect('/blog');
+
+await initDB();
+const db = getPool();
+
+type PostRow = {
+  id: number; slug: string; title: string; excerpt: string; content: string;
+  category: string; cover_img: string; author: string; read_time: number; created_at: string;
+};
+
+const res = await db.query<PostRow>(
+  'SELECT * FROM blog_posts WHERE slug=$1 AND published=true LIMIT 1',
+  [slug]
+);
+if (!res.rowCount) return Astro.redirect('/blog');
+
+const post = res.rows[0];
+---
+
+<Layout
+  title={post.title}
+  description={post.excerpt || `Leggi l'articolo "${post.title}" sul blog di ED Digital Agency.`}
+  ogImage={post.cover_img || undefined}
+>
+  <BlogPostPage client:load post={post} />
+</Layout>

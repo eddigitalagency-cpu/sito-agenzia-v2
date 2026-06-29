@@ -5,6 +5,7 @@ const links = [
   { label: 'Home',     href: '/' },
   { label: 'Servizi',  href: '/servizi' },
   { label: 'Progetti', href: '/#casistudio' },
+  { label: 'Blog',     href: '/blog' },
   { label: 'Contatti', href: '/contatti' },
 ];
 

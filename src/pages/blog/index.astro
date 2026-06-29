@@ -1,0 +1,26 @@
+---
+export const prerender = false;
+import Layout from '../../layouts/Layout.astro';
+import BlogPage from '../../components/BlogPage';
+import { getPool, initDB } from '../../lib/db';
+
+await initDB();
+const db = getPool();
+
+type PostRow = {
+  id: number; slug: string; title: string; excerpt: string;
+  category: string; cover_img: string; author: string;
+  read_time: number; created_at: string;
+};
+
+const rows = (await db.query<PostRow>(
+  'SELECT id,slug,title,excerpt,category,cover_img,author,read_time,created_at FROM blog_posts WHERE published=true ORDER BY display_order ASC, created_at DESC'
+)).rows;
+---
+
+<Layout
+  title="Blog — Strategie e Risorse per il Marketing Digitale"
+  description="Guide, strategie e casi studio sul marketing digitale per PMI italiane. Social media, advertising, web design, SEO e molto altro da ED Digital Agency."
+>
+  <BlogPage client:load posts={rows} />
+</Layout>
