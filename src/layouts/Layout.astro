@@ -329,9 +329,16 @@ const ogImageAbs    = new URL(ogImage, 'https://eddigitalagency.it').toString();
 
   <body class="t-bg t-text font-sans antialiased overflow-x-hidden">
 
+    <!-- Skip to main content for keyboard/screen reader/AI users -->
+    <a href="#main-content"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-semibold"
+      style="background:#FF6A00;color:#000;">
+      Vai al contenuto principale
+    </a>
+
     <Navbar client:load />
 
-    <main>
+    <main id="main-content">
       <slot />
     </main>
 
@@ -358,6 +365,7 @@ const ogImageAbs    = new URL(ogImage, 'https://eddigitalagency.it').toString();
         </div>
 
         <!-- Nav columns -->
+        <nav aria-label="Navigazione footer">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-10 mb-14">
 
           <!-- Servizi -->
@@ -413,6 +421,7 @@ const ogImageAbs    = new URL(ogImage, 'https://eddigitalagency.it').toString();
             </ul>
           </div>
         </div>
+        </nav>
 
         <!-- Bottom bar -->
         <div style="border-top:1px solid rgba(var(--c-text),0.06); padding-top:2rem;"

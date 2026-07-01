@@ -51,13 +51,15 @@ export default function Navbar() {
           </a>
 
           {/* Desktop links */}
-          <ul className="hidden md:flex items-center gap-8 text-[13px] font-medium flex-1 justify-center">
-            {links.map(l => (
-              <li key={l.href}>
-                <a href={l.href} className="nav-link tracking-wide">{l.label}</a>
-              </li>
-            ))}
-          </ul>
+          <nav aria-label="Navigazione principale">
+            <ul className="hidden md:flex items-center gap-8 text-[13px] font-medium flex-1 justify-center">
+              {links.map(l => (
+                <li key={l.href}>
+                  <a href={l.href} className="nav-link tracking-wide">{l.label}</a>
+                </li>
+              ))}
+            </ul>
+          </nav>
 
           {/* Right: theme + CTA + hamburger */}
           <div className="flex items-center gap-2">
@@ -120,7 +122,7 @@ export default function Navbar() {
             {/* spacer for header height */}
             <div className="h-[68px] shrink-0" />
 
-            <div className="flex-1 flex flex-col items-center justify-center gap-1 px-8 pb-24">
+            <nav aria-label="Navigazione mobile" className="flex-1 flex flex-col items-center justify-center gap-1 px-8 pb-24">
               {links.map((l, i) => (
                 <motion.a
                   key={l.href}
@@ -147,7 +149,7 @@ export default function Navbar() {
               >
                 Lavoriamo insieme
               </motion.a>
-            </div>
+            </nav>
 
             <motion.p
               initial={{ opacity: 0 }}
