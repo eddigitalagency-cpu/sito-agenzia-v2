@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-import { motion, AnimatePresence, useInView, useScroll, useTransform, useMotionValue, useSpring, animate } from 'framer-motion';
+import { motion, AnimatePresence, useInView, useMotionValue, animate } from 'framer-motion';
 
 // Apple ease
 const ease = [0.16, 1, 0.3, 1] as const;
@@ -157,9 +157,7 @@ function StatItem({ value, suffix, label }: { value: number; suffix: string; lab
 
 export default function HomePage({ projects = [] }: { projects?: CaseStudy[] }) {
   const caseStudies = projects;
-  const heroRef = useRef(null);
   const caseScrollRef = useRef<HTMLDivElement>(null);
-  const { scrollY } = useScroll();
 
   // Wheel → horizontal scroll with lerp for case studies
   useEffect(() => {
@@ -193,17 +191,11 @@ export default function HomePage({ projects = [] }: { projects?: CaseStudy[] }) 
     };
   }, []);
 
-  // Hero parallax
-  const heroTextY    = useTransform(scrollY, [0, 600], [0, -80]);
-  const heroOpacity  = useTransform(scrollY, [0, 400], [1, 0]);
-  const heroImageY   = useTransform(scrollY, [0, 600], [40, -40]);
-  const heroImageScale = useTransform(scrollY, [0, 600], [1, 1.06]);
-
   return (
     <div className="t-bg t-text overflow-x-hidden" style={{ fontFamily: 'GraphikLCG, system-ui, sans-serif' }}>
 
       {/* ── HERO ─────────────────────────────────────────── */}
-      <section ref={heroRef} className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
+      <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
 
         {/* Background glow */}
         <div className="absolute inset-0 pointer-events-none">
@@ -212,7 +204,7 @@ export default function HomePage({ projects = [] }: { projects?: CaseStudy[] }) 
 
 
         {/* Content */}
-        <motion.div style={{ y: heroTextY, opacity: heroOpacity }} className="relative z-10 text-center px-5 max-w-6xl mx-auto pt-24 pb-16">
+        <div className="relative z-10 text-center px-5 max-w-6xl mx-auto pt-24 pb-16">
 
           {/* Label — CSS animation, visible without JS */}
           <div
@@ -254,7 +246,7 @@ export default function HomePage({ projects = [] }: { projects?: CaseStudy[] }) 
               Inizia un progetto →
             </a>
           </div>
-        </motion.div>
+        </div>
 
 
         {/* Scroll hint */}
