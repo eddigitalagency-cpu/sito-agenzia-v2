@@ -109,6 +109,7 @@ Genera un JSON con questa struttura esatta:
   "title": "Titolo SEO ottimizzato (max 65 caratteri, contiene la keyword principale)",
   "slug": "titolo-in-formato-slug-kebab-case",
   "excerpt": "Meta description SEO (130-155 caratteri, contiene la keyword, invoglia al click)",
+  "keywords": "keyword1, keyword2, keyword3, keyword4, keyword5 (5-8 keyword rilevanti per SEO, separate da virgola)",
   "category": "Categoria suggerita tra: Social Media, Advertising, Web Design, E-Commerce, SEO, Brand Identity, AI & Automazioni, Foto & Video, News",
   "read_time": 5,
   "content": "<h2>Prima sezione...</h2><p>Testo...</p>..."
@@ -148,6 +149,7 @@ Genera un JSON con questa struttura esatta:
       title:     String(parsed.title     ?? ''),
       slug:      String(parsed.slug      ?? '').toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-'),
       excerpt:   String(parsed.excerpt   ?? ''),
+      keywords:  String(parsed.keywords  ?? keywords ?? ''),
       category:  String(parsed.category  ?? category ?? ''),
       read_time: parseInt(String(parsed.read_time ?? 5)) || 5,
       content:   String(parsed.content   ?? ''),

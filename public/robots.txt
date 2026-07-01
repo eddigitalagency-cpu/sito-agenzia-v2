@@ -34,3 +34,4 @@ User-agent: Bingbot
 Allow: /
 
 Sitemap: https://eddigitalagency.it/sitemap-index.xml
+Sitemap: https://eddigitalagency.it/blog-sitemap.xml

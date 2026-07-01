@@ -12,7 +12,8 @@ const db = getPool();
 
 type PostRow = {
   id: number; slug: string; title: string; excerpt: string; content: string;
-  category: string; cover_img: string; author: string; read_time: number; created_at: string;
+  category: string; cover_img: string; author: string; read_time: number;
+  keywords: string; created_at: string; updated_at: string;
 };
 
 const res = await db.query<PostRow>(
@@ -22,12 +23,81 @@ const res = await db.query<PostRow>(
 if (!res.rowCount) return Astro.redirect('/blog');
 
 const post = res.rows[0];
+
+const BASE = 'https://eddigitalagency.it';
+const postUrl = `${BASE}/blog/${post.slug}`;
+const coverAbs = post.cover_img
+  ? (post.cover_img.startsWith('http') ? post.cover_img : `${BASE}${post.cover_img}`)
+  : `${BASE}/Images/Logo_Bianco_ED.webp`;
+
+// Keywords: post-specific + category + geo
+const geoSuffix = 'Treviso, Vittorio Veneto, Veneto, PMI italiane, marketing digitale';
+const postKeywords = [post.keywords, post.category, geoSuffix].filter(Boolean).join(', ');
+
+// Dates
+const datePublished = new Date(post.created_at).toISOString();
+const dateModified  = new Date(post.updated_at || post.created_at).toISOString();
+
+// JSON-LD: BlogPosting
+const blogPostingSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  '@id': postUrl,
+  'headline': post.title,
+  'description': post.excerpt,
+  'image': { '@type': 'ImageObject', 'url': coverAbs, 'width': 1200, 'height': 630 },
+  'datePublished': datePublished,
+  'dateModified': dateModified,
+  'author': {
+    '@type': 'Organization',
+    'name': post.author || 'ED Digital Agency',
+    '@id': `${BASE}/#organization`,
+  },
+  'publisher': {
+    '@type': 'Organization',
+    'name': 'ED Digital Agency',
+    '@id': `${BASE}/#organization`,
+    'logo': { '@type': 'ImageObject', 'url': `${BASE}/Images/Logo%20ED%20Digitla.png` },
+  },
+  'mainEntityOfPage': { '@type': 'WebPage', '@id': postUrl },
+  'url': postUrl,
+  'inLanguage': 'it-IT',
+  'articleSection': post.category,
+  'keywords': postKeywords,
+  'timeRequired': `PT${post.read_time}M`,
+  'about': {
+    '@type': 'Thing',
+    'name': post.category,
+  },
+};
+
+// JSON-LD: BreadcrumbList
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  'itemListElement': [
+    { '@type': 'ListItem', 'position': 1, 'name': 'Home',  'item': BASE },
+    { '@type': 'ListItem', 'position': 2, 'name': 'Blog',  'item': `${BASE}/blog` },
+    { '@type': 'ListItem', 'position': 3, 'name': post.title, 'item': postUrl },
+  ],
+};
 ---
 
 <Layout
   title={post.title}
   description={post.excerpt || `Leggi l'articolo "${post.title}" sul blog di ED Digital Agency.`}
   ogImage={post.cover_img || undefined}
+  ogType="article"
+  articleDate={datePublished}
+  articleModified={dateModified}
+  articleAuthor={post.author || 'ED Digital Agency'}
+  articleSection={post.category}
+  pageKeywords={postKeywords}
 >
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(blogPostingSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+  </Fragment>
+
   <BlogPostPage client:load post={post} />
 </Layout>

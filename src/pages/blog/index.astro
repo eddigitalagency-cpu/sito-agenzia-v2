@@ -16,11 +16,27 @@ type PostRow = {
 const rows = (await db.query<PostRow>(
   'SELECT id,slug,title,excerpt,category,cover_img,author,read_time,created_at FROM blog_posts WHERE published=true ORDER BY display_order ASC, created_at DESC'
 )).rows;
+
+const BASE = 'https://eddigitalagency.it';
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  'itemListElement': [
+    { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': BASE },
+    { '@type': 'ListItem', 'position': 2, 'name': 'Blog', 'item': `${BASE}/blog` },
+  ],
+};
 ---
 
 <Layout
   title="Blog — Strategie e Risorse per il Marketing Digitale"
-  description="Guide, strategie e casi studio sul marketing digitale per PMI italiane. Social media, advertising, web design, SEO e molto altro da ED Digital Agency."
+  description="Guide, strategie e casi studio sul marketing digitale per PMI italiane. Social media, advertising, web design, SEO e molto altro da ED Digital Agency a Treviso."
+  pageKeywords="blog marketing digitale, guide SEO Treviso, strategie social media PMI, advertising PMI italiane, web design Veneto, e-commerce Treviso, ED Digital Agency blog"
 >
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+  </Fragment>
+
   <BlogPage client:load posts={rows} />
 </Layout>

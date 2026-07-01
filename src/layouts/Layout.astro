@@ -7,16 +7,30 @@ interface Props {
   title: string;
   description?: string;
   ogImage?: string;
+  // Article-specific SEO
+  ogType?: 'website' | 'article';
+  articleDate?: string;      // ISO string
+  articleModified?: string;  // ISO string
+  articleAuthor?: string;
+  articleSection?: string;
+  pageKeywords?: string;     // Overrides generic keywords when provided
 }
 const {
   title,
   description = 'ED Digital Agency — Il partner strategico per le piccole imprese italiane che vogliono crescere online. Social media, advertising, siti web, e-commerce, visual identity e automazioni.',
   ogImage = '/Images/Logo_Bianco_ED.webp',
+  ogType = 'website',
+  articleDate,
+  articleModified,
+  articleAuthor,
+  articleSection,
+  pageKeywords,
 } = Astro.props;
 
 const canonicalURL  = new URL(Astro.url.pathname, 'https://eddigitalagency.it');
 const fullTitle     = `${title} — ED Digital Agency`;
 const ogImageAbs    = new URL(ogImage, 'https://eddigitalagency.it').toString();
+const defaultKeywords = 'agenzia digitale Treviso, agenzia marketing Treviso, web agency Vittorio Veneto, social media marketing Treviso, siti web Treviso, advertising Treviso, e-commerce Treviso, agenzia digitale Veneto, marketing digitale PMI, web design Treviso, SEO Treviso, agenzia comunicazione Treviso, ED Digital Agency';
 ---
 
 <!doctype html>
@@ -28,8 +42,8 @@ const ogImageAbs    = new URL(ogImage, 'https://eddigitalagency.it').toString();
     <!-- ── Primary SEO ──────────────────────────────────────── -->
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
-    <meta name="keywords" content="agenzia digitale Treviso, agenzia marketing Treviso, web agency Vittorio Veneto, social media marketing Treviso, siti web Treviso, advertising Treviso, e-commerce Treviso, agenzia digitale Veneto, marketing digitale PMI, web design Treviso, SEO Treviso, agenzia comunicazione Treviso, ED Digital Agency" />
-    <meta name="author" content="ED Digital Agency" />
+    <meta name="keywords" content={pageKeywords || defaultKeywords} />
+    <meta name="author" content={articleAuthor || 'ED Digital Agency'} />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <link rel="canonical" href={canonicalURL} />
 
@@ -41,7 +55,7 @@ const ogImageAbs    = new URL(ogImage, 'https://eddigitalagency.it').toString();
     <meta name="DC.coverage" content="Vittorio Veneto, Treviso, Veneto, Italia" />
 
     <!-- ── Open Graph ──────────────────────────────────────── -->
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
@@ -50,6 +64,10 @@ const ogImageAbs    = new URL(ogImage, 'https://eddigitalagency.it').toString();
     <meta property="og:image:height" content="630" />
     <meta property="og:locale" content="it_IT" />
     <meta property="og:site_name" content="ED Digital Agency" />
+    {ogType === 'article' && articleDate    && <meta property="article:published_time" content={articleDate} />}
+    {ogType === 'article' && articleModified && <meta property="article:modified_time" content={articleModified} />}
+    {ogType === 'article' && articleAuthor  && <meta property="article:author" content={articleAuthor} />}
+    {ogType === 'article' && articleSection && <meta property="article:section" content={articleSection} />}
 
     <!-- ── Twitter Card ────────────────────────────────────── -->
     <meta name="twitter:card" content="summary_large_image" />
@@ -209,6 +227,9 @@ const ogImageAbs    = new URL(ogImage, 'https://eddigitalagency.it').toString();
         ]
       }
     </script>
+
+    <!-- ── Page-specific head (JSON-LD, extra meta) ─────────── -->
+    <slot name="head" />
 
     <!-- ── Flash prevention: apply saved theme before paint ── -->
     <script is:inline>

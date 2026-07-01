@@ -110,6 +110,8 @@ export async function initDB(): Promise<void> {
       created_at    TIMESTAMPTZ  DEFAULT NOW(),
       updated_at    TIMESTAMPTZ  DEFAULT NOW()
     );
+    ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS keywords TEXT NOT NULL DEFAULT '';
+    ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
     CREATE INDEX IF NOT EXISTS idx_blog_published ON blog_posts(published, display_order);
   `);
 

@@ -20,7 +20,7 @@ const postId = isNew ? 0 : parseInt(id ?? '0');
 type PostRow = {
   id: number; slug: string; title: string; excerpt: string; content: string;
   category: string; cover_img: string; author: string; read_time: number;
-  published: boolean; display_order: number;
+  keywords: string; published: boolean; display_order: number;
 };
 
 let post: PostRow | null = null;
@@ -45,6 +45,7 @@ if (Astro.request.method === 'POST') {
   const coverImg = String(form.get('cover_img')  ?? '').trim();
   const author   = String(form.get('author')   ?? 'ED Digital Agency').trim() || 'ED Digital Agency';
   const readTime = parseInt(String(form.get('read_time') ?? '5')) || 5;
+  const keywords   = String(form.get('keywords')  ?? '').trim();
   const published  = form.get('published')  === 'on';
   const order      = parseInt(String(form.get('display_order') ?? '0')) || 0;
 
@@ -54,15 +55,15 @@ if (Astro.request.method === 'POST') {
     try {
       if (isNew) {
         await db.query(
-          `INSERT INTO blog_posts (slug,title,excerpt,content,category,cover_img,author,read_time,published,display_order)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
-          [slug, title, excerpt, content, category, coverImg, author, readTime, published, order],
+          `INSERT INTO blog_posts (slug,title,excerpt,content,category,cover_img,author,read_time,keywords,published,display_order)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+          [slug, title, excerpt, content, category, coverImg, author, readTime, keywords, published, order],
         );
       } else {
         await db.query(
           `UPDATE blog_posts SET slug=$1,title=$2,excerpt=$3,content=$4,category=$5,cover_img=$6,
-           author=$7,read_time=$8,published=$9,display_order=$10,updated_at=NOW() WHERE id=$11`,
-          [slug, title, excerpt, content, category, coverImg, author, readTime, published, order, postId],
+           author=$7,read_time=$8,keywords=$9,published=$10,display_order=$11,updated_at=NOW() WHERE id=$12`,
+          [slug, title, excerpt, content, category, coverImg, author, readTime, keywords, published, order, postId],
         );
       }
       return Astro.redirect('/admin/blog');
@@ -317,6 +318,13 @@ const CATEGORIES = ['Social Media', 'Advertising', 'Web Design', 'E-Commerce', '
           <span class="field-hint">Idealmente 120-160 caratteri per la SEO</span>
         </div>
 
+        <!-- Keywords SEO -->
+        <div class="field form-full">
+          <label>Keywords SEO</label>
+          <input type="text" name="keywords" value={post?.keywords ?? ''} placeholder="marketing digitale Treviso, social media PMI, agenzia web Veneto" />
+          <span class="field-hint">5-8 keyword separate da virgola · usate in meta keywords, JSON-LD e sitemap</span>
+        </div>
+
         <!-- Content -->
         <div class="field form-full">
           <label>Contenuto (HTML)</label>
@@ -561,6 +569,10 @@ Esempi:
           const opt = Array.from(catSel.options).find(o => o.value === data.category);
           if (opt) catSel.value = data.category;
         }
+
+        // Fill keywords
+        const kwInp = document.querySelector('input[name="keywords"]');
+        if (kwInp && data.keywords) kwInp.value = data.keywords;
 
         // Fill read_time
         const rtInp = document.querySelector('input[name="read_time"]');
