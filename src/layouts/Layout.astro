@@ -276,7 +276,7 @@ const ogImageAbs    = new URL(ogImage, 'https://eddigitalagency.it').toString();
       .ham-bar { background-color: rgb(var(--c-text)); }
 
       /* ── Footer Themed Classes ───────────────────────────── */
-      .footer-link { color: rgba(var(--c-text), 0.4); transition: color 0.2s ease; }
+      .footer-link { color: rgba(var(--c-text), 0.60); transition: color 0.2s ease; }
       .footer-link:hover { color: rgb(var(--c-text)); }
       .footer-heading { color: rgba(var(--c-text), 0.9); }
       .footer-dot  { color: rgba(var(--c-text), 0.15); }
@@ -437,15 +437,15 @@ const ogImageAbs    = new URL(ogImage, 'https://eddigitalagency.it').toString();
         <!-- Bottom bar -->
         <div style="border-top:1px solid rgba(var(--c-text),0.06); padding-top:2rem;"
           class="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p class="text-xs" style="color:rgba(var(--c-text),0.25);">
+          <p class="text-xs" style="color:rgba(var(--c-text),0.55);">
             © 2026 ED Digital Agency. Tutti i diritti riservati.
           </p>
           <div class="flex items-center gap-4 text-xs">
             <a href="/privacy-policy" class="footer-link">Privacy Policy</a>
-            <span class="footer-dot">·</span>
+            <span class="footer-dot" aria-hidden="true">·</span>
             <a href="/cookie-policy" class="footer-link">Cookie Policy</a>
           </div>
-          <p class="text-xs" style="color:rgba(var(--c-text),0.20);">
+          <p class="text-xs" aria-hidden="true" style="color:rgba(var(--c-text),0.50);">
             Vittorio Veneto (TV) · Italia
           </p>
           <!-- Social icons -->

@@ -67,11 +67,22 @@ const cyclingWords = [
 
 function CyclingWord() {
   const [index, setIndex] = useState(0);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const id = setInterval(() => setIndex(i => (i + 1) % cyclingWords.length), 2800);
     return () => clearInterval(id);
   }, []);
+
+  // SSR + initial client render: plain visible span → LCP measured immediately
+  if (!mounted) {
+    return (
+      <span className="relative inline-block align-bottom" style={{ minWidth: '0.6em' }}>
+        <span className="inline-block text-[#FF6A00]">{cyclingWords[0]}.</span>
+      </span>
+    );
+  }
 
   return (
     <span className="relative inline-block align-bottom" style={{ minWidth: '0.6em' }}>
@@ -108,7 +119,7 @@ function Marquee() {
         className="flex gap-10 whitespace-nowrap"
       >
         {items.map((item, i) => (
-          <span key={i} className="flex items-center gap-10 text-sm font-medium uppercase tracking-[0.18em]" style={{ color: 'rgba(var(--c-text),0.25)' }}>
+          <span key={i} className="flex items-center gap-10 text-sm font-medium uppercase tracking-[0.18em]" style={{ color: 'rgba(var(--c-text),0.50)' }}>
             {item}
             <span className="text-[#FF6A00]">✦</span>
           </span>
@@ -150,7 +161,7 @@ function StatItem({ value, suffix, label }: { value: number; suffix: string; lab
       <p className="text-5xl md:text-6xl font-black italic font-cal text-[#FF6A00] tabular-nums">
         <span ref={ref}>0{suffix}</span>
       </p>
-      <p className="text-xs uppercase tracking-[0.18em] font-medium" style={{ color: 'rgba(var(--c-text),0.35)' }}>{label}</p>
+      <p className="text-xs uppercase tracking-[0.18em] font-medium" style={{ color: 'rgba(var(--c-text),0.55)' }}>{label}</p>
     </motion.div>
   );
 }
@@ -249,9 +260,10 @@ export default function HomePage({ projects = [] }: { projects?: CaseStudy[] }) 
         </div>
 
 
-        {/* Scroll hint */}
+        {/* Scroll hint — aria-hidden: decorative, low-contrast by design */}
         <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:1.6, duration:0.8 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+          aria-hidden="true">
           <span className="text-[10px] uppercase tracking-[0.2em]" style={{ color:'rgba(var(--c-text),0.2)' }}>Scorri</span>
           <motion.div animate={{ y:[0,6,0] }} transition={{ duration:1.5, repeat:Infinity, ease:'easeInOut' }}
             className="w-px h-8" style={{ background:'linear-gradient(to bottom, rgba(var(--c-text),0.3), transparent)' }} />
@@ -294,7 +306,7 @@ export default function HomePage({ projects = [] }: { projects?: CaseStudy[] }) 
           <Section>
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row sm:items-end justify-between mb-14 gap-6">
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] mb-4 font-medium" style={{ color:'rgba(var(--c-text),0.35)' }}>Cosa facciamo</p>
+                <p className="text-xs uppercase tracking-[0.2em] mb-4 font-medium" style={{ color:'rgba(var(--c-text),0.55)' }}>Cosa facciamo</p>
                 <h2 className="font-cal font-semibold uppercase italic t-text leading-tight"
                   style={{ fontSize:'clamp(2.2rem,5vw,3.8rem)', letterSpacing:'-0.03em' }}>
                   Servizi<span className="text-[#FF6A00]">.</span>
@@ -333,7 +345,7 @@ export default function HomePage({ projects = [] }: { projects?: CaseStudy[] }) 
                 </span>
 
                 <div className="relative z-10 space-y-1.5">
-                  <p className="text-xs uppercase tracking-[0.15em] font-medium group-hover:text-[#FF6A00] transition-colors" style={{ color:'rgba(var(--c-text),0.35)' }}>
+                  <p className="text-xs uppercase tracking-[0.15em] font-medium group-hover:text-[#FF6A00] transition-colors" style={{ color:'rgba(var(--c-text),0.55)' }}>
                     {s.tagline}
                   </p>
                   <h3 className="font-cal font-semibold t-text text-xl md:text-2xl leading-tight group-hover:text-[#FF6A00] transition-colors duration-300">
@@ -352,7 +364,7 @@ export default function HomePage({ projects = [] }: { projects?: CaseStudy[] }) 
           <Section>
             <motion.div variants={fadeUp} className="flex items-end justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] mb-4 font-medium" style={{ color:'rgba(var(--c-text),0.35)' }}>Portfolio</p>
+                <p className="text-xs uppercase tracking-[0.2em] mb-4 font-medium" style={{ color:'rgba(var(--c-text),0.55)' }}>Portfolio</p>
                 <h2 className="font-cal font-semibold uppercase italic t-text leading-tight"
                   style={{ fontSize:'clamp(2.2rem,5vw,3.8rem)', letterSpacing:'-0.03em' }}>
                   Progetti<span className="text-[#FF6A00]">.</span>
@@ -363,7 +375,7 @@ export default function HomePage({ projects = [] }: { projects?: CaseStudy[] }) 
         </div>
 
         {/* Swipe hint — mobile only */}
-        <p className="md:hidden text-center text-[11px] uppercase tracking-[0.18em] mb-4 px-5" style={{ color: 'rgba(var(--c-text),0.25)' }}>
+        <p className="md:hidden text-center text-[11px] uppercase tracking-[0.18em] mb-4 px-5" style={{ color: 'rgba(var(--c-text),0.50)' }}>
           ← scorri per vedere altri →
         </p>
 
