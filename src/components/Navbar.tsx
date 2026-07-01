@@ -44,6 +44,8 @@ export default function Navbar() {
             <img
               src="/Images/Logo%20ED%20Digitla.png"
               alt="ED Digital Agency"
+              width="44" height="44"
+              fetchpriority="high"
               className={`h-11 w-auto transition-all duration-300 ${isDark ? '' : 'invert'}`}
             />
           </a>

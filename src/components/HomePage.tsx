@@ -134,10 +134,10 @@ const services = [
 type CaseStudy = { slug: string; title: string; service: string; services?: string[]; img: string };
 
 const partners = [
-  { src: '/Images/shopify-partner.png',                alt: 'Shopify' },
-  { src: '/Images/wordpress-logo-png-transparent.png', alt: 'WordPress' },
-  { src: '/Images/keliweb-logo-e1522914795801.png',     alt: 'Keliweb' },
-  { src: '/Images/Logo-Litchi-solutions-intero.svg',     alt: 'Litchi' },
+  { src: '/Images/shopify-partner.png',                alt: 'Shopify',    w: 93 },
+  { src: '/Images/wordpress-logo-png-transparent.png', alt: 'WordPress',  w: 96 },
+  { src: '/Images/keliweb-logo-e1522914795801.png',     alt: 'Keliweb',   w: 112 },
+  { src: '/Images/Logo-Litchi-solutions-intero.svg',    alt: 'Litchi',    w: 80 },
 ];
 
 // ── Stats ──────────────────────────────────────────────────
@@ -389,7 +389,7 @@ export default function HomePage({ projects = [] }: { projects?: CaseStudy[] }) 
               className="min-w-[260px] sm:min-w-[320px] lg:min-w-[380px] aspect-[3/4] relative rounded-[2rem] overflow-hidden flex-shrink-0 group border-0 outline-none ring-0"
               style={{ isolation: 'isolate', transform: 'translateZ(0)', willChange: 'transform' } as React.CSSProperties}
             >
-              <img src={s.img} alt={s.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              <img src={s.img} alt={s.title} width="380" height="507" loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute inset-0" style={{ background:'linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0) 55%)' }} />
               <div className="absolute bottom-6 left-6 right-6">
                 <p className="text-[#FF6A00] text-[10px] uppercase tracking-[0.25em] font-bold mb-1.5">
@@ -441,7 +441,9 @@ export default function HomePage({ projects = [] }: { projects?: CaseStudy[] }) 
             <motion.div variants={stagger} className="flex flex-wrap justify-center items-center gap-10 md:gap-16">
               {partners.map(p => (
                 <motion.img key={p.alt} variants={fadeUp} src={p.src} alt={p.alt}
+                  width={p.w} height={28}
                   className="h-6 md:h-7 w-auto opacity-20 hover:opacity-50 transition-opacity duration-400"
+                  loading="lazy"
                   style={{ filter:'var(--partner-filter)' }} />
               ))}
             </motion.div>
