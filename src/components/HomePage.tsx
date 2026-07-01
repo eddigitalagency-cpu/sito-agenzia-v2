@@ -214,37 +214,36 @@ export default function HomePage({ projects = [] }: { projects?: CaseStudy[] }) 
         {/* Content */}
         <motion.div style={{ y: heroTextY, opacity: heroOpacity }} className="relative z-10 text-center px-5 max-w-6xl mx-auto pt-24 pb-16">
 
-          {/* Label */}
-          <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.8, delay:0.1, ease }}
-            className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full border text-xs uppercase tracking-[0.2em] font-medium mb-10"
-            style={{ borderColor:'rgba(var(--c-text),0.1)', backgroundColor:'rgba(var(--c-text),0.04)', color:'rgba(var(--c-text),0.5)' }}>
+          {/* Label — CSS animation, visible without JS */}
+          <div
+            className="hero-label inline-flex items-center gap-2.5 px-5 py-2 rounded-full border text-xs uppercase tracking-[0.2em] font-medium mb-10"
+            style={{ borderColor:'rgba(var(--c-text),0.1)', backgroundColor:'rgba(var(--c-text),0.04)', color:'rgba(var(--c-text),0.5)' }}
+          >
             <span className="w-1.5 h-1.5 rounded-full bg-[#FF6A00] animate-pulse inline-block" />
             Partner Strategico Digitale
-          </motion.div>
+          </div>
 
-          {/* Headline */}
+          {/* Headline — CSS animation, LCP element visible immediately */}
           <div className="overflow-hidden mb-4">
-            <motion.h1
-              initial={{ y: 100, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 1.1, delay: 0.2, ease }}
-              className="font-cal font-semibold uppercase italic t-text leading-[0.88] tracking-[-0.03em]"
+            <h1
+              className="hero-headline font-cal font-semibold uppercase italic t-text leading-[0.88] tracking-[-0.03em]"
               style={{ fontSize: 'clamp(3.2rem, 9vw, 8rem)' }}
             >
               La nostra <CyclingWord />
               <br />La tua visione.
-            </motion.h1>
+            </h1>
           </div>
 
-          <motion.p initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.9, delay:0.45, ease }}
-            className="font-[250] text-base md:text-xl leading-relaxed max-w-xl mx-auto mt-8 mb-10"
-            style={{ color:'rgba(var(--c-muted),1)' }}>
+          <p
+            className="hero-desc font-[250] text-base md:text-xl leading-relaxed max-w-xl mx-auto mt-8 mb-10"
+            style={{ color:'rgba(var(--c-muted),1)' }}
+          >
             Strategie sartoriali per brand che non temono di farsi notare.
             <br className="hidden md:block" /> Dal digitale al fisico, sempre con un obiettivo: far crescere il tuo business.
-          </motion.p>
+          </p>
 
           {/* Buttons */}
-          <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.8, delay:0.6, ease }} className="flex flex-wrap items-center justify-center gap-4">
+          <div className="hero-buttons flex flex-wrap items-center justify-center gap-4">
             <a href="#casistudio" className="px-8 py-4 bg-[#FF6A00] text-black font-bold rounded-full hover:scale-[1.03] active:scale-[0.97] transition-transform text-sm uppercase tracking-widest shadow-lg shadow-orange-500/20">
               I Nostri Lavori
             </a>
@@ -254,7 +253,7 @@ export default function HomePage({ projects = [] }: { projects?: CaseStudy[] }) 
               onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = ''; }}>
               Inizia un progetto →
             </a>
-          </motion.div>
+          </div>
         </motion.div>
 
 
