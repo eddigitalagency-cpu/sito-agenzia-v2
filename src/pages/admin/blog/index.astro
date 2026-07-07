@@ -21,9 +21,9 @@ if (Astro.request.method === 'POST') {
   return Astro.redirect('/admin/blog');
 }
 
-type Row = { id: number; slug: string; title: string; category: string; cover_img: string; published: boolean; display_order: number; created_at: string };
+type Row = { id: number; slug: string; title: string; category: string; cover_img: string; published: boolean; scheduled_at: Date | null; display_order: number; created_at: string };
 const rows = (await db.query<Row>(
-  'SELECT id,slug,title,category,cover_img,published,display_order,created_at FROM blog_posts ORDER BY display_order ASC, created_at DESC'
+  'SELECT id,slug,title,category,cover_img,published,scheduled_at,display_order,created_at FROM blog_posts ORDER BY display_order ASC, created_at DESC'
 )).rows;
 ---
 <!doctype html>
@@ -60,6 +60,8 @@ const rows = (await db.query<Row>(
     .status-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px;}
     .status-dot.on{background:#22c55e;}
     .status-dot.off{background:#555;}
+    .status-dot.sched{background:#FF6A00;}
+    .sched-badge{color:#FF6A00;font-size:11px;}
     .post-actions{display:flex;gap:8px;flex-shrink:0;}
     .btn-edit{padding:6px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:7px;color:rgba(255,255,255,.6);font-size:12px;cursor:pointer;text-decoration:none;transition:all .15s;white-space:nowrap;}
     .btn-edit:hover{color:#fff;border-color:rgba(255,255,255,.25);}
@@ -106,8 +108,13 @@ const rows = (await db.query<Row>(
                 <div class="post-meta">
                   {p.category && <span class="cat-pill">{p.category}</span>}
                   <span>
-                    <span class={`status-dot ${p.published ? 'on' : 'off'}`}></span>
-                    {p.published ? 'Pubblicato' : 'Bozza'}
+                    {(() => {
+                      const sched = p.scheduled_at ? new Date(p.scheduled_at) : null;
+                      const isScheduled = !p.published && sched && sched > new Date();
+                      if (p.published) return <><span class="status-dot on"></span>Pubblicato</>;
+                      if (isScheduled) return <><span class="status-dot sched"></span><span class="sched-badge">Programmato — {sched!.toLocaleString('it-IT', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' })}</span></>;
+                      return <><span class="status-dot off"></span>Bozza</>;
+                    })()}
                   </span>
                   <span style="color:rgba(255,255,255,.2)">/blog/{p.slug}</span>
                   <span style="color:rgba(255,255,255,.18)">{new Date(p.created_at).toLocaleDateString('it-IT')}</span>

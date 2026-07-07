@@ -17,7 +17,9 @@ type PostRow = {
 };
 
 const res = await db.query<PostRow>(
-  'SELECT * FROM blog_posts WHERE slug=$1 AND published=true LIMIT 1',
+  `SELECT * FROM blog_posts
+   WHERE slug=$1 AND (published=true OR (scheduled_at IS NOT NULL AND scheduled_at <= NOW()))
+   LIMIT 1`,
   [slug]
 );
 if (!res.rowCount) return Astro.redirect('/blog');

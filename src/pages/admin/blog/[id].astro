@@ -21,6 +21,7 @@ type PostRow = {
   id: number; slug: string; title: string; excerpt: string; content: string;
   category: string; cover_img: string; author: string; read_time: number;
   keywords: string; published: boolean; display_order: number;
+  scheduled_at: Date | null;
 };
 
 let post: PostRow | null = null;
@@ -45,9 +46,11 @@ if (Astro.request.method === 'POST') {
   const coverImg = String(form.get('cover_img')  ?? '').trim();
   const author   = String(form.get('author')   ?? 'ED Digital Agency').trim() || 'ED Digital Agency';
   const readTime = parseInt(String(form.get('read_time') ?? '5')) || 5;
-  const keywords   = String(form.get('keywords')  ?? '').trim();
-  const published  = form.get('published')  === 'on';
-  const order      = parseInt(String(form.get('display_order') ?? '0')) || 0;
+  const keywords      = String(form.get('keywords')    ?? '').trim();
+  const published     = form.get('published')  === 'on';
+  const scheduledRaw  = String(form.get('scheduled_at') ?? '').trim();
+  const scheduledAt   = scheduledRaw ? new Date(scheduledRaw) : null;
+  const order         = parseInt(String(form.get('display_order') ?? '0')) || 0;
 
   if (!title || !slug) {
     errorMsg = 'Titolo e slug sono obbligatori.';
@@ -55,15 +58,15 @@ if (Astro.request.method === 'POST') {
     try {
       if (isNew) {
         await db.query(
-          `INSERT INTO blog_posts (slug,title,excerpt,content,category,cover_img,author,read_time,keywords,published,display_order)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
-          [slug, title, excerpt, content, category, coverImg, author, readTime, keywords, published, order],
+          `INSERT INTO blog_posts (slug,title,excerpt,content,category,cover_img,author,read_time,keywords,published,scheduled_at,display_order)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+          [slug, title, excerpt, content, category, coverImg, author, readTime, keywords, published, scheduledAt, order],
         );
       } else {
         await db.query(
           `UPDATE blog_posts SET slug=$1,title=$2,excerpt=$3,content=$4,category=$5,cover_img=$6,
-           author=$7,read_time=$8,keywords=$9,published=$10,display_order=$11,updated_at=NOW() WHERE id=$12`,
-          [slug, title, excerpt, content, category, coverImg, author, readTime, keywords, published, order, postId],
+           author=$7,read_time=$8,keywords=$9,published=$10,scheduled_at=$11,display_order=$12,updated_at=NOW() WHERE id=$13`,
+          [slug, title, excerpt, content, category, coverImg, author, readTime, keywords, published, scheduledAt, order, postId],
         );
       }
       return Astro.redirect('/admin/blog');
@@ -79,6 +82,14 @@ const v = (field: string, fallback = '') => p ? String((p as Record<string, unkn
 const pageTitle = isNew ? 'Nuovo Articolo' : `Modifica: ${p?.title ?? ''}`;
 
 const CATEGORIES = ['Social Media', 'Advertising', 'Web Design', 'E-Commerce', 'SEO', 'Brand Identity', 'AI & Automazioni', 'Foto & Video', 'News'];
+
+// Compute initial publication state for the UI
+const now = new Date();
+const scheduledAtDate = post?.scheduled_at ? new Date(post.scheduled_at) : null;
+const scheduledAtValue = scheduledAtDate ? scheduledAtDate.toISOString().slice(0, 16) : '';
+const initialStato: 'publish' | 'schedule' | 'draft' =
+  post?.published ? 'publish' :
+  (scheduledAtDate && scheduledAtDate > now ? 'schedule' : 'draft');
 ---
 <!doctype html>
 <html lang="it">
@@ -183,9 +194,18 @@ const CATEGORIES = ['Social Media', 'Advertising', 'Web Design', 'E-Commerce', '
     .ai-inner-ta{padding:9px 12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;font-size:13px;font-family:inherit;outline:none;resize:vertical;min-height:70px;line-height:1.55;}
     .ai-inner-ta:focus{border-color:rgba(255,106,0,.5);}
 
-    .toggle-row{display:flex;align-items:center;gap:10px;}
-    .toggle-row input[type=checkbox]{width:18px;height:18px;accent-color:#FF6A00;cursor:pointer;}
-    .toggle-row label{font-size:14px;color:rgba(255,255,255,.75);cursor:pointer;}
+    .stato-selector{display:flex;gap:0;border:1px solid rgba(255,255,255,.1);border-radius:10px;overflow:hidden;width:100%;}
+    .stato-btn{flex:1;padding:10px 6px;background:transparent;border:none;border-right:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.35);font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;text-align:center;letter-spacing:.06em;text-transform:uppercase;font-family:inherit;}
+    .stato-btn:last-child{border-right:none;}
+    .stato-btn:hover{color:rgba(255,255,255,.7);background:rgba(255,255,255,.04);}
+    .stato-btn.active-draft{background:rgba(255,255,255,.06);color:rgba(255,255,255,.8);}
+    .stato-btn.active-publish{background:rgba(34,197,94,.14);color:#4ade80;}
+    .stato-btn.active-schedule{background:rgba(255,106,0,.14);color:#FF6A00;}
+    .schedule-field{margin-top:10px;display:none;}
+    .schedule-field.visible{display:flex;flex-direction:column;gap:6px;}
+    .schedule-field input[type=datetime-local]{padding:10px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,106,0,.35);border-radius:9px;color:#fff;font-size:14px;font-family:inherit;outline:none;color-scheme:dark;}
+    .schedule-field input[type=datetime-local]:focus{border-color:rgba(255,106,0,.6);}
+    .schedule-hint{font-size:11px;color:rgba(255,255,255,.28);}
     .divider{border:none;border-top:1px solid rgba(255,255,255,.06);margin:8px 0;}
     .form-actions{display:flex;gap:12px;align-items:center;margin-top:8px;}
     .btn-save{padding:12px 28px;background:#FF6A00;color:#000;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.07em;transition:opacity .15s;}
@@ -256,11 +276,20 @@ const CATEGORIES = ['Social Media', 'Advertising', 'Web Design', 'E-Commerce', '
           <span class="field-hint">Numeri più bassi appaiono prima</span>
         </div>
 
-        <div class="field" style="justify-content:flex-end;padding-bottom:4px;">
-          <div class="toggle-row">
-            <input type="checkbox" name="published" id="chk-published" checked={p?.published !== false}/>
-            <label for="chk-published">Pubblicato (visibile sul sito)</label>
+        <div class="field" style="padding-bottom:4px;">
+          <label>Stato pubblicazione</label>
+          <div class="stato-selector" id="stato-selector">
+            <button type="button" class={`stato-btn${initialStato==='draft' ? ' active-draft' : ''}`} id="btn-stato-draft">Bozza</button>
+            <button type="button" class={`stato-btn${initialStato==='publish' ? ' active-publish' : ''}`} id="btn-stato-publish">Pubblica ora</button>
+            <button type="button" class={`stato-btn${initialStato==='schedule' ? ' active-schedule' : ''}`} id="btn-stato-schedule">Programma</button>
           </div>
+          <div class={`schedule-field${initialStato==='schedule' ? ' visible' : ''}`} id="schedule-field">
+            <input type="datetime-local" id="scheduled-at-picker" value={scheduledAtValue} min={new Date().toISOString().slice(0,16)}/>
+            <span class="schedule-hint">Il post sarà pubblicato automaticamente alla data e ora selezionate.</span>
+          </div>
+          <!-- Hidden inputs set by JS based on state selection -->
+          <input type="hidden" name="published"    id="hidden-published"    value={initialStato==='publish' ? 'on' : ''}/>
+          <input type="hidden" name="scheduled_at" id="hidden-scheduled-at" value={initialStato==='schedule' ? scheduledAtValue : ''}/>
         </div>
 
         <hr class="divider form-full"/>
@@ -388,13 +417,70 @@ Esempi:
       </div>
 
       <div class="form-actions">
-        <button type="submit" class="btn-save">{isNew ? 'Pubblica Articolo' : 'Salva Modifiche'}</button>
+        <button type="submit" class="btn-save" id="btn-save">Salva</button>
         <a href="/admin/blog" class="btn-cancel-link">Annulla</a>
       </div>
     </form>
   </div>
 
-  <script define:vars={{ isNew }}>
+  <script define:vars={{ isNew, initialStato, scheduledAtValue }}>
+    // ── Stato pubblicazione (Bozza / Pubblica ora / Programma) ──
+    const btnDraft    = document.getElementById('btn-stato-draft');
+    const btnPublish  = document.getElementById('btn-stato-publish');
+    const btnSchedule = document.getElementById('btn-stato-schedule');
+    const schedField  = document.getElementById('schedule-field');
+    const datePicker  = document.getElementById('scheduled-at-picker');
+    const hiddenPub   = document.getElementById('hidden-published');
+    const hiddenSched = document.getElementById('hidden-scheduled-at');
+    const btnSave     = document.getElementById('btn-save');
+
+    const ALL_STATO = [btnDraft, btnPublish, btnSchedule];
+
+    function clearStatoClasses(btn) {
+      btn.classList.remove('active-draft', 'active-publish', 'active-schedule');
+    }
+
+    function setStato(stato) {
+      ALL_STATO.forEach(clearStatoClasses);
+      if (stato === 'draft') {
+        btnDraft.classList.add('active-draft');
+        schedField.classList.remove('visible');
+        hiddenPub.value   = '';
+        hiddenSched.value = '';
+        if (btnSave) btnSave.textContent = 'Salva come bozza';
+      } else if (stato === 'publish') {
+        btnPublish.classList.add('active-publish');
+        schedField.classList.remove('visible');
+        hiddenPub.value   = 'on';
+        hiddenSched.value = '';
+        if (btnSave) btnSave.textContent = isNew ? 'Pubblica ora' : 'Salva e pubblica';
+      } else {
+        btnSchedule.classList.add('active-schedule');
+        schedField.classList.add('visible');
+        hiddenPub.value   = '';
+        hiddenSched.value = datePicker?.value || '';
+        const label = datePicker?.value
+          ? 'Programma — ' + new Date(datePicker.value).toLocaleString('it-IT', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' })
+          : 'Programma';
+        if (btnSave) btnSave.textContent = label;
+      }
+    }
+
+    btnDraft?.addEventListener('click',    () => setStato('draft'));
+    btnPublish?.addEventListener('click',  () => setStato('publish'));
+    btnSchedule?.addEventListener('click', () => setStato('schedule'));
+
+    datePicker?.addEventListener('input', () => {
+      hiddenSched.value = datePicker.value;
+      if (datePicker.value) {
+        const label = 'Programma — ' + new Date(datePicker.value).toLocaleString('it-IT', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+        if (btnSave) btnSave.textContent = label;
+      }
+    });
+
+    // Set initial button label
+    setStato(initialStato);
+
     // ── Auto-slug from title ─────────────────────────────
     const titleInput = document.getElementById('input-title');
     const slugInput  = document.getElementById('input-slug');

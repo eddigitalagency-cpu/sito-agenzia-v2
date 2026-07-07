@@ -112,7 +112,9 @@ export async function initDB(): Promise<void> {
     );
     ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS keywords TEXT NOT NULL DEFAULT '';
     ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+    ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS scheduled_at TIMESTAMPTZ;
     CREATE INDEX IF NOT EXISTS idx_blog_published ON blog_posts(published, display_order);
+    CREATE INDEX IF NOT EXISTS idx_blog_scheduled ON blog_posts(scheduled_at) WHERE scheduled_at IS NOT NULL;
   `);
 
   // Seed projects_db from static data on first run
