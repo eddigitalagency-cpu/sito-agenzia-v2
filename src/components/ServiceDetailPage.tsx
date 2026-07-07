@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { Service } from '../data/services';
 
 const ease = [0.25, 0.1, 0.25, 1.0] as const;
@@ -12,6 +13,43 @@ const scaleIn = {
   animate:  { opacity: 1, scale: 1 },
   transition: { duration: 1.0, ease },
 };
+
+function FaqAccordion({ faq }: { faq: Service['faq'] }) {
+  const [open, setOpen] = useState<number | null>(null);
+  return (
+    <div className="space-y-3">
+      {faq.map((item, i) => (
+        <div key={i} className="t-card t-border border rounded-2xl overflow-hidden">
+          <button
+            onClick={() => setOpen(open === i ? null : i)}
+            className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left"
+            aria-expanded={open === i}
+          >
+            <span className="font-medium t-text text-sm md:text-base leading-snug">{item.question}</span>
+            <span className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-transform duration-300" style={{ backgroundColor: 'rgba(255,106,0,0.12)', color: '#FF6A00', transform: open === i ? 'rotate(45deg)' : 'rotate(0deg)' }}>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+            </span>
+          </button>
+          <AnimatePresence initial={false}>
+            {open === i && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3, ease: [0.25,0.1,0.25,1] }}
+                style={{ overflow: 'hidden' }}
+              >
+                <p className="px-6 pb-5 font-[250] t-muted text-sm md:text-base leading-7" style={{ borderTop: '1px solid rgba(var(--c-text),0.06)', paddingTop: '1rem' }}>
+                  {item.answer}
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 interface Props { service: Service; related: Service[]; }
 
@@ -159,6 +197,23 @@ export default function ServiceDetailPage({ service, related }: Props) {
               ))}
             </div>
           </div>
+        </section>
+      )}
+
+      {/* ── FAQ ───────────────────────────────────────────── */}
+      {service.faq.length > 0 && (
+        <section className="max-w-[1400px] mx-auto px-5 md:px-12 pb-20 md:pb-24">
+          <motion.p initial={{ opacity:0 }} whileInView={{ opacity:1 }} viewport={{ once:true }} transition={{ duration:0.6 }} className="text-xs t-text-30 uppercase tracking-widest mb-8 md:mb-12">
+            Domande frequenti
+          </motion.p>
+          <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.7, ease }} className="max-w-3xl">
+            <FaqAccordion faq={service.faq} />
+          </motion.div>
+          <motion.div initial={{ opacity:0 }} whileInView={{ opacity:1 }} viewport={{ once:true }} transition={{ duration:0.6, delay:0.2 }} className="mt-8">
+            <a href="/contatti" className="inline-flex items-center gap-2 text-[#FF6A00] text-sm font-medium hover:underline">
+              Hai altre domande? Contattaci →
+            </a>
+          </motion.div>
         </section>
       )}
 

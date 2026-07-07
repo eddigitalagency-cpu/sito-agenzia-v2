@@ -1,3 +1,8 @@
+export interface ServiceFaq {
+  question: string;
+  answer: string;
+}
+
 export interface Service {
   slug: string;
   name: string;
@@ -11,6 +16,8 @@ export interface Service {
   platforms: string[];
   process: { step: string; title: string; description: string }[];
   related: string[];
+  keywords: string[];
+  faq: ServiceFaq[];
 }
 
 export const services: Service[] = [
@@ -43,6 +50,29 @@ export const services: Service[] = [
       { step: '04', title: 'Ottimizzazione', description: 'Analizziamo i dati ogni mese e aggiustiamo la strategia in base ai risultati.' },
     ],
     related: ['advertising', 'photo-video', 'visual-identity'],
+    keywords: [
+      'gestione social media Treviso', 'social media manager Treviso', 'social media marketing Veneto',
+      'community management PMI', 'piano editoriale Instagram Treviso', 'agenzia social Vittorio Veneto',
+      'gestione Instagram Facebook Treviso', 'content creator Treviso',
+    ],
+    faq: [
+      {
+        question: 'Quanto costa la gestione social media a Treviso?',
+        answer: 'I nostri pacchetti di gestione social media per PMI partono da €350/mese per una piattaforma. Il costo varia in base al numero di canali gestiti e alla frequenza di pubblicazione. Offriamo un preventivo gratuito e personalizzato entro 24 ore.',
+      },
+      {
+        question: 'Quanti post a settimana pubblicate?',
+        answer: 'In base al piano scelto, pubblichiamo da 3 a 7 contenuti a settimana per piattaforma, incluse Stories e Reels ottimizzati per l\'algoritmo di Instagram e Facebook.',
+      },
+      {
+        question: 'Gestite anche i commenti e i messaggi?',
+        answer: 'Sì, il community management è incluso in tutti i nostri piani. Rispondiamo a commenti e messaggi entro poche ore, mantenendo un tono coerente con il tuo brand e costruendo relazioni autentiche con i tuoi follower.',
+      },
+      {
+        question: 'Su quali piattaforme social lavorate a Treviso?',
+        answer: 'Gestiamo Instagram, Facebook, LinkedIn e TikTok. La scelta delle piattaforme più adatte dipende dal tuo target di clienti, dal settore e dai tuoi obiettivi di business. Te la consigliamo noi in fase di analisi.',
+      },
+    ],
   },
   {
     slug: 'advertising',
@@ -73,6 +103,29 @@ export const services: Service[] = [
       { step: '04', title: 'Ottimizzazione', description: 'Monitoriamo quotidianamente e ottimizziamo per massimizzare il ROAS.' },
     ],
     related: ['social-media-management', 'website', 'ecommerce'],
+    keywords: [
+      'Meta Ads Treviso', 'Google Ads Treviso', 'agenzia advertising Veneto',
+      'campagne pubblicitarie online Treviso', 'Facebook Ads PMI Treviso', 'Google Ads PMI Veneto',
+      'advertising digitale Vittorio Veneto', 'gestione campagne Meta Google Treviso',
+    ],
+    faq: [
+      {
+        question: 'Qual è il budget minimo consigliato per le campagne advertising?',
+        answer: 'Consigliamo un budget media minimo di €500/mese per Meta Ads e €600/mese per Google Ads Search, a cui si aggiunge la nostra fee di gestione. Con budget più contenuti i risultati richiedono più tempo per ottimizzarsi.',
+      },
+      {
+        question: 'Quanto tempo prima di vedere i primi risultati dalle campagne?',
+        answer: 'Le prime ottimizzazioni sono visibili entro 2-4 settimane. Risultati stabili e un ROAS ottimizzato arrivano dopo 2-3 mesi di test continui. Il digitale richiede dati per imparare: più tempo e budget, migliori i risultati.',
+      },
+      {
+        question: 'Cosa include la gestione delle campagne advertising?',
+        answer: 'Include setup completo degli account, installazione pixel e tag, creazione delle creatività (immagini, video, copy), A/B testing su audience e formati, ottimizzazione settimanale e report KPI dettagliati ogni settimana.',
+      },
+      {
+        question: 'Lavorate con aziende di qualsiasi settore nel Trevigiano?',
+        answer: 'Sì, gestiamo campagne per PMI di tutti i settori: retail, ristorazione, immobiliare, moda, artigianato, servizi professionali. Abbiamo esperienza con aziende di Treviso, Vittorio Veneto, Conegliano e in tutto il Veneto.',
+      },
+    ],
   },
   {
     slug: 'website',
@@ -103,6 +156,29 @@ export const services: Service[] = [
       { step: '04', title: 'Lancio', description: 'Testiamo ogni dettaglio, ottimizziamo le performance e pubblichiamo online.' },
     ],
     related: ['ecommerce', 'visual-identity', 'mvp-saas'],
+    keywords: [
+      'realizzazione siti web Treviso', 'web agency Treviso', 'siti web PMI Veneto',
+      'sviluppo sito web Vittorio Veneto', 'sito web aziendale Treviso', 'web design Treviso',
+      'agenzia web Conegliano', 'sito web professionale Veneto', 'WordPress Treviso',
+    ],
+    faq: [
+      {
+        question: 'Quanto costa un sito web professionale a Treviso?',
+        answer: 'Un sito web vetrina per PMI parte da €1.500-2.500. Siti con funzionalità avanzate (blog, area riservata, CRM) vanno da €3.000 a €7.000. Il costo dipende dalla complessità. Offriamo preventivi gratuiti entro 24 ore.',
+      },
+      {
+        question: 'Quanto tempo ci vuole per realizzare un sito web?',
+        answer: 'In media 3-6 settimane dal brief iniziale alla pubblicazione, a seconda della complessità. Siti vetrina semplici possono essere pronti in 2-3 settimane. Lavoriamo con revisioni condivise per rispettare i tempi.',
+      },
+      {
+        question: 'Il sito web sarà ottimizzato per Google (SEO)?',
+        answer: 'Sì, ogni sito include SEO on-page completa: ottimizzazione titoli, meta description, struttura URL, velocità di caricamento (Core Web Vitals), dati strutturati JSON-LD e integrazione con Google Search Console e Analytics 4.',
+      },
+      {
+        question: 'Dopo il lancio, chi gestisce il sito?',
+        answer: 'Il primo anno di hosting e manutenzione ordinaria è incluso. Dopodiché offriamo piani di assistenza mensile o aggiornamenti a richiesta. Ti formiamo anche per gestire autonomamente i contenuti se preferisci.',
+      },
+    ],
   },
   {
     slug: 'ecommerce',
@@ -133,6 +209,29 @@ export const services: Service[] = [
       { step: '04', title: 'Go Live', description: 'Testiamo il flusso di acquisto completo, formiamo il tuo team e lanciamo.' },
     ],
     related: ['website', 'advertising', 'social-media-management'],
+    keywords: [
+      'e-commerce Treviso', 'negozio online Treviso', 'Shopify Treviso', 'WooCommerce Veneto',
+      'realizzazione e-commerce Vittorio Veneto', 'shop online PMI Treviso',
+      'agenzia e-commerce Veneto', 'vendita online Treviso', 'partner Shopify Treviso',
+    ],
+    faq: [
+      {
+        question: 'Quanto costa realizzare un e-commerce a Treviso?',
+        answer: 'Un negozio online completo su Shopify o WooCommerce parte da €2.500 per cataloghi semplici, fino a €8.000+ per e-commerce con funzionalità avanzate (configuratori, abbonamenti, marketplace). Preventivo gratuito in 24 ore.',
+      },
+      {
+        question: 'Meglio Shopify o WooCommerce per la mia azienda?',
+        answer: 'Shopify è ideale per chi vuole partire velocemente, con meno complessità tecnica e pagamenti semplificati. WooCommerce su WordPress è preferibile se hai già un sito WordPress o hai bisogno di personalizzazioni spinte. Te lo consigliamo noi dopo una call gratuita.',
+      },
+      {
+        question: 'L\'e-commerce sarà ottimizzato per apparire su Google Shopping?',
+        answer: 'Sì, configuriamo il feed prodotti per Google Shopping, ottimizziamo le schede prodotto per la SEO (titoli, descrizioni, dati strutturati Product schema) e colleghiamo Google Merchant Center.',
+      },
+      {
+        question: 'Riuscirò a gestire il negozio autonomamente dopo il lancio?',
+        answer: 'Assolutamente sì. Includiamo una sessione di formazione pratica in cui ti insegniamo a caricare prodotti, gestire ordini, impostare sconti e leggere le statistiche. Siamo poi disponibili per supporto tecnico post-lancio.',
+      },
+    ],
   },
   {
     slug: 'photo-video',
@@ -163,6 +262,29 @@ export const services: Service[] = [
       { step: '04', title: 'Post-produzione', description: 'Editing, ritocco, color grading e consegna dei file finali.' },
     ],
     related: ['social-media-management', 'visual-identity', 'advertising'],
+    keywords: [
+      'fotografo aziendale Treviso', 'videomaking Treviso', 'shooting fotografico prodotti Veneto',
+      'video istituzionale Treviso', 'fotografia commerciale Vittorio Veneto',
+      'produzione video social Treviso', 'content creation Veneto', 'fotografo professionista Treviso',
+    ],
+    faq: [
+      {
+        question: 'Quanto costa uno shooting fotografico aziendale a Treviso?',
+        answer: 'Uno shooting fotografico professionale per aziende parte da €400 per mezza giornata in studio o location a Treviso e provincia. Include editing e consegna dei file ad alta risoluzione. Preventivo gratuito su misura per il tuo progetto.',
+      },
+      {
+        question: 'Realizzate video per i social media e i Reels Instagram?',
+        answer: 'Sì, produciamo contenuti video ottimizzati per ogni formato: Reels verticali per Instagram e TikTok, video orizzontali per YouTube e LinkedIn, story animate. Consegniamo file pronti alla pubblicazione in tutti i formati richiesti.',
+      },
+      {
+        question: 'Venite anche fuori da Treviso per le riprese?',
+        answer: 'Assolutamente sì. Lavoriamo in tutta la provincia di Treviso, il Veneto e in tutta Italia per progetti più grandi. Il costo di trasferta è quotato caso per caso nel preventivo.',
+      },
+      {
+        question: 'Quanto tempo ci vuole dalla ripresa alla consegna dei file?',
+        answer: 'La post-produzione standard richiede 5-10 giorni lavorativi per la fotografia e 2-4 settimane per la produzione video. Per esigenze urgenti offriamo un servizio fast-delivery con tempi ridotti.',
+      },
+    ],
   },
   {
     slug: 'visual-identity',
@@ -193,6 +315,29 @@ export const services: Service[] = [
       { step: '04', title: 'Consegna', description: 'Consegniamo tutti i file sorgente e il brandbook con le regole di utilizzo.' },
     ],
     related: ['website', 'social-media-management', 'photo-video'],
+    keywords: [
+      'logo design Treviso', 'brand identity Treviso', 'identità visiva aziendale Veneto',
+      'grafica aziendale Treviso', 'logo professionista Vittorio Veneto',
+      'brand design PMI Treviso', 'brandbook Veneto', 'visual identity Treviso',
+    ],
+    faq: [
+      {
+        question: 'Quanto costa il design di un logo professionale a Treviso?',
+        answer: 'Il design di un logo professionale per PMI parte da €800, incluse varianti cromatiche e file sorgente in tutti i formati (AI, SVG, PNG, PDF). Un pacchetto visual identity completo con brandbook parte da €1.800. Preventivo gratuito.',
+      },
+      {
+        question: 'Quante proposte di logo ricevo e quante revisioni sono incluse?',
+        answer: 'Sviluppiamo 2-3 direzioni creative distinte nella fase di concept, ognuna con moodboard e rationale. Una volta scelta la direzione, sono incluse 3 round di revisioni per arrivare al risultato perfetto.',
+      },
+      {
+        question: 'Cosa ricevo alla fine del progetto di visual identity?',
+        answer: 'Consegniamo tutti i file sorgente editabili (Illustrator, Figma), il logo in tutti i formati (SVG, PNG, PDF, JPG) e dimensioni, il brandbook PDF con regole d\'uso, palette colori con codici HEX/CMYK/Pantone e tipografie.',
+      },
+      {
+        question: 'Realizzate anche il materiale di stampa (biglietti da visita, brochure)?',
+        answer: 'Sì, dopo la creazione dell\'identità visiva progettiamo qualsiasi materiale di comunicazione: biglietti da visita, brochure, roll-up, packaging, carta intestata. Tutto coerente con il brand manual appena creato.',
+      },
+    ],
   },
   {
     slug: 'mvp-saas',
@@ -223,6 +368,29 @@ export const services: Service[] = [
       { step: '04', title: 'Launch & Iterate', description: 'Pubblichiamo, raccogliamo feedback reali e continuiamo a costruire.' },
     ],
     related: ['app', 'website', 'visual-identity'],
+    keywords: [
+      'sviluppo software Treviso', 'MVP startup Veneto', 'SaaS development Treviso',
+      'sviluppo prodotto digitale Veneto', 'software house Treviso', 'prototipo digitale PMI',
+      'sviluppo web app Treviso', 'Next.js sviluppo Veneto',
+    ],
+    faq: [
+      {
+        question: 'Quanto costa sviluppare un MVP a Treviso?',
+        answer: 'Un MVP ben costruito per validare un\'idea di business parte da €5.000-8.000 per prodotti semplici, fino a €15.000+ per piattaforme più complesse. Il costo dipende dalle funzionalità core necessarie. Prima valutiamo insieme l\'idea gratuitamente.',
+      },
+      {
+        question: 'Quanto tempo ci vuole per andare live con il primo prodotto?',
+        answer: 'Con la metodologia lean, il primo MVP funzionante è disponibile in 6-12 settimane. Lavoriamo in sprint settimanali con demo frequenti così puoi vedere il progresso e dare feedback in ogni fase.',
+      },
+      {
+        question: 'Cosa succede se voglio aggiungere funzionalità dopo il lancio?',
+        answer: 'Il nostro approccio è pensato per crescere nel tempo. Dopo il lancio dell\'MVP raccogliamo feedback reali degli utenti e continuiamo a sviluppare le feature più richieste con sprint iterativi. Puoi scalare il prodotto a tuo ritmo.',
+      },
+      {
+        question: 'Il codice sarà nostro o rimarrà vostro?',
+        answer: 'Tutto il codice sorgente è di tua proprietà al 100%. Al termine del progetto ricevi l\'accesso completo a tutti i repository, incluse istruzioni per gestire autonomamente il deployment e gli aggiornamenti.',
+      },
+    ],
   },
   {
     slug: 'app',
@@ -253,6 +421,29 @@ export const services: Service[] = [
       { step: '04', title: 'Store', description: 'Gestiamo la pubblicazione su App Store e Google Play, inclusa la revisione.' },
     ],
     related: ['mvp-saas', 'website', 'advertising'],
+    keywords: [
+      'sviluppo app Treviso', 'app iOS Android Treviso', 'applicazione mobile Veneto',
+      'React Native Treviso', 'sviluppo app aziendale Veneto', 'app store Treviso',
+      'mobile developer Vittorio Veneto', 'agenzia sviluppo app Treviso',
+    ],
+    faq: [
+      {
+        question: 'Quanto costa sviluppare un\'app mobile a Treviso?',
+        answer: 'Un\'app mobile con funzionalità standard parte da €8.000-12.000 per iOS e Android insieme con React Native. App più complesse con integrazioni avanzate possono superare i €20.000. Offriamo una valutazione gratuita della tua idea.',
+      },
+      {
+        question: 'Quanto tempo ci vuole per pubblicare un\'app sugli store?',
+        answer: 'Lo sviluppo di un\'app completa richiede in media 3-5 mesi. La pubblicazione su App Store e Google Play aggiunge 1-2 settimane per i processi di review. Lavoriamo in sprint settimanali con build testabili su dispositivo reale.',
+      },
+      {
+        question: 'L\'app funzionerà sia su iPhone che Android?',
+        answer: 'Sì, sviluppiamo con React Native che genera un\'unica codebase per entrambe le piattaforme, garantendo un\'esperienza nativa di qualità sia su iOS che Android, riducendo i costi rispetto allo sviluppo nativo separato.',
+      },
+      {
+        question: 'Cosa succede se ho già un sito web e voglio affiancarlo un\'app?',
+        answer: 'Integriamo l\'app con il tuo sito e sistema di gestione esistenti tramite API. L\'app diventa un canale aggiuntivo per i tuoi clienti, con accesso alle stesse informazioni del sito ma con funzionalità native (notifiche push, offline, ecc.).',
+      },
+    ],
   },
   {
     slug: 'integrazioni',
@@ -283,6 +474,29 @@ export const services: Service[] = [
       { step: '04', title: 'Monitoraggio', description: 'Attiviamo alerting sui flussi critici e forniamo dashboard per controllare che tutto funzioni.' },
     ],
     related: ['mvp-saas', 'ecommerce', 'website'],
+    keywords: [
+      'automazioni aziendali Treviso', 'integrazioni CRM ERP Veneto', 'Make Zapier Treviso',
+      'automazione processi PMI Veneto', 'integrazione software aziendale Treviso',
+      'n8n sviluppo Veneto', 'workflow automation Treviso', 'API integration Veneto',
+    ],
+    faq: [
+      {
+        question: 'Quali strumenti aziendali riuscite a integrare a Treviso?',
+        answer: 'Integriamo praticamente qualsiasi software aziendale: CRM (HubSpot, Salesforce, Zoho), ERP (SAP, Odoo), e-commerce (Shopify, WooCommerce), contabilità (Fatture in Cloud, TeamSystem), email marketing (Mailchimp, Klaviyo), HR e molto altro.',
+      },
+      {
+        question: 'Quanto costa implementare automazioni aziendali?',
+        answer: 'Un\'automazione semplice (es. sincronizzazione CRM-email) parte da €500-800 una tantum. Flussi più complessi con più sistemi coinvolti vanno da €1.500 a €5.000+. Poi c\'è solo il costo mensile degli strumenti usati (Make, Zapier, ecc.), spesso €30-100/mese.',
+      },
+      {
+        question: 'Ho bisogno di un tecnico per gestire le automazioni dopo che le avete create?',
+        answer: 'No. Le automazioni funzionano in modo autonomo 24/7. Ti forniamo documentazione chiara e una dashboard di monitoraggio. Per modifiche future siamo disponibili, ma i flussi più semplici li puoi gestire autonomamente anche senza conoscenze tecniche.',
+      },
+      {
+        question: 'Quanto tempo risparmia mediamente un\'azienda grazie alle automazioni?',
+        answer: 'Le nostre integrazioni risparmiano in media 5-20 ore di lavoro manuale a settimana per PMI con 5-20 dipendenti. Il ROI è solitamente raggiunto entro 2-4 mesi dal go-live. Ogni progetto parte da un\'analisi gratuita del potenziale di risparmio.',
+      },
+    ],
   },
 ];
 

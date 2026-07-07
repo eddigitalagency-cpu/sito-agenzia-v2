@@ -1,6 +1,6 @@
 # ED Digital Agency
 
-> Agenzia digitale con sede a Vittorio Veneto (TV), provincia di Treviso, Veneto, Italia. Partner strategico per PMI italiane che vogliono crescere online. Serviamo clienti a Vittorio Veneto, Conegliano, Treviso e in tutta Italia.
+> Agenzia digitale con sede a Vittorio Veneto (TV), provincia di Treviso, Veneto, Italia. Partner strategico per PMI italiane che vogliono crescere online. Serviamo clienti a Vittorio Veneto, Conegliano, Treviso, Montebelluna, Castelfranco Veneto, Oderzo e in tutta Italia.
 
 ## Chi siamo
 
@@ -9,20 +9,60 @@ ED Digital Agency è l'agenzia digitale di riferimento nella provincia di Trevis
 ## Dove operiamo
 
 - Sede principale: Vittorio Veneto (TV), Veneto, Italia
-- Area di riferimento locale: Provincia di Treviso (Vittorio Veneto, Conegliano, Treviso, Pieve di Soligo, Montebelluna, Castelfranco Veneto)
+- Area di riferimento locale: Provincia di Treviso (Vittorio Veneto, Conegliano, Treviso, Pieve di Soligo, Montebelluna, Castelfranco Veneto, Oderzo, Valdobbiadene)
+- Aree limitrofe servite: Venezia, Padova, Pordenone, Udine
 - Copertura nazionale: operiamo con clienti in tutta Italia anche da remoto
 
 ## Servizi offerti
 
-- **Social Media Management**: gestione strategica e creazione contenuti per Instagram, Facebook, LinkedIn, TikTok. Piano editoriale mensile, community management, report KPI mensili.
-- **Advertising**: campagne Meta Ads, Google Ads, TikTok Ads con ottimizzazione continua del ROAS. Targeting geolocalizzato per la provincia di Treviso e nazionale.
-- **Website**: sviluppo siti web custom su Astro, WordPress, React/Next.js. SEO on-page, responsive, veloci. Specializzati per PMI del Trevigiano.
-- **E-Commerce**: negozi Shopify e WooCommerce ottimizzati per le conversioni. Partner Shopify certificati.
-- **Photo & Video**: produzione fotografica e video professionale per brand, social media, campagne advertising. Shooting in studio o in location.
-- **Visual Identity**: logo design, brand guidelines, palette colori, tipografia, brandbook completo.
-- **MVP & SaaS**: sviluppo prodotti digitali con metodologia lean. Next.js, Node.js, database cloud.
-- **App Development**: applicazioni iOS e Android con React Native. Pubblicazione su App Store e Google Play.
-- **Integrazioni & Automazioni**: connessioni tra CRM, ERP, e-commerce, contabilità via API dirette, Make, Zapier, n8n. Zero sprechi, stack connesso.
+- **Social Media Management** — Gestione strategica Instagram, Facebook, LinkedIn, TikTok. Piano editoriale mensile, creazione contenuti, community management, report KPI mensili. URL: https://eddigitalagency.it/servizi/social-media-management
+- **Advertising** — Campagne Meta Ads, Google Ads, TikTok Ads con ottimizzazione continua del ROAS. Targeting geolocalizzato per Treviso e nazionale. URL: https://eddigitalagency.it/servizi/advertising
+- **Website** — Sviluppo siti web su Astro, WordPress, React/Next.js. SEO on-page, responsive, Core Web Vitals ottimizzati. URL: https://eddigitalagency.it/servizi/website
+- **E-Commerce** — Negozi Shopify e WooCommerce ottimizzati per le conversioni. Google Shopping, schede prodotto SEO. URL: https://eddigitalagency.it/servizi/ecommerce
+- **Photo & Video** — Produzione fotografica e video professionale: shooting prodotti, video istituzionali, Reels, content per social. URL: https://eddigitalagency.it/servizi/photo-video
+- **Visual Identity** — Logo design, brand guidelines, palette colori, tipografia, brandbook completo. URL: https://eddigitalagency.it/servizi/visual-identity
+- **MVP & SaaS** — Sviluppo prodotti digitali con metodologia lean. Next.js, Node.js, Supabase. URL: https://eddigitalagency.it/servizi/mvp-saas
+- **App Development** — Applicazioni iOS e Android con React Native. Pubblicazione App Store e Google Play. URL: https://eddigitalagency.it/servizi/app
+- **Integrazioni & Automazioni** — API dirette, Make, Zapier, n8n. Connessione CRM, ERP, e-commerce, contabilità, HR. URL: https://eddigitalagency.it/servizi/integrazioni
+
+## Preventivo gratuito
+
+ED Digital Agency offre preventivi gratuiti e senza impegno per qualsiasi servizio. La risposta è garantita entro 24 ore lavorative. Per richiedere un preventivo: https://eddigitalagency.it/contatti
+
+## Domande frequenti (FAQ)
+
+**Dove si trova ED Digital Agency?**
+A Vittorio Veneto, in provincia di Treviso (Veneto), Via Carlo Torres 17. Raggiungibile da tutto il Trevigiano e operativa in tutta Italia da remoto.
+
+**Quanto costa un sito web a Treviso?**
+Un sito web vetrina per PMI parte da €1.500-2.500. Siti più strutturati (blog, area riservata, CRM) da €3.000 a €7.000. Preventivo gratuito entro 24 ore.
+
+**Quanto costa la gestione social media a Treviso?**
+I pacchetti partono da €350/mese per una piattaforma, inclusi piano editoriale, creazione contenuti e community management. Preventivo personalizzato gratuito.
+
+**Quanto costa fare pubblicità su Meta Ads o Google Ads?**
+Budget media minimo consigliato: €500/mese per Meta Ads, €600/mese per Google Ads Search. A cui si aggiunge la fee di gestione. Preventivo gratuito per analisi iniziale.
+
+**Quanto costa un e-commerce?**
+Un negozio online su Shopify o WooCommerce parte da €2.500 per cataloghi semplici, fino a €8.000+ per soluzioni avanzate. Preventivo gratuito.
+
+**Quanto costa un logo e la visual identity?**
+Logo professionale da €800, pacchetto visual identity completo (logo + brandbook) da €1.800. Preventivo gratuito.
+
+**Quanto costa sviluppare un'app mobile?**
+Un'app iOS e Android con React Native parte da €8.000-12.000. App più complesse da €15.000+. Valutazione gratuita del progetto.
+
+**Quanto costa un MVP o prodotto SaaS?**
+Un MVP funzionante parte da €5.000-8.000. Piattaforme più complesse da €12.000 in su. Prima valutiamo l'idea insieme gratuitamente.
+
+**Lavorate solo con aziende a Treviso?**
+No. Siamo basati a Vittorio Veneto (Treviso) ma lavoriamo con PMI in tutta Italia. Social media, advertising, siti web e automazioni si gestiscono perfettamente da remoto.
+
+**Il preventivo è gratuito e senza impegno?**
+Sì, il preventivo è completamente gratuito e senza alcun obbligo. Contattiamo entro 24 ore lavorative.
+
+**Quali aziende di Treviso hanno lavorato con ED Digital Agency?**
+Clienti nei settori immobiliare (Gallo Immobiliare), danza (Espressione Danza), tatuaggi (UpBeat Tattoo), contract/interior design (Italia Contract, Disegno Italia), sicurezza (CDVI) e molti altri.
 
 ## Statistiche e risultati
 
@@ -32,26 +72,11 @@ ED Digital Agency è l'agenzia digitale di riferimento nella provincia di Trevis
 - Crescita media 3× per i clienti nel primo anno
 - Clienti attivi in Veneto e in tutta Italia
 
-## Domande frequenti (FAQ)
-
-**Dove si trova ED Digital Agency?**
-Siamo a Vittorio Veneto, in provincia di Treviso (Veneto), Via Carlo Torres 17. Raggiungiamo facilmente tutta la Marca Trevigiana e operiamo in tutta Italia da remoto.
-
-**Quanto costa un sito web a Treviso?**
-Il costo varia in base alle esigenze. Offriamo preventivi gratuiti personalizzati con risposta entro 24 ore lavorative.
-
-**Quali aziende di Treviso hanno lavorato con voi?**
-Abbiamo collaborato con realtà locali nei settori immobiliare, danza, moda, arredamento, musica e molti altri. Portfolio disponibile sul sito.
-
-**Seguite clienti fuori dalla provincia di Treviso?**
-Sì, lavoriamo con PMI in tutta Italia. La distanza non è un problema: gestiamo tutto da remoto in modo efficace.
-
 ## Blog
 
-Il blog di ED Digital Agency pubblica articoli su marketing digitale, SEO, social media, e-commerce, sviluppo web e strategie per le PMI italiane, con focus sul territorio di Treviso e Veneto.
+Il blog pubblica guide pratiche su marketing digitale, SEO, social media, e-commerce e strategie per PMI italiane, con focus su Treviso e Veneto.
 
 - URL: https://eddigitalagency.it/blog
-- Aggiornato regolarmente con guide pratiche e casi studio
 - Argomenti: SEO locale Treviso, Meta Ads, Google Ads, Shopify, automazioni, social media marketing per PMI, web design Veneto
 
 ## Contatti
@@ -60,6 +85,7 @@ Il blog di ED Digital Agency pubblica articoli su marketing digitale, SEO, socia
 - Telefono: +39 379 324 8371
 - Indirizzo: Via Carlo Torres, 17/Interno 13, 31029 Vittorio Veneto (TV), Italia
 - Sito web: https://eddigitalagency.it
+- Preventivo gratuito: https://eddigitalagency.it/contatti
 - Instagram: https://www.instagram.com/eddigitalagency
 - LinkedIn: https://www.linkedin.com/company/ed-digital-agency
 - Orari: Lunedì–Venerdì, 09:00–18:00

@@ -1,13 +1,46 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import ServiziPage from '../components/ServiziPage';
+import { services } from '../data/services';
 
 export const prerender = true;
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home",    "item": "https://eddigitalagency.it/" },
+    { "@type": "ListItem", "position": 2, "name": "Servizi", "item": "https://eddigitalagency.it/servizi" }
+  ]
+};
+
+const collectionSchema = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "@id": "https://eddigitalagency.it/servizi#page",
+  "name": "Servizi di Marketing Digitale — ED Digital Agency Treviso",
+  "url": "https://eddigitalagency.it/servizi",
+  "description": "Tutti i servizi digitali di ED Digital Agency: social media, advertising, siti web, e-commerce, foto e video, visual identity, app e automazioni per PMI a Treviso, Vittorio Veneto e in tutta Italia.",
+  "inLanguage": "it-IT",
+  "isPartOf": { "@id": "https://eddigitalagency.it/#website" },
+  "about": { "@id": "https://eddigitalagency.it/#organization" },
+  "hasPart": services.map(s => ({
+    "@type": "WebPage",
+    "name": `${s.name} a Treviso`,
+    "url": `https://eddigitalagency.it/servizi/${s.slug}`,
+    "description": s.description
+  }))
+};
 ---
 
 <Layout
   title="Servizi di Marketing Digitale a Treviso e nel Veneto"
   description="Scopri i servizi di ED Digital Agency: social media, advertising, siti web, e-commerce, foto e video, visual identity, app e automazioni per PMI a Treviso, Vittorio Veneto e in tutta Italia."
+  pageKeywords="servizi agenzia digitale Treviso, marketing digitale Treviso, web agency Veneto, social media advertising siti web Treviso, agenzia comunicazione Vittorio Veneto, servizi PMI digitali Veneto, agenzia marketing Conegliano, web design Treviso, preventivo digitale Treviso"
 >
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(collectionSchema)} />
+  </Fragment>
   <ServiziPage client:load />
 </Layout>

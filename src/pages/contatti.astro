@@ -3,11 +3,100 @@ import Layout from '../layouts/Layout.astro';
 import ContattiPage from '../components/ContattiPage';
 
 export const prerender = true;
+
+const contactSchema = {
+  "@context": "https://schema.org",
+  "@type": "ContactPage",
+  "@id": "https://eddigitalagency.it/contatti#page",
+  "name": "Richiedi Preventivo — ED Digital Agency Treviso",
+  "url": "https://eddigitalagency.it/contatti",
+  "description": "Richiedi un preventivo gratuito per i tuoi servizi digitali. ED Digital Agency risponde entro 24 ore.",
+  "inLanguage": "it-IT",
+  "isPartOf": { "@id": "https://eddigitalagency.it/#website" },
+  "about": { "@id": "https://eddigitalagency.it/#organization" },
+  "breadcrumb": {
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home",     "item": "https://eddigitalagency.it/" },
+      { "@type": "ListItem", "position": 2, "name": "Contatti", "item": "https://eddigitalagency.it/contatti" }
+    ]
+  }
+};
+
+const offerSchema = {
+  "@context": "https://schema.org",
+  "@type": "Offer",
+  "name": "Consulenza e Preventivo Gratuito",
+  "description": "Richiedi una consulenza gratuita e un preventivo personalizzato per la tua azienda. ED Digital Agency risponde entro 24 ore lavorative.",
+  "url": "https://eddigitalagency.it/contatti",
+  "priceCurrency": "EUR",
+  "price": "0",
+  "availability": "https://schema.org/InStock",
+  "validFrom": "2024-01-01",
+  "seller": {
+    "@type": "LocalBusiness",
+    "@id": "https://eddigitalagency.it/#organization",
+    "name": "ED Digital Agency",
+    "telephone": "+39 379 3248371",
+    "email": "info@eddigitalagency.it"
+  },
+  "itemOffered": {
+    "@type": "Service",
+    "name": "Consulenza Digitale Gratuita",
+    "description": "Consulenza gratuita sulla strategia digitale più adatta alla tua azienda: social media, advertising, sito web, e-commerce, visual identity e automazioni.",
+    "provider": { "@id": "https://eddigitalagency.it/#organization" }
+  }
+};
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Quanto tempo ci vuole per ricevere un preventivo?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Rispondiamo entro 24 ore lavorative a tutte le richieste. Di solito contattiamo il giorno stesso per capire meglio le tue esigenze e inviare un preventivo dettagliato e personalizzato."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Il preventivo è davvero gratuito e senza impegno?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Sì, assolutamente. La consulenza iniziale e il preventivo sono completamente gratuiti e senza alcun obbligo di acquisto. Vogliamo che tu possa valutare la proposta con tutta la tranquillità necessaria."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Lavorate solo a Treviso o anche nel resto d'Italia?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Siamo basati a Vittorio Veneto (Treviso) e seguiamo molti clienti in tutta la provincia e nel Veneto, ma lavoriamo anche con aziende in tutta Italia da remoto. La distanza non è mai un problema."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Quali informazioni serve fornire per richiedere un preventivo?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Basta indicare il tuo nome, azienda, contatto e descrivere brevemente cosa stai cercando. Non serve un brief dettagliato: ci pensiamo noi a fare le domande giuste durante la prima call conoscitiva, sempre gratuita."
+      }
+    }
+  ]
+};
 ---
 
 <Layout
-  title="Contatti — Agenzia Digitale Treviso e Vittorio Veneto"
-  description="Contatta ED Digital Agency, l'agenzia digitale a Vittorio Veneto (TV). Siamo il partner ideale per far crescere la tua azienda online. Risposta garantita entro 24 ore."
+  title="Preventivo Gratuito — Agenzia Digitale a Treviso"
+  description="Richiedi un preventivo gratuito per la tua azienda a ED Digital Agency. Social media, siti web, advertising, e-commerce, video e automazioni. Risposta garantita entro 24 ore — senza impegno."
+  pageKeywords="preventivo agenzia digitale Treviso, contattare web agency Treviso, preventivo sito web Treviso, preventivo social media Treviso, consulenza marketing digitale Veneto, agenzia digitale Vittorio Veneto contatti"
 >
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(contactSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(offerSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  </Fragment>
   <ContattiPage client:load />
 </Layout>

@@ -12,11 +12,97 @@ export function getStaticPaths() {
 const { slug } = Astro.params;
 const service = services.find((s) => s.slug === slug)!;
 const related = getRelatedServices(service.related);
+
+const canonicalURL  = `https://eddigitalagency.it/servizi/${service.slug}`;
+const serviceImg    = new URL(service.heroImage || '/Images/Logo%20ED%20Digitla.png', 'https://eddigitalagency.it').toString();
+
+const pageTitle    = `${service.name} a Treviso e Vittorio Veneto`;
+const pageDesc     = `${service.description} ED Digital Agency, agenzia specializzata a Vittorio Veneto in provincia di Treviso. Preventivo gratuito entro 24 ore.`;
+const pageKeywords = [...service.keywords, 'preventivo gratuito Treviso', 'agenzia digitale Veneto', 'ED Digital Agency'].join(', ');
+
+const areaServed = [
+  { "@type": "City", "name": "Vittorio Veneto" },
+  { "@type": "City", "name": "Treviso" },
+  { "@type": "City", "name": "Conegliano" },
+  { "@type": "City", "name": "Pieve di Soligo" },
+  { "@type": "City", "name": "Montebelluna" },
+  { "@type": "City", "name": "Castelfranco Veneto" },
+  { "@type": "City", "name": "Oderzo" },
+  { "@type": "AdministrativeArea", "name": "Provincia di Treviso" },
+  { "@type": "State", "name": "Veneto" },
+  { "@type": "Country", "name": "Italia" }
+];
+
+const serviceSchema = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "@id": `${canonicalURL}#service`,
+  "name": `${service.name} a Treviso e Vittorio Veneto`,
+  "serviceType": service.name,
+  "description": service.description,
+  "url": canonicalURL,
+  "image": serviceImg,
+  "inLanguage": "it-IT",
+  "provider": {
+    "@type": "LocalBusiness",
+    "@id": "https://eddigitalagency.it/#organization",
+    "name": "ED Digital Agency",
+    "url": "https://eddigitalagency.it",
+    "telephone": "+39 379 3248371",
+    "email": "info@eddigitalagency.it",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Via Carlo Torres, 17/Interno 13",
+      "addressLocality": "Vittorio Veneto",
+      "addressRegion": "Treviso",
+      "postalCode": "31029",
+      "addressCountry": "IT"
+    }
+  },
+  "areaServed": areaServed,
+  "offers": {
+    "@type": "Offer",
+    "name": "Preventivo Gratuito",
+    "url": "https://eddigitalagency.it/contatti",
+    "priceCurrency": "EUR",
+    "price": "0",
+    "description": `Richiedi un preventivo gratuito per ${service.name} entro 24 ore — senza impegno.`,
+    "eligibleRegion": { "@type": "Country", "name": "IT" },
+    "availability": "https://schema.org/InStock"
+  }
+};
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home",     "item": "https://eddigitalagency.it/" },
+    { "@type": "ListItem", "position": 2, "name": "Servizi",  "item": "https://eddigitalagency.it/servizi" },
+    { "@type": "ListItem", "position": 3, "name": service.name, "item": canonicalURL }
+  ]
+};
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": service.faq.map(f => ({
+    "@type": "Question",
+    "name": f.question,
+    "acceptedAnswer": { "@type": "Answer", "text": f.answer }
+  }))
+};
 ---
 
 <Layout
-  title={`${service.name} a Treviso e Vittorio Veneto`}
-  description={`${service.description} ED Digital Agency, agenzia specializzata a Vittorio Veneto in provincia di Treviso. Contattaci per un preventivo gratuito.`}
+  title={pageTitle}
+  description={pageDesc}
+  ogImage={service.heroImage || '/Images/Logo%20ED%20Digitla.png'}
+  pageKeywords={pageKeywords}
 >
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(serviceSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  </Fragment>
   <ServiceDetailPage client:load service={service} related={related} />
 </Layout>
