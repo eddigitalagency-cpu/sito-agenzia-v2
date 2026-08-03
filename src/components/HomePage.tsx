@@ -143,13 +143,7 @@ const services = [
 ];
 
 type CaseStudy = { slug: string; title: string; service: string; services?: string[]; img: string };
-
-const partners = [
-  { src: '/Images/shopify-partner.png',                alt: 'Shopify',    w: 93 },
-  { src: '/Images/wordpress-logo-png-transparent.png', alt: 'WordPress',  w: 96 },
-  { src: '/Images/keliweb-logo-e1522914795801.png',     alt: 'Keliweb',   w: 112 },
-  { src: '/Images/Logo-Litchi-solutions-intero.svg',    alt: 'Litchi',    w: 80 },
-];
+type Partner = { src: string; alt: string; w: number };
 
 // ── Stats ──────────────────────────────────────────────────
 function StatItem({ value, suffix, label }: { value: number; suffix: string; label: string }) {
@@ -166,7 +160,7 @@ function StatItem({ value, suffix, label }: { value: number; suffix: string; lab
   );
 }
 
-export default function HomePage({ projects = [] }: { projects?: CaseStudy[] }) {
+export default function HomePage({ projects = [], partners = [] }: { projects?: CaseStudy[]; partners?: Partner[] }) {
   const caseStudies = projects;
   const caseScrollRef = useRef<HTMLDivElement>(null);
 
@@ -435,24 +429,26 @@ export default function HomePage({ projects = [] }: { projects?: CaseStudy[] }) 
       </section>
 
       {/* ── PARTNERS ─────────────────────────────────────── */}
-      <section className="pb-24 md:pb-32">
-        <div className="max-w-[1200px] mx-auto px-5 md:px-12">
-          <Section>
-            <motion.p variants={fadeUp} className="text-center text-[10px] uppercase tracking-[0.2em] mb-12 font-medium" style={{ color:'rgba(var(--c-text),0.2)' }}>
-              Technology partners
-            </motion.p>
-            <motion.div variants={stagger} className="flex flex-wrap justify-center items-center gap-10 md:gap-16">
-              {partners.map(p => (
-                <motion.img key={p.alt} variants={fadeUp} src={p.src} alt={p.alt}
-                  width={p.w} height={28}
-                  className="h-6 md:h-7 w-auto opacity-20 hover:opacity-50 transition-opacity duration-400"
-                  loading="lazy"
-                  style={{ filter:'var(--partner-filter)' }} />
-              ))}
-            </motion.div>
-          </Section>
-        </div>
-      </section>
+      {partners.length > 0 && (
+        <section className="pb-24 md:pb-32">
+          <div className="max-w-[1200px] mx-auto px-5 md:px-12">
+            <Section>
+              <motion.p variants={fadeUp} className="text-center text-[10px] uppercase tracking-[0.2em] mb-12 font-medium" style={{ color:'rgba(var(--c-text),0.2)' }}>
+                Technology partners
+              </motion.p>
+              <motion.div variants={stagger} className="flex flex-wrap justify-center items-center gap-10 md:gap-16">
+                {partners.map(p => (
+                  <motion.img key={p.alt} variants={fadeUp} src={p.src} alt={p.alt}
+                    width={p.w} height={28}
+                    className="h-6 md:h-7 w-auto opacity-20 hover:opacity-50 transition-opacity duration-400"
+                    loading="lazy"
+                    style={{ filter:'var(--partner-filter)' }} />
+                ))}
+              </motion.div>
+            </Section>
+          </div>
+        </section>
+      )}
 
     </div>
   );

@@ -1,0 +1,277 @@
+---
+export const prerender = false;
+import { getPool, initDB } from '../../../lib/db';
+import { createHash } from 'node:crypto';
+
+function sessionToken(pwd: string) {
+  return createHash('sha256').update(`ed-admin-session:${pwd}`).digest('hex');
+}
+const auth   = Astro.cookies.get('ed-admin');
+const stored = process.env.ADMIN_PASSWORD ?? '';
+if (!stored || auth?.value !== sessionToken(stored)) return Astro.redirect('/admin/login');
+
+await initDB();
+const db = getPool();
+
+const { id } = Astro.params;
+const isNew = id === 'nuovo';
+const partnerId = isNew ? 0 : parseInt(id ?? '0');
+
+type PartnerRow = {
+  id: number; name: string; logo_url: string; width: number;
+  display_order: number; published: boolean;
+};
+
+let partner: PartnerRow | null = null;
+if (!isNew) {
+  if (!partnerId) return Astro.redirect('/admin/partners');
+  const res = await db.query<PartnerRow>('SELECT * FROM technology_partners WHERE id=$1', [partnerId]);
+  if (!res.rowCount) return Astro.redirect('/admin/partners');
+  partner = res.rows[0];
+}
+
+let errorMsg = '';
+
+// ── Handle form POST ────────────────────────────────────────────
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+
+  const name     = String(form.get('name')     ?? '').trim();
+  const logoUrl  = String(form.get('logo_url') ?? '').trim();
+  const width    = parseInt(String(form.get('width') ?? '100')) || 100;
+  const order    = parseInt(String(form.get('display_order') ?? '0')) || 0;
+  const published = form.get('published') === 'on';
+
+  if (!name || !logoUrl) {
+    errorMsg = 'Nome e logo sono obbligatori.';
+  } else {
+    try {
+      if (isNew) {
+        await db.query(
+          `INSERT INTO technology_partners (name,logo_url,width,display_order,published)
+           VALUES ($1,$2,$3,$4,$5)`,
+          [name, logoUrl, width, order, published],
+        );
+      } else {
+        await db.query(
+          `UPDATE technology_partners SET name=$1,logo_url=$2,width=$3,display_order=$4,published=$5,updated_at=NOW()
+           WHERE id=$6`,
+          [name, logoUrl, width, order, published, partnerId],
+        );
+      }
+      return Astro.redirect('/admin/partners');
+    } catch {
+      errorMsg = 'Errore nel salvataggio.';
+    }
+  }
+}
+
+const p = partner;
+const v = (field: 'name' | 'logo_url', fallback = '') => {
+  if (errorMsg) return fallback;
+  return p ? String(p[field] ?? fallback) : fallback;
+};
+
+const pageTitle = isNew ? 'Nuovo Partner' : `Modifica: ${p?.name ?? ''}`;
+---
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>{pageTitle} — Admin</title>
+  <meta name="robots" content="noindex,nofollow"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#080808;color:#fff;font-family:system-ui,sans-serif;min-height:100vh;}
+    a{color:inherit;text-decoration:none;}
+    .topbar{display:flex;align-items:center;gap:12px;padding:0 28px;border-bottom:1px solid rgba(255,255,255,.07);background:#0d0d0d;position:sticky;top:0;z-index:20;height:56px;}
+    .brand{font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.4);}
+    .badge{background:#FF6A00;color:#000;font-size:10px;font-weight:800;padding:3px 8px;border-radius:99px;}
+    .btn-back{padding:7px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.45);font-size:12px;text-decoration:none;white-space:nowrap;}
+    .btn-back:hover{color:#fff;border-color:rgba(255,255,255,.25);}
+    .wrap{max-width:640px;margin:0 auto;padding:32px 24px;}
+    .page-title{font-size:22px;font-weight:800;margin-bottom:28px;}
+    .error-box{background:rgba(255,68,68,.1);border:1px solid rgba(255,68,68,.3);border-radius:10px;padding:12px 16px;color:#ff6666;font-size:13px;margin-bottom:20px;}
+
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+    @media(max-width:640px){.form-grid{grid-template-columns:1fr;}}
+    .form-full{grid-column:1/-1;}
+    .field{display:flex;flex-direction:column;gap:6px;}
+    .field label{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.35);font-weight:600;}
+    .field input{
+      padding:10px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
+      border-radius:9px;color:#fff;font-size:14px;font-family:inherit;outline:none;transition:border-color .15s;
+    }
+    .field input:focus{border-color:rgba(255,106,0,.5);}
+    .field input::placeholder{color:rgba(255,255,255,.2);}
+    .field-hint{font-size:11px;color:rgba(255,255,255,.25);margin-top:2px;}
+
+    .img-upload-area{border:2px dashed rgba(255,255,255,.15);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:border-color .15s;position:relative;}
+    .img-upload-area:hover{border-color:rgba(255,106,0,.4);}
+    .img-preview{max-width:100%;max-height:100px;object-fit:contain;border-radius:8px;margin-bottom:12px;display:none;background:#1a1a1a;padding:10px;}
+    .img-preview.has-img{display:inline-block;}
+    .upload-label{font-size:13px;color:rgba(255,255,255,.4);cursor:pointer;}
+    .upload-label strong{color:#FF6A00;}
+    .upload-btn{margin-top:8px;padding:7px 16px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:7px;color:rgba(255,255,255,.6);font-size:12px;cursor:pointer;transition:all .15s;}
+    .upload-btn:hover{color:#fff;border-color:rgba(255,255,255,.3);}
+    .upload-spinner{display:none;font-size:12px;color:rgba(255,255,255,.35);margin-top:8px;}
+    .upload-err{display:none;font-size:12px;color:#ff6666;margin-top:6px;}
+
+    .toggle-row{display:flex;align-items:center;gap:10px;}
+    .toggle-row input[type=checkbox]{width:18px;height:18px;accent-color:#FF6A00;cursor:pointer;}
+    .toggle-row label{font-size:14px;color:rgba(255,255,255,.75);cursor:pointer;}
+
+    .form-actions{display:flex;gap:12px;align-items:center;margin-top:8px;}
+    .btn-save{padding:12px 28px;background:#FF6A00;color:#000;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.07em;transition:opacity .15s;}
+    .btn-save:hover{opacity:.85;}
+    .btn-cancel-link{padding:12px 20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:9px;color:rgba(255,255,255,.5);font-size:13px;text-decoration:none;transition:all .15s;}
+    .btn-cancel-link:hover{color:#fff;border-color:rgba(255,255,255,.25);}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="brand">ED Digital</span>
+      <span class="badge">Admin</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
+      <a href="/admin/partners" class="btn-back">← Partners</a>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="page-title">{pageTitle}</div>
+
+    {errorMsg && <div class="error-box">{errorMsg}</div>}
+
+    <form method="POST" id="partner-form">
+      {!isNew && <input type="hidden" name="id" value={partnerId}/>}
+
+      <div class="form-grid">
+
+        <!-- Name -->
+        <div class="field form-full">
+          <label>Nome *</label>
+          <input type="text" name="name" required value={v('name')} placeholder="es. Shopify" id="input-name"/>
+          <span class="field-hint">Usato come testo alternativo (accessibilità)</span>
+        </div>
+
+        <!-- Logo -->
+        <div class="field form-full">
+          <label>Logo *</label>
+          <input type="hidden" name="logo_url" id="logo-url-val" value={v('logo_url')}/>
+
+          <div class="img-upload-area" id="upload-area">
+            <img class={`img-preview${v('logo_url') ? ' has-img' : ''}`} id="img-preview"
+              src={v('logo_url') || undefined} alt="Anteprima"/>
+            <div class="upload-label">
+              Trascina qui un'immagine o <strong>clicca per caricare</strong>
+            </div>
+            <input type="file" id="file-input" accept="image/*" style="display:none"/>
+            <button type="button" class="upload-btn" id="upload-btn">Scegli file</button>
+            <div class="upload-spinner" id="upload-spinner">Caricamento in corso...</div>
+            <div class="upload-err" id="upload-err"></div>
+          </div>
+
+          <span class="field-hint">PNG, SVG, WebP — sfondo trasparente consigliato. Max 8 MB. O incolla un URL:</span>
+          <input type="text" id="logo-url-input" placeholder="Oppure incolla URL immagine..." value={v('logo_url')} style="margin-top:6px"/>
+        </div>
+
+        <!-- Width -->
+        <div class="field">
+          <label>Larghezza (px)</label>
+          <input type="number" name="width" value={p?.width ?? 100} min="20" max="400"/>
+          <span class="field-hint">Larghezza del logo nella sezione partner</span>
+        </div>
+
+        <!-- Order -->
+        <div class="field">
+          <label>Ordine visualizzazione</label>
+          <input type="number" name="display_order" value={p?.display_order ?? 0} min="0" max="999"/>
+          <span class="field-hint">Numeri più bassi appaiono prima</span>
+        </div>
+
+        <!-- Published -->
+        <div class="field form-full">
+          <div class="toggle-row">
+            <input type="checkbox" name="published" id="chk-published" checked={p?.published !== false}/>
+            <label for="chk-published">Visibile sul sito</label>
+          </div>
+        </div>
+
+      </div><!-- /form-grid -->
+
+      <div class="form-actions">
+        <button type="submit" class="btn-save">{isNew ? 'Crea Partner' : 'Salva Modifiche'}</button>
+        <a href="/admin/partners" class="btn-cancel-link">Annulla</a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    // ── Image upload ───────────────────────────────────────
+    const fileInput   = document.getElementById('file-input');
+    const uploadBtn   = document.getElementById('upload-btn');
+    const uploadArea  = document.getElementById('upload-area');
+    const imgPreview  = document.getElementById('img-preview');
+    const logoVal     = document.getElementById('logo-url-val');
+    const spinner     = document.getElementById('upload-spinner');
+    const uploadErr   = document.getElementById('upload-err');
+    const urlInput    = document.getElementById('logo-url-input');
+
+    uploadBtn?.addEventListener('click', () => fileInput?.click());
+    uploadArea?.addEventListener('click', (e) => { if (e.target === uploadArea) fileInput?.click(); });
+
+    uploadArea?.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.style.borderColor='rgba(255,106,0,.6)'; });
+    uploadArea?.addEventListener('dragleave', () => { uploadArea.style.borderColor=''; });
+    uploadArea?.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.style.borderColor = '';
+      const f = e.dataTransfer?.files[0];
+      if (f) uploadFile(f);
+    });
+
+    fileInput?.addEventListener('change', () => {
+      const f = fileInput.files[0];
+      if (f) uploadFile(f);
+    });
+
+    async function uploadFile(file) {
+      uploadErr.style.display = 'none';
+      spinner.style.display = 'block';
+      uploadBtn.disabled = true;
+      try {
+        const fd = new FormData();
+        fd.append('file', file);
+        const res = await fetch('/api/admin/upload', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.url) {
+          setImage(data.url);
+        } else {
+          showErr(data.error || 'Errore upload');
+        }
+      } catch { showErr('Errore di rete'); }
+      spinner.style.display = 'none';
+      uploadBtn.disabled = false;
+    }
+
+    function setImage(url) {
+      if (imgPreview) { imgPreview.src = url; imgPreview.classList.add('has-img'); }
+      if (logoVal)    logoVal.value = url;
+      if (urlInput)   urlInput.value = url;
+    }
+
+    function showErr(msg) {
+      uploadErr.textContent = msg;
+      uploadErr.style.display = 'block';
+    }
+
+    urlInput?.addEventListener('input', () => {
+      const url = urlInput.value.trim();
+      if (logoVal) logoVal.value = url;
+      if (url && imgPreview) { imgPreview.src = url; imgPreview.classList.add('has-img'); }
+    });
+  </script>
+</body>
+</html>

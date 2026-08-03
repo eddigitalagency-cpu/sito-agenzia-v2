@@ -115,6 +115,17 @@ export async function initDB(): Promise<void> {
     ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS scheduled_at TIMESTAMPTZ;
     CREATE INDEX IF NOT EXISTS idx_blog_published ON blog_posts(published, display_order);
     CREATE INDEX IF NOT EXISTS idx_blog_scheduled ON blog_posts(scheduled_at) WHERE scheduled_at IS NOT NULL;
+
+    CREATE TABLE IF NOT EXISTS technology_partners (
+      id            SERIAL       PRIMARY KEY,
+      name          TEXT         NOT NULL,
+      logo_url      TEXT         NOT NULL DEFAULT '',
+      width         INT          NOT NULL DEFAULT 100,
+      display_order INT          NOT NULL DEFAULT 0,
+      published     BOOLEAN      NOT NULL DEFAULT true,
+      created_at    TIMESTAMPTZ  DEFAULT NOW(),
+      updated_at    TIMESTAMPTZ  DEFAULT NOW()
+    );
   `);
 
   // Seed projects_db from static data on first run
@@ -137,6 +148,30 @@ export async function initDB(): Promise<void> {
       }
     }
   } catch (e) { console.error('Seed error:', e); }
+
+  // Seed technology_partners from previous hardcoded list on first run
+  try {
+    const pool = getPool();
+    const { rows: [{ count }] } = await pool.query<{ count: number }>(
+      'SELECT COUNT(*)::int AS count FROM technology_partners'
+    );
+    if (count === 0) {
+      const staticPartners = [
+        { name: 'Shopify',   logo_url: '/Images/shopify-partner.png',                width: 93 },
+        { name: 'WordPress', logo_url: '/Images/wordpress-logo-png-transparent.png', width: 96 },
+        { name: 'Keliweb',   logo_url: '/Images/keliweb-logo-e1522914795801.png',    width: 112 },
+        { name: 'Litchi',    logo_url: '/Images/Logo-Litchi-solutions-intero.svg',   width: 80 },
+      ];
+      for (let i = 0; i < staticPartners.length; i++) {
+        const p = staticPartners[i];
+        await pool.query(
+          `INSERT INTO technology_partners (name,logo_url,width,display_order)
+           VALUES ($1,$2,$3,$4)`,
+          [p.name, p.logo_url, p.width, i],
+        );
+      }
+    }
+  } catch (e) { console.error('Seed error (partners):', e); }
 
   _ready = true;
 }
