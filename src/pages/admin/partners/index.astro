@@ -13,11 +13,18 @@ if (!stored || auth?.value !== sessionToken(stored)) return Astro.redirect('/adm
 await initDB();
 const db = getPool();
 
-// Handle delete
+// Handle delete / toggle visibility
 if (Astro.request.method === 'POST') {
   const form = await Astro.request.formData();
   const id = parseInt(String(form.get('id') ?? '0'));
-  if (id) await db.query('DELETE FROM technology_partners WHERE id=$1', [id]);
+  const action = String(form.get('action') ?? 'delete');
+  if (id) {
+    if (action === 'toggle') {
+      await db.query('UPDATE technology_partners SET published = NOT published, updated_at = NOW() WHERE id=$1', [id]);
+    } else {
+      await db.query('DELETE FROM technology_partners WHERE id=$1', [id]);
+    }
+  }
   return Astro.redirect('/admin/partners');
 }
 
@@ -60,6 +67,9 @@ const rows = (await db.query<Row>(
     .status-dot.on{background:#22c55e;}
     .status-dot.off{background:#555;}
     .post-actions{display:flex;gap:8px;flex-shrink:0;}
+    .btn-eye{width:32px;height:32px;display:flex;align-items:center;justify-content:center;padding:0;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:7px;color:rgba(255,255,255,.6);font-size:14px;cursor:pointer;transition:all .15s;flex-shrink:0;}
+    .btn-eye:hover{color:#fff;border-color:rgba(255,255,255,.25);}
+    .btn-eye.is-hidden{color:rgba(255,255,255,.25);}
     .btn-edit{padding:6px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:7px;color:rgba(255,255,255,.6);font-size:12px;cursor:pointer;text-decoration:none;transition:all .15s;white-space:nowrap;}
     .btn-edit:hover{color:#fff;border-color:rgba(255,255,255,.25);}
     .btn-del{padding:6px 14px;background:transparent;border:1px solid rgba(255,68,68,.2);border-radius:7px;color:rgba(255,68,68,.5);font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap;}
@@ -113,6 +123,13 @@ const rows = (await db.query<Row>(
                 </div>
               </div>
               <div class="post-actions">
+                <form method="POST" style="display:inline">
+                  <input type="hidden" name="id" value={p.id}/>
+                  <input type="hidden" name="action" value="toggle"/>
+                  <button type="submit" class={`btn-eye${p.published ? '' : ' is-hidden'}`} title={p.published ? 'Nascondi dal sito' : 'Rendi visibile sul sito'}>
+                    {p.published ? '👁' : '🚫'}
+                  </button>
+                </form>
                 <a href={`/admin/partners/${p.id}`} class="btn-edit">Modifica</a>
                 <form method="POST" style="display:inline" onsubmit={`return confirm('Eliminare il partner «${p.name}»?')`}>
                   <input type="hidden" name="id" value={p.id}/>
