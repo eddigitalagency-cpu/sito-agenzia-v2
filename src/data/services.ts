@@ -342,9 +342,9 @@ export const services: Service[] = [
   {
     slug: 'mvp-saas',
     name: 'MVP & SaaS',
-    tagline: "Dal prototipo al prodotto in settimane, non anni.",
-    description: 'Trasformiamo la tua idea in un prodotto digitale funzionante. Sviluppiamo MVP con le tecnologie più moderne per validare il mercato rapidamente.',
-    longDescription: "Hai un'idea per un prodotto digitale ma non sai da dove iniziare? Lavoriamo con startup e imprenditori per trasformare idee in prodotti reali. Seguiamo la metodologia lean: costruiamo il minimo necessario per validare il mercato, raccogliere feedback reali e iterare velocemente.",
+    tagline: "Dal prototipo al gestionale su misura, in settimane non anni.",
+    description: 'Trasformiamo la tua idea in un prodotto digitale funzionante e sviluppiamo software gestionali personalizzati per aziende: magazzino, produzione, CRM, contabilità. Applicazioni web su misura con le tecnologie più moderne.',
+    longDescription: "Hai un'idea per un prodotto digitale o hai bisogno di un gestionale su misura per la tua azienda? Lavoriamo sia con startup che vogliono validare un prodotto, sia con PMI che hanno processi troppo specifici per i software standard. Sviluppiamo applicazioni web custom — dai gestionali interni (magazzino, produzione, CRM, fatturazione) ai prodotti SaaS — seguendo un approccio lean: costruiamo il necessario per iniziare a lavorarci davvero, raccogliamo feedback reali e iteriamo velocemente.",
     heroImage: '/Images/Servizio_Gestionale%26Software.jpg',
     overviewImage: '/Images/Servizio_Gestionale%26Software.jpg',
     gallery: [
@@ -353,38 +353,45 @@ export const services: Service[] = [
       '/Images/Servizio_Gestionale%26Software.jpg',
     ],
     includes: [
-      'Discovery e definizione del prodotto',
+      'Discovery e definizione del prodotto o del gestionale',
       'UX design e prototipo interattivo (Figma)',
       'Sviluppo full-stack (Next.js, Node.js, Supabase)',
+      'Sviluppo gestionali su misura: magazzino, produzione, CRM, fatturazione',
       'Autenticazione, database e API',
       'Deploy su infrastruttura cloud scalabile',
       'Supporto post-lancio e sviluppo iterativo',
     ],
     platforms: ['Next.js', 'Node.js', 'Supabase', 'Railway', 'Vercel'],
     process: [
-      { step: '01', title: 'Ideazione', description: 'Definiamo il core del prodotto: quali problemi risolve e per chi.' },
+      { step: '01', title: 'Ideazione', description: 'Definiamo il core del prodotto o del gestionale: quali problemi risolve e per chi.' },
       { step: '02', title: 'Design', description: 'Prototipiamo il flusso utente principale in Figma prima di scrivere codice.' },
       { step: '03', title: 'Build', description: 'Sviluppiamo le feature core con sprint settimanali e review frequenti.' },
       { step: '04', title: 'Launch & Iterate', description: 'Pubblichiamo, raccogliamo feedback reali e continuiamo a costruire.' },
     ],
-    related: ['app', 'website', 'visual-identity'],
+    related: ['app', 'website', 'integrazioni'],
     keywords: [
       'sviluppo software Treviso', 'MVP startup Veneto', 'SaaS development Treviso',
+      'software gestionale personalizzato Treviso', 'sviluppo gestionale aziendale Veneto',
+      'applicazioni web su misura PMI', 'gestionale custom Treviso', 'software aziendale su misura Veneto',
       'sviluppo prodotto digitale Veneto', 'software house Treviso', 'prototipo digitale PMI',
       'sviluppo web app Treviso', 'Next.js sviluppo Veneto',
     ],
     faq: [
       {
-        question: 'Quanto costa sviluppare un MVP a Treviso?',
-        answer: 'Un MVP ben costruito per validare un\'idea di business parte da €5.000-8.000 per prodotti semplici, fino a €15.000+ per piattaforme più complesse. Il costo dipende dalle funzionalità core necessarie. Prima valutiamo insieme l\'idea gratuitamente.',
+        question: 'Sviluppate anche software gestionali per aziende, non solo startup?',
+        answer: 'Sì. Oltre agli MVP per startup, sviluppiamo gestionali e applicazioni web su misura per PMI: gestione magazzino, produzione, CRM, fatturazione e qualsiasi processo troppo specifico per i software standard. Analizziamo il tuo flusso di lavoro reale e costruiamo l\'applicativo su misura.',
       },
       {
-        question: 'Quanto tempo ci vuole per andare live con il primo prodotto?',
-        answer: 'Con la metodologia lean, il primo MVP funzionante è disponibile in 6-12 settimane. Lavoriamo in sprint settimanali con demo frequenti così puoi vedere il progresso e dare feedback in ogni fase.',
+        question: 'Quanto costa sviluppare un MVP o un gestionale su misura a Treviso?',
+        answer: 'Un MVP o un gestionale essenziale per validare un processo parte da €5.000-8.000, fino a €15.000+ per piattaforme più complesse con più moduli e integrazioni. Il costo dipende dalle funzionalità core necessarie. Prima valutiamo insieme il progetto gratuitamente.',
+      },
+      {
+        question: 'Quanto tempo ci vuole per andare live con il primo prodotto o gestionale?',
+        answer: 'Con la metodologia lean, la prima versione funzionante è disponibile in 6-12 settimane. Lavoriamo in sprint settimanali con demo frequenti così puoi vedere il progresso e dare feedback in ogni fase.',
       },
       {
         question: 'Cosa succede se voglio aggiungere funzionalità dopo il lancio?',
-        answer: 'Il nostro approccio è pensato per crescere nel tempo. Dopo il lancio dell\'MVP raccogliamo feedback reali degli utenti e continuiamo a sviluppare le feature più richieste con sprint iterativi. Puoi scalare il prodotto a tuo ritmo.',
+        answer: 'Il nostro approccio è pensato per crescere nel tempo. Dopo il lancio raccogliamo feedback reali degli utenti e continuiamo a sviluppare le feature più richieste con sprint iterativi. Puoi scalare il prodotto o il gestionale a tuo ritmo.',
       },
       {
         question: 'Il codice sarà nostro o rimarrà vostro?',

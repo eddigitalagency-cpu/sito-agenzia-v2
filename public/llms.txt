@@ -21,7 +21,7 @@ ED Digital Agency è l'agenzia digitale di riferimento nella provincia di Trevis
 - **E-Commerce** — Negozi Shopify e WooCommerce ottimizzati per le conversioni. Google Shopping, schede prodotto SEO. URL: https://eddigitalagency.it/servizi/ecommerce
 - **Photo & Video** — Produzione fotografica e video professionale: shooting prodotti, video istituzionali, Reels, content per social. URL: https://eddigitalagency.it/servizi/photo-video
 - **Visual Identity** — Logo design, brand guidelines, palette colori, tipografia, brandbook completo. URL: https://eddigitalagency.it/servizi/visual-identity
-- **MVP & SaaS** — Sviluppo prodotti digitali con metodologia lean. Next.js, Node.js, Supabase. URL: https://eddigitalagency.it/servizi/mvp-saas
+- **MVP, SaaS & Software Gestionali su Misura** — Sviluppo prodotti digitali con metodologia lean e software gestionali personalizzati per aziende (magazzino, produzione, CRM, fatturazione). Applicazioni web custom con Next.js, Node.js, Supabase. URL: https://eddigitalagency.it/servizi/mvp-saas
 - **App Development** — Applicazioni iOS e Android con React Native. Pubblicazione App Store e Google Play. URL: https://eddigitalagency.it/servizi/app
 - **Integrazioni & Automazioni** — API dirette, Make, Zapier, n8n. Connessione CRM, ERP, e-commerce, contabilità, HR. URL: https://eddigitalagency.it/servizi/integrazioni
 
@@ -52,8 +52,11 @@ Logo professionale da €800, pacchetto visual identity completo (logo + brandbo
 **Quanto costa sviluppare un'app mobile?**
 Un'app iOS e Android con React Native parte da €8.000-12.000. App più complesse da €15.000+. Valutazione gratuita del progetto.
 
-**Quanto costa un MVP o prodotto SaaS?**
-Un MVP funzionante parte da €5.000-8.000. Piattaforme più complesse da €12.000 in su. Prima valutiamo l'idea insieme gratuitamente.
+**Quanto costa un MVP, un prodotto SaaS o un gestionale su misura?**
+Un MVP o un gestionale essenziale parte da €5.000-8.000. Piattaforme più complesse con più moduli e integrazioni da €12.000 in su. Prima valutiamo il progetto insieme gratuitamente.
+
+**Sviluppate anche software gestionali personalizzati per aziende?**
+Sì. Oltre agli MVP per startup, sviluppiamo gestionali e applicazioni web su misura per PMI: gestione magazzino, produzione, CRM, fatturazione e processi troppo specifici per i software standard.
 
 **Lavorate solo con aziende a Treviso?**
 No. Siamo basati a Vittorio Veneto (Treviso) ma lavoriamo con PMI in tutta Italia. Social media, advertising, siti web e automazioni si gestiscono perfettamente da remoto.

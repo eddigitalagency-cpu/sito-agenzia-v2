@@ -30,6 +30,24 @@ const breadcrumbSchema = {
     { '@type': 'ListItem', 'position': 2, 'name': 'Blog', 'item': `${BASE}/blog` },
   ],
 };
+
+const collectionSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  '@id': `${BASE}/blog#page`,
+  'name': 'Blog — Strategie e Risorse per il Marketing Digitale — ED Digital Agency',
+  'url': `${BASE}/blog`,
+  'description': 'Guide, strategie e casi studio sul marketing digitale per PMI italiane. Social media, advertising, web design, SEO e molto altro da ED Digital Agency a Treviso.',
+  'inLanguage': 'it-IT',
+  'isPartOf': { '@id': `${BASE}/#website` },
+  'about': { '@id': `${BASE}/#organization` },
+  'hasPart': rows.map(p => ({
+    '@type': 'BlogPosting',
+    'headline': p.title,
+    'url': `${BASE}/blog/${p.slug}`,
+    'description': p.excerpt,
+  })),
+};
 ---
 
 <Layout
@@ -39,6 +57,7 @@ const breadcrumbSchema = {
 >
   <Fragment slot="head">
     <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(collectionSchema)} />
   </Fragment>
 
   <BlogPage client:load posts={rows} />
