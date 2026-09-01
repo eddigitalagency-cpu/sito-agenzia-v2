@@ -393,24 +393,24 @@ const de: typeof it = {
     text: 'Dieser Inhalt ist in dieser Sprache noch nicht verfügbar — auf Italienisch angezeigt.',
   },
   seo: {
-    defaultTitle: 'Digitalagentur aus Italien — Individuelle Software, Web & Marketing',
-    defaultDescription: 'ED Digital Agency ist eine italienische Digitalagentur, die Unternehmen in ganz Europa und international betreut. Social Media, Advertising, Websites, E-Commerce, Corporate Design sowie individuelle Businesssoftware und Webanwendungen für wachsende Unternehmen.',
-    defaultKeywords: 'Digitalagentur Österreich, individuelle Businesssoftware, Social Media Marketing Agentur Österreich, Webagentur Österreich, E-Commerce Agentur, Software Entwicklung Österreich, App Entwicklung Österreich, MVP Entwicklung, ED Digital Agency',
-    orgDescription: 'ED Digital Agency ist eine italienische Digitalagentur mit Sitz in der Region Venetien, die Unternehmen in Italien, Österreich und international betreut. Unsere Schwerpunkte: Social-Media-Marketing, Advertising, Websites, E-Commerce, Corporate Design, individuelle Businesssoftware und Prozessautomatisierung.',
-    websiteName: 'ED Digital Agency — Digitalagentur aus Italien',
-    websiteDescription: 'Italienische Digitalagentur. Social Media, Advertising, Websites, E-Commerce, Corporate Design und individuelle Businesssoftware für Unternehmen in ganz Europa.',
+    defaultTitle: 'Digitalagentur aus Italien mit Standort Wien — Individuelle Software, Web & Marketing',
+    defaultDescription: 'ED Digital Agency ist eine italienische Digitalagentur, die mit einem zweiten Standort nach Wien expandiert. Social Media, Advertising, Websites, E-Commerce, Corporate Design sowie individuelle Businesssoftware und Webanwendungen für Unternehmen in Österreich und Europa.',
+    defaultKeywords: 'Digitalagentur Wien, Webagentur Wien, individuelle Businesssoftware Wien, Social Media Marketing Agentur Wien, Werbeagentur Wien, E-Commerce Agentur Österreich, Softwareentwicklung Wien, App Entwicklung Österreich, ED Digital Agency',
+    orgDescription: 'ED Digital Agency ist eine italienische Digitalagentur mit Sitz in der Region Venetien, die mit einem zweiten Standort nach Wien expandiert und Unternehmen in Österreich, Italien und international betreut. Unsere Schwerpunkte: Social-Media-Marketing, Advertising, Websites, E-Commerce, Corporate Design, individuelle Businesssoftware und Prozessautomatisierung.',
+    websiteName: 'ED Digital Agency — Digitalagentur aus Italien mit Standort Wien',
+    websiteDescription: 'Italienische Digitalagentur mit zweitem Standort in Wien. Social Media, Advertising, Websites, E-Commerce, Corporate Design und individuelle Businesssoftware für Unternehmen in Österreich und Europa.',
     faq: [
       {
         q: 'Wo hat ED Digital Agency ihren Sitz?',
-        a: 'ED Digital Agency hat ihren Sitz in Vittorio Veneto, in der Region Venetien in Italien. Wir betreuen Kunden in Italien, Österreich und international — remote sowie persönlich.',
+        a: 'ED Digital Agency hat ihren Hauptsitz in Vittorio Veneto, in der Region Venetien in Italien, und baut derzeit einen zweiten Standort in Wien auf. Wir betreuen Kunden in Österreich, Italien und international — remote sowie persönlich.',
       },
       {
         q: 'Welche Leistungen bietet ED Digital Agency an?',
         a: 'Wir bieten Social Media Management, Meta- und Google-Advertising, Website- und E-Commerce-Entwicklung, professionelle Foto- und Videoproduktion, Corporate Design und Logo-Design, Entwicklung von MVPs, SaaS, mobilen Apps und individueller Businesssoftware sowie Integrationen und Prozessautomatisierung.',
       },
       {
-        q: 'Betreut ED Digital Agency auch Kunden außerhalb Italiens?',
-        a: 'Ja, wir betreuen Kunden in ganz Italien, in Österreich und international. Wir bauen unsere Präsenz in Österreich aktiv aus und arbeiten remote mit Unternehmen in ganz Europa zusammen.',
+        q: 'Betreut ED Digital Agency auch Unternehmen in Wien und Österreich?',
+        a: 'Ja — das ist unser Fokus für die österreichische Expansion. Wir bauen aktuell einen Standort in Wien auf und betreuen bereits jetzt Unternehmen in Wien und ganz Österreich, remote und persönlich vor Ort.',
       },
       {
         q: 'Was kostet eine Website bei ED Digital Agency?',

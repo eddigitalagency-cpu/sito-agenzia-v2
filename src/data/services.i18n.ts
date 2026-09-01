@@ -74,7 +74,7 @@ export const serviceTranslations: Record<string, { en: ServiceTranslation; de: S
         { title: 'Optimierung', description: 'Wir analysieren die Daten jeden Monat und passen die Strategie an die Ergebnisse an.' },
       ],
       keywords: [
-        'Social Media Management Agentur Österreich', 'Social Media Marketing Agentur', 'Community Management Agentur',
+        'Social Media Agentur Wien', 'Social Media Management Agentur Österreich', 'Social Media Marketing Agentur', 'Community Management Agentur',
         'Instagram Content Strategie Österreich', 'Social Media Betreuung KMU', 'Social-Media-Agentur Deutschland',
         'Content Erstellung für Unternehmen', 'Instagram Facebook Betreuung Agentur',
       ],
@@ -161,7 +161,7 @@ export const serviceTranslations: Record<string, { en: ServiceTranslation; de: S
         { title: 'Optimierung', description: 'Wir überwachen täglich und optimieren, um den ROAS zu maximieren.' },
       ],
       keywords: [
-        'Meta Ads Agentur Österreich', 'Google Ads Agentur Österreich', 'Werbeagentur Online Marketing Österreich',
+        'Werbeagentur Wien', 'Meta Ads Agentur Österreich', 'Google Ads Agentur Österreich', 'Werbeagentur Online Marketing Österreich',
         'Facebook Ads Betreuung KMU', 'Google Ads für Unternehmen Deutschland', 'Performance Marketing Agentur Österreich',
         'Online Werbekampagnen Agentur', 'TikTok Ads Agentur',
       ],
@@ -249,7 +249,7 @@ export const serviceTranslations: Record<string, { en: ServiceTranslation; de: S
         { title: 'Launch', description: 'Wir testen jedes Detail, optimieren die Performance und veröffentlichen die Website.' },
       ],
       keywords: [
-        'Webagentur Österreich', 'Website erstellen lassen Österreich', 'Webdesign Agentur Österreich',
+        'Webagentur Wien', 'Website erstellen lassen Wien', 'Webagentur Österreich', 'Webdesign Agentur Österreich',
         'WordPress Agentur Österreich', 'Firmenwebsite erstellen Deutschland', 'professionelle Webentwicklung',
         'SEO Website Agentur Österreich', 'Astro Webentwicklung',
       ],
@@ -337,7 +337,7 @@ export const serviceTranslations: Record<string, { en: ServiceTranslation; de: S
         { title: 'Go Live', description: 'Wir testen den kompletten Kaufprozess, schulen Ihr Team und starten den Shop.' },
       ],
       keywords: [
-        'Shopify Agentur Österreich', 'WooCommerce Agentur Österreich', 'Online-Shop erstellen lassen Österreich',
+        'E-Commerce Agentur Wien', 'Shopify Agentur Österreich', 'WooCommerce Agentur Österreich', 'Online-Shop erstellen lassen Österreich',
         'E-Commerce Agentur Deutschland', 'Shopify Partner Agentur', 'Onlineshop Entwicklung KMU',
         'individueller Online-Shop', 'E-Commerce Website Agentur',
       ],
@@ -425,7 +425,7 @@ export const serviceTranslations: Record<string, { en: ServiceTranslation; de: S
         { title: 'Postproduktion', description: 'Editing, Retusche, Color Grading und Lieferung der finalen Dateien.' },
       ],
       keywords: [
-        'Fotograf für Unternehmen Österreich', 'Videoproduktion Agentur Österreich', 'Produktfotografie Agentur',
+        'Fotograf für Unternehmen Wien', 'Videoproduktion Agentur Wien', 'Fotograf für Unternehmen Österreich', 'Produktfotografie Agentur',
         'Imagefilm Produktion Österreich', 'Unternehmensfotografie Agentur', 'Social Media Video Produktion',
         'Content Creation Studio Österreich', 'Werbefotograf Österreich',
       ],
@@ -513,7 +513,7 @@ export const serviceTranslations: Record<string, { en: ServiceTranslation; de: S
         { title: 'Übergabe', description: 'Wir liefern alle Quelldateien sowie das Brandbook mit den Nutzungsregeln.' },
       ],
       keywords: [
-        'Brand Identity Agentur Österreich', 'Logo Design Agentur Österreich', 'Corporate Design Agentur',
+        'Corporate Design Agentur Wien', 'Logo Design Agentur Wien', 'Brand Identity Agentur Österreich', 'Corporate Design Agentur',
         'Branding Agentur KMU', 'Brandbook erstellen lassen', 'professionelles Logo Design Österreich',
         'Grafikdesign Agentur Österreich', 'visuelle Markenidentität',
       ],
@@ -607,7 +607,7 @@ export const serviceTranslations: Record<string, { en: ServiceTranslation; de: S
         { title: 'Launch & Iterate', description: 'Wir veröffentlichen, sammeln echtes Feedback und entwickeln kontinuierlich weiter.' },
       ],
       keywords: [
-        'individuelle Businesssoftware Österreich', 'Softwareentwicklung Agentur Österreich', 'SaaS MVP Entwicklung',
+        'individuelle Businesssoftware Wien', 'Softwareentwicklung Agentur Wien', 'individuelle Businesssoftware Österreich', 'SaaS MVP Entwicklung',
         'Softwareentwicklung für Startups', 'individuelle ERP Entwicklung Österreich', 'Business Software Entwicklung KMU',
         'Webanwendung entwickeln lassen', 'Softwareagentur Österreich', 'Next.js Entwicklung Agentur', 'Produktentwicklung digitale Produkte',
       ],
@@ -699,7 +699,7 @@ export const serviceTranslations: Record<string, { en: ServiceTranslation; de: S
         { title: 'Store', description: 'Wir übernehmen die Veröffentlichung im App Store und bei Google Play, inklusive Review-Prozess.' },
       ],
       keywords: [
-        'App Entwicklung Österreich', 'React Native Agentur Österreich', 'iOS Android App Entwicklung',
+        'App Entwicklung Wien', 'React Native Agentur Wien', 'App Entwicklung Österreich', 'iOS Android App Entwicklung',
         'App Entwicklung Agentur Deutschland', 'mobile App entwickeln lassen', 'plattformübergreifende App Entwicklung',
         'App Agentur für Unternehmen', 'Mobile Developer Agentur Österreich',
       ],
@@ -787,7 +787,7 @@ export const serviceTranslations: Record<string, { en: ServiceTranslation; de: S
         { title: 'Monitoring', description: 'Wir aktivieren Alerts für kritische Abläufe und stellen Dashboards bereit, damit Sie sicherstellen können, dass alles funktioniert.' },
       ],
       keywords: [
-        'Prozessautomatisierung Agentur Österreich', 'CRM ERP Integration Österreich', 'Make Zapier Agentur',
+        'Prozessautomatisierung Agentur Wien', 'CRM ERP Integration Wien', 'Prozessautomatisierung Agentur Österreich', 'Make Zapier Agentur',
         'Workflow Automatisierung Agentur', 'API Integration Dienstleistung', 'Softwareintegration Agentur Österreich',
         'n8n Automatisierung Agentur', 'Business Automation Beratung',
       ],
