@@ -2,6 +2,7 @@
 import Navbar from '../components/Navbar';
 import CustomCursor from '../components/CustomCursor';
 import CookieBanner from '../components/CookieBanner';
+import { dict, HTML_LANG, OG_LOCALE, stripLangPrefix, withLang, type Lang } from '../i18n/dictionary';
 
 interface Props {
   title: string;
@@ -14,10 +15,11 @@ interface Props {
   articleAuthor?: string;
   articleSection?: string;
   pageKeywords?: string;     // Overrides generic keywords when provided
+  lang?: Lang;
 }
 const {
   title,
-  description = 'ED Digital Agency — Il partner strategico per le piccole imprese italiane che vogliono crescere online. Social media, advertising, siti web, e-commerce, visual identity e automazioni.',
+  description,
   ogImage = '/Images/Logo_Bianco_ED.webp',
   ogType = 'website',
   articleDate,
@@ -25,27 +27,153 @@ const {
   articleAuthor,
   articleSection,
   pageKeywords,
+  lang = 'it',
 } = Astro.props;
+
+const t = dict[lang];
 
 const canonicalURL  = new URL(Astro.url.pathname, 'https://eddigitalagency.it');
 const fullTitle     = `${title} — ED Digital Agency`;
 const ogImageAbs    = new URL(ogImage, 'https://eddigitalagency.it').toString();
-const defaultKeywords = 'agenzia digitale Treviso, agenzia marketing Treviso, web agency Vittorio Veneto, social media marketing Treviso, siti web Treviso, advertising Treviso, e-commerce Treviso, agenzia digitale Veneto, marketing digitale PMI, web design Treviso, SEO Treviso, agenzia comunicazione Treviso, ED Digital Agency';
+const pageDescription = description ?? t.seo.defaultDescription;
+const defaultKeywords = t.seo.defaultKeywords;
+
+// Hreflang alternates — same page across all three locales, plus x-default (IT)
+const basePath = stripLangPrefix(Astro.url.pathname);
+const hreflangAlternates: { lang: string; href: string }[] = [
+  { lang: 'it', href: new URL(basePath, 'https://eddigitalagency.it').toString() },
+  { lang: 'en', href: new URL(withLang(basePath, 'en'), 'https://eddigitalagency.it').toString() },
+  { lang: 'de', href: new URL(withLang(basePath, 'de'), 'https://eddigitalagency.it').toString() },
+  { lang: 'x-default', href: new URL(basePath, 'https://eddigitalagency.it').toString() },
+];
+
+// ── JSON-LD @graph — factual NAP stays identical across locales, copy is translated ──
+const offerNames: Record<Lang, string[]> = {
+  it: ['Social Media Management a Treviso', 'Advertising Digitale a Treviso', 'Siti Web a Treviso', 'E-Commerce a Treviso', 'Foto e Video Professionale', 'Visual Identity e Logo Design', 'Sviluppo MVP, SaaS e Gestionali su Misura', 'Sviluppo App Mobile', 'Integrazioni e Automazioni'],
+  en: ['Social Media Management', 'Digital Advertising', 'Website Development', 'E-Commerce Development', 'Professional Photo & Video', 'Brand Identity & Logo Design', 'MVP, SaaS & Custom Business Software Development', 'Mobile App Development', 'Integrations & Automation'],
+  de: ['Social Media Management', 'Digitales Advertising', 'Website-Entwicklung', 'E-Commerce-Entwicklung', 'Professionelle Foto- & Videoproduktion', 'Corporate Design & Logo-Design', 'MVP-, SaaS- & individuelle Businesssoftware-Entwicklung', 'App-Entwicklung', 'Integrationen & Automatisierung'],
+};
+const offerSlugs = ['social-media-management', 'advertising', 'website', 'ecommerce', 'photo-video', 'visual-identity', 'mvp-saas', 'app', 'integrazioni'];
+const catalogName: Record<Lang, string> = { it: 'Servizi Digitali per PMI', en: 'Digital Services', de: 'Digitale Leistungen' };
+
+const jsonLdGraph = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': ['Organization', 'LocalBusiness', 'ProfessionalService'],
+      '@id': 'https://eddigitalagency.it/#organization',
+      name: 'ED Digital Agency',
+      alternateName: ['ED Digital', 'ED Digital Agency Treviso'],
+      url: 'https://eddigitalagency.it',
+      logo: { '@type': 'ImageObject', url: 'https://eddigitalagency.it/Images/Logo%20ED%20Digitla.png', width: 400, height: 400 },
+      image: 'https://eddigitalagency.it/Images/Logo%20ED%20Digitla.png',
+      description: t.seo.orgDescription,
+      foundingDate: '2019',
+      telephone: '+39 379 3248371',
+      email: 'info@eddigitalagency.it',
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: 'Via Carlo Torres, 17/Interno 13',
+        addressLocality: 'Vittorio Veneto',
+        addressRegion: 'Treviso',
+        postalCode: '31029',
+        addressCountry: 'IT',
+      },
+      geo: { '@type': 'GeoCoordinates', latitude: 45.9826, longitude: 12.3001 },
+      areaServed: [
+        { '@type': 'City', name: 'Vittorio Veneto' },
+        { '@type': 'City', name: 'Treviso' },
+        { '@type': 'City', name: 'Conegliano' },
+        { '@type': 'City', name: 'Pieve di Soligo' },
+        { '@type': 'City', name: 'Montebelluna' },
+        { '@type': 'City', name: 'Castelfranco Veneto' },
+        { '@type': 'City', name: 'Oderzo' },
+        { '@type': 'City', name: 'Valdobbiadene' },
+        { '@type': 'City', name: 'Mogliano Veneto' },
+        { '@type': 'City', name: 'Venezia' },
+        { '@type': 'City', name: 'Padova' },
+        { '@type': 'AdministrativeArea', name: 'Provincia di Treviso' },
+        { '@type': 'State', name: 'Veneto' },
+        { '@type': 'Country', name: 'Italia' },
+        { '@type': 'Country', name: 'Austria' },
+      ],
+      contactPoint: {
+        '@type': 'ContactPoint',
+        telephone: '+39-379-3248371',
+        email: 'info@eddigitalagency.it',
+        contactType: 'customer service',
+        availableLanguage: ['Italian', 'English', 'German'],
+        areaServed: ['IT', 'AT', 'EU'],
+      },
+      openingHoursSpecification: [{ '@type': 'OpeningHoursSpecification', dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'], opens: '09:00', closes: '18:00' }],
+      sameAs: ['https://www.instagram.com/eddigitalagency', 'https://www.linkedin.com/company/ed-digital-agency'],
+      knowsLanguage: ['it', 'en', 'de'],
+      priceRange: '€€',
+      knowsAbout: [
+        'Social Media Management', 'Advertising Meta e Google Ads', 'Sviluppo Siti Web',
+        'E-Commerce', 'Fotografia e Video Making', 'Visual Identity e Brand Design',
+        'Sviluppo Software Gestionale Personalizzato', 'Applicazioni Web su Misura per Aziende',
+        'Sviluppo MVP e SaaS', 'Sviluppo App Mobile iOS e Android', 'Integrazioni e Automazioni Aziendali',
+      ],
+      hasOfferCatalog: {
+        '@type': 'OfferCatalog',
+        name: catalogName[lang],
+        itemListElement: offerSlugs.map((slug, i) => ({
+          '@type': 'Offer',
+          itemOffered: { '@type': 'Service', name: offerNames[lang][i], url: `https://eddigitalagency.it${withLang('/servizi/' + slug, lang)}` },
+        })),
+      },
+    },
+    {
+      '@type': 'WebSite',
+      '@id': 'https://eddigitalagency.it/#website',
+      url: 'https://eddigitalagency.it',
+      name: t.seo.websiteName,
+      description: t.seo.websiteDescription,
+      publisher: { '@id': 'https://eddigitalagency.it/#organization' },
+      inLanguage: HTML_LANG[lang],
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: `https://eddigitalagency.it${withLang('/servizi', lang)}?q={search_term_string}`,
+        'query-input': 'required name=search_term_string',
+      },
+    },
+    {
+      '@type': 'WebPage',
+      '@id': `${canonicalURL}#webpage`,
+      url: canonicalURL.toString(),
+      name: fullTitle,
+      isPartOf: { '@id': 'https://eddigitalagency.it/#website' },
+      about: { '@id': 'https://eddigitalagency.it/#organization' },
+      inLanguage: HTML_LANG[lang],
+      speakable: { '@type': 'SpeakableSpecification', cssSelector: ['h1', 'h2', '.speakable'] },
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: t.seo.faq.map(f => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    },
+  ],
+};
 ---
 
 <!doctype html>
-<html lang="it" class="scroll-smooth">
+<html lang={HTML_LANG[lang]} class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- ── Primary SEO ──────────────────────────────────────── -->
     <title>{fullTitle}</title>
-    <meta name="description" content={description} />
+    <meta name="description" content={pageDescription} />
     <meta name="keywords" content={pageKeywords || defaultKeywords} />
     <meta name="author" content={articleAuthor || 'ED Digital Agency'} />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <link rel="canonical" href={canonicalURL} />
+    {hreflangAlternates.map(a => <link rel="alternate" hreflang={a.lang} href={a.href} />)}
 
     <!-- ── Geo ─────────────────────────────────────────────── -->
     <meta name="geo.region" content="IT-TV" />
@@ -58,11 +186,12 @@ const defaultKeywords = 'agenzia digitale Treviso, agenzia marketing Treviso, we
     <meta property="og:type" content={ogType} />
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:title" content={fullTitle} />
-    <meta property="og:description" content={description} />
+    <meta property="og:description" content={pageDescription} />
     <meta property="og:image" content={ogImageAbs} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:locale" content="it_IT" />
+    <meta property="og:locale" content={OG_LOCALE[lang]} />
+    {(['it','en','de'] as const).filter(l => l !== lang).map(l => <meta property="og:locale:alternate" content={OG_LOCALE[l]} />)}
     <meta property="og:site_name" content="ED Digital Agency" />
     {ogType === 'article' && articleDate    && <meta property="article:published_time" content={articleDate} />}
     {ogType === 'article' && articleModified && <meta property="article:modified_time" content={articleModified} />}
@@ -72,7 +201,7 @@ const defaultKeywords = 'agenzia digitale Treviso, agenzia marketing Treviso, we
     <!-- ── Twitter Card ────────────────────────────────────── -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={fullTitle} />
-    <meta name="twitter:description" content={description} />
+    <meta name="twitter:description" content={pageDescription} />
     <meta name="twitter:image" content={ogImageAbs} />
 
     <!-- ── Icons & Theme ───────────────────────────────────── -->
@@ -86,154 +215,8 @@ const defaultKeywords = 'agenzia digitale Treviso, agenzia marketing Treviso, we
     <link rel="preload" href="/fonts/GraphikLCG-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
     <link rel="preload" href="/fonts/GraphikLCG-Light.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
 
-    <!-- ── JSON-LD Structured Data ─────────────────────────── -->
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@graph": [
-          {
-            "@type": ["Organization", "LocalBusiness", "ProfessionalService"],
-            "@id": "https://eddigitalagency.it/#organization",
-            "name": "ED Digital Agency",
-            "alternateName": ["ED Digital", "ED Digital Agency Treviso"],
-            "url": "https://eddigitalagency.it",
-            "logo": {
-              "@type": "ImageObject",
-              "url": "https://eddigitalagency.it/Images/Logo%20ED%20Digitla.png",
-              "width": 400,
-              "height": 400
-            },
-            "image": "https://eddigitalagency.it/Images/Logo%20ED%20Digitla.png",
-            "description": "ED Digital Agency è l'agenzia digitale di riferimento a Vittorio Veneto e nella provincia di Treviso. Specializzata in social media marketing, advertising, siti web, e-commerce, visual identity e automazioni per PMI italiane.",
-            "foundingDate": "2019",
-            "telephone": "+39 379 3248371",
-            "email": "info@eddigitalagency.it",
-            "address": {
-              "@type": "PostalAddress",
-              "streetAddress": "Via Carlo Torres, 17/Interno 13",
-              "addressLocality": "Vittorio Veneto",
-              "addressRegion": "Treviso",
-              "postalCode": "31029",
-              "addressCountry": "IT"
-            },
-            "geo": {
-              "@type": "GeoCoordinates",
-              "latitude": 45.9826,
-              "longitude": 12.3001
-            },
-            "areaServed": [
-              { "@type": "City", "name": "Vittorio Veneto" },
-              { "@type": "City", "name": "Treviso" },
-              { "@type": "City", "name": "Conegliano" },
-              { "@type": "City", "name": "Pieve di Soligo" },
-              { "@type": "City", "name": "Montebelluna" },
-              { "@type": "City", "name": "Castelfranco Veneto" },
-              { "@type": "City", "name": "Oderzo" },
-              { "@type": "City", "name": "Valdobbiadene" },
-              { "@type": "City", "name": "Mogliano Veneto" },
-              { "@type": "City", "name": "Venezia" },
-              { "@type": "City", "name": "Padova" },
-              { "@type": "AdministrativeArea", "name": "Provincia di Treviso" },
-              { "@type": "State", "name": "Veneto" },
-              { "@type": "Country", "name": "Italia" }
-            ],
-            "contactPoint": {
-              "@type": "ContactPoint",
-              "telephone": "+39-379-3248371",
-              "email": "info@eddigitalagency.it",
-              "contactType": "customer service",
-              "availableLanguage": "Italian",
-              "areaServed": "IT"
-            },
-            "openingHoursSpecification": [{
-              "@type": "OpeningHoursSpecification",
-              "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
-              "opens": "09:00",
-              "closes": "18:00"
-            }],
-            "sameAs": [
-              "https://www.instagram.com/eddigitalagency",
-              "https://www.linkedin.com/company/ed-digital-agency"
-            ],
-            "knowsLanguage": "it",
-            "priceRange": "€€",
-            "knowsAbout": [
-              "Social Media Management", "Advertising Meta e Google Ads", "Sviluppo Siti Web",
-              "E-Commerce", "Fotografia e Video Making", "Visual Identity e Brand Design",
-              "Sviluppo Software Gestionale Personalizzato", "Applicazioni Web su Misura per Aziende",
-              "Sviluppo MVP e SaaS", "Sviluppo App Mobile iOS e Android", "Integrazioni e Automazioni Aziendali"
-            ],
-            "hasOfferCatalog": {
-              "@type": "OfferCatalog",
-              "name": "Servizi Digitali per PMI",
-              "itemListElement": [
-                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Social Media Management a Treviso", "url": "https://eddigitalagency.it/servizi/social-media-management" } },
-                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Advertising Digitale a Treviso", "url": "https://eddigitalagency.it/servizi/advertising" } },
-                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Siti Web a Treviso", "url": "https://eddigitalagency.it/servizi/website" } },
-                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "E-Commerce a Treviso", "url": "https://eddigitalagency.it/servizi/ecommerce" } },
-                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Foto e Video Professionale", "url": "https://eddigitalagency.it/servizi/photo-video" } },
-                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Visual Identity e Logo Design", "url": "https://eddigitalagency.it/servizi/visual-identity" } },
-                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Sviluppo MVP, SaaS e Gestionali su Misura", "url": "https://eddigitalagency.it/servizi/mvp-saas" } },
-                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Sviluppo App Mobile", "url": "https://eddigitalagency.it/servizi/app" } },
-                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Integrazioni e Automazioni", "url": "https://eddigitalagency.it/servizi/integrazioni" } }
-              ]
-            }
-          },
-          {
-            "@type": "WebSite",
-            "@id": "https://eddigitalagency.it/#website",
-            "url": "https://eddigitalagency.it",
-            "name": "ED Digital Agency — Agenzia Digitale Treviso",
-            "description": "Agenzia digitale a Vittorio Veneto (Treviso). Social media, advertising, siti web, e-commerce, visual identity per PMI italiane.",
-            "publisher": { "@id": "https://eddigitalagency.it/#organization" },
-            "inLanguage": "it-IT",
-            "potentialAction": {
-              "@type": "SearchAction",
-              "target": "https://eddigitalagency.it/servizi?q={search_term_string}",
-              "query-input": "required name=search_term_string"
-            }
-          },
-          {
-            "@type": "WebPage",
-            "@id": "https://eddigitalagency.it/#webpage",
-            "url": "https://eddigitalagency.it",
-            "name": "Agenzia Digitale a Treviso e Vittorio Veneto — ED Digital Agency",
-            "isPartOf": { "@id": "https://eddigitalagency.it/#website" },
-            "about": { "@id": "https://eddigitalagency.it/#organization" },
-            "inLanguage": "it-IT",
-            "speakable": {
-              "@type": "SpeakableSpecification",
-              "cssSelector": ["h1", "h2", ".speakable"]
-            }
-          },
-          {
-            "@type": "FAQPage",
-            "mainEntity": [
-              {
-                "@type": "Question",
-                "name": "Dove si trova ED Digital Agency?",
-                "acceptedAnswer": { "@type": "Answer", "text": "ED Digital Agency ha sede a Vittorio Veneto, in provincia di Treviso (Veneto), in Via Carlo Torres 17. Operiamo in tutta la provincia di Treviso, il Veneto e su tutto il territorio italiano anche da remoto." }
-              },
-              {
-                "@type": "Question",
-                "name": "Quali servizi offre ED Digital Agency a Treviso?",
-                "acceptedAnswer": { "@type": "Answer", "text": "Offriamo social media management, advertising su Meta e Google, sviluppo siti web e e-commerce, produzione foto e video, visual identity e logo design, sviluppo MVP, SaaS, app mobile e software gestionali personalizzati per aziende (magazzino, produzione, CRM, fatturazione), integrazioni e automazioni tra tool aziendali." }
-              },
-              {
-                "@type": "Question",
-                "name": "ED Digital Agency segue anche clienti fuori dalla provincia di Treviso?",
-                "acceptedAnswer": { "@type": "Answer", "text": "Sì, lavoriamo con clienti in tutta Italia. Siamo specializzati in aziende a Vittorio Veneto, Conegliano, Treviso e nel Veneto, ma operiamo da remoto con PMI su tutto il territorio nazionale." }
-              },
-              {
-                "@type": "Question",
-                "name": "Quanto costa un sito web con ED Digital Agency a Treviso?",
-                "acceptedAnswer": { "@type": "Answer", "text": "Il costo di un sito web varia in base alle esigenze del progetto. Offriamo soluzioni per PMI con prezzi competitivi. Contattaci per un preventivo gratuito e personalizzato entro 24 ore." }
-              }
-            ]
-          }
-        ]
-      }
-    </script>
+    <!-- ── JSON-LD Structured Data ────────────────────── -->
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLdGraph)} />
 
     <!-- ── Page-specific head (JSON-LD, extra meta) ─────────── -->
     <slot name="head" />
@@ -372,10 +355,10 @@ const defaultKeywords = 'agenzia digitale Treviso, agenzia marketing Treviso, we
     <a href="#main-content"
       class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-semibold"
       style="background:#FF6A00;color:#000;">
-      Vai al contenuto principale
+      {lang === 'it' ? 'Vai al contenuto principale' : lang === 'de' ? 'Zum Hauptinhalt springen' : 'Skip to main content'}
     </a>
 
-    <Navbar client:load />
+    <Navbar client:load lang={lang} />
 
     <main id="main-content">
       <slot />
@@ -388,56 +371,56 @@ const defaultKeywords = 'agenzia digitale Treviso, agenzia marketing Treviso, we
         <!-- Top: logo + tagline + CTA -->
         <div class="flex flex-col md:flex-row md:items-start justify-between gap-10 mb-14">
           <div class="max-w-xs">
-            <a href="/" aria-label="ED Digital Agency — Home">
+            <a href={withLang('/', lang)} aria-label="ED Digital Agency — Home">
               <img id="footer-logo" src="/Images/Logo%20ED%20Digitla.png" alt="ED Digital Agency" width="56" height="56" class="h-14 w-auto mb-5" loading="lazy" />
             </a>
             <p class="text-sm leading-relaxed" style="color:rgba(var(--c-muted),1)">
-              Il partner strategico per le PMI italiane che vogliono crescere nel digitale.
+              {t.footer.tagline}
             </p>
           </div>
 
-          <a href="/contatti"
+          <a href={withLang('/contatti', lang)}
             class="self-start inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold uppercase tracking-widest transition-all duration-200 active:scale-95"
             style="background:#FF6A00; color:#000;">
-            Inizia un progetto →
+            {t.footer.cta}
           </a>
         </div>
 
         <!-- Nav columns -->
-        <nav aria-label="Navigazione footer">
+        <nav aria-label={t.footer.navHeading}>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-10 mb-14">
 
           <!-- Servizi -->
           <div>
-            <p class="footer-heading text-xs font-semibold uppercase tracking-[0.18em] mb-5">Servizi</p>
+            <p class="footer-heading text-xs font-semibold uppercase tracking-[0.18em] mb-5">{t.footer.servicesHeading}</p>
             <ul class="space-y-3 text-sm">
-              <li><a href="/servizi/social-media-management" class="footer-link">Social Media</a></li>
-              <li><a href="/servizi/advertising" class="footer-link">Advertising</a></li>
-              <li><a href="/servizi/website" class="footer-link">Website</a></li>
-              <li><a href="/servizi/ecommerce" class="footer-link">E-Commerce</a></li>
-              <li><a href="/servizi/photo-video" class="footer-link">Photo & Video</a></li>
-              <li><a href="/servizi/visual-identity" class="footer-link">Visual Identity</a></li>
-              <li><a href="/servizi/mvp-saas" class="footer-link">MVP & SaaS</a></li>
-              <li><a href="/servizi/app" class="footer-link">App</a></li>
-              <li><a href="/servizi/integrazioni" class="footer-link">Integrazioni</a></li>
+              <li><a href={withLang('/servizi/social-media-management', lang)} class="footer-link">Social Media</a></li>
+              <li><a href={withLang('/servizi/advertising', lang)} class="footer-link">Advertising</a></li>
+              <li><a href={withLang('/servizi/website', lang)} class="footer-link">Website</a></li>
+              <li><a href={withLang('/servizi/ecommerce', lang)} class="footer-link">E-Commerce</a></li>
+              <li><a href={withLang('/servizi/photo-video', lang)} class="footer-link">Photo & Video</a></li>
+              <li><a href={withLang('/servizi/visual-identity', lang)} class="footer-link">Visual Identity</a></li>
+              <li><a href={withLang('/servizi/mvp-saas', lang)} class="footer-link">MVP & SaaS</a></li>
+              <li><a href={withLang('/servizi/app', lang)} class="footer-link">App</a></li>
+              <li><a href={withLang('/servizi/integrazioni', lang)} class="footer-link">Integrazioni</a></li>
             </ul>
           </div>
 
           <!-- Agenzia -->
           <div>
-            <p class="footer-heading text-xs font-semibold uppercase tracking-[0.18em] mb-5">Agenzia</p>
+            <p class="footer-heading text-xs font-semibold uppercase tracking-[0.18em] mb-5">{t.footer.agencyHeading}</p>
             <ul class="space-y-3 text-sm">
-              <li><a href="/" class="footer-link">Home</a></li>
-              <li><a href="/servizi" class="footer-link">Servizi</a></li>
-              <li><a href="/#casistudio" class="footer-link">Progetti</a></li>
-              <li><a href="/blog" class="footer-link">Blog</a></li>
-              <li><a href="/contatti" class="footer-link">Contatti</a></li>
+              <li><a href={withLang('/', lang)} class="footer-link">{t.footer.home}</a></li>
+              <li><a href={withLang('/servizi', lang)} class="footer-link">{t.footer.services}</a></li>
+              <li><a href={withLang('/#casistudio', lang)} class="footer-link">{t.footer.projects}</a></li>
+              <li><a href={withLang('/blog', lang)} class="footer-link">{t.footer.blog}</a></li>
+              <li><a href={withLang('/contatti', lang)} class="footer-link">{t.footer.contact}</a></li>
             </ul>
           </div>
 
           <!-- Contatti -->
           <div class="col-span-2 md:col-span-2">
-            <p class="footer-heading text-xs font-semibold uppercase tracking-[0.18em] mb-5">Contatti</p>
+            <p class="footer-heading text-xs font-semibold uppercase tracking-[0.18em] mb-5">{t.footer.contactHeading}</p>
             <ul class="space-y-3 text-sm">
               <li>
                 <a href="mailto:info@eddigitalagency.it" class="footer-link flex items-center gap-2">
@@ -460,15 +443,15 @@ const defaultKeywords = 'agenzia digitale Treviso, agenzia marketing Treviso, we
         <div style="border-top:1px solid rgba(var(--c-text),0.06); padding-top:2rem;"
           class="flex flex-col sm:flex-row items-center justify-between gap-4">
           <p class="text-xs" style="color:rgba(var(--c-text),0.55);">
-            © 2026 ED Digital Agency. Tutti i diritti riservati.
+            {t.footer.copyright}
           </p>
           <div class="flex items-center gap-4 text-xs">
-            <a href="/privacy-policy" class="footer-link">Privacy Policy</a>
+            <a href={withLang('/privacy-policy', lang)} class="footer-link">{t.footer.privacy}</a>
             <span class="footer-dot" aria-hidden="true">·</span>
-            <a href="/cookie-policy" class="footer-link">Cookie Policy</a>
+            <a href={withLang('/cookie-policy', lang)} class="footer-link">{t.footer.cookie}</a>
           </div>
           <p class="text-xs" aria-hidden="true" style="color:rgba(var(--c-text),0.50);">
-            Vittorio Veneto (TV) · Italia
+            {t.footer.countryLine}
           </p>
           <!-- Social icons -->
           <div class="flex items-center gap-4">
@@ -578,7 +561,7 @@ const defaultKeywords = 'agenzia digitale Treviso, agenzia marketing Treviso, we
     </script>
 
     <CustomCursor client:idle />
-    <CookieBanner client:idle />
+    <CookieBanner client:idle lang={lang} />
 
   </body>
 </html>

@@ -1,0 +1,92 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+export const prerender = true;
+const lang = 'en' as const;
+---
+
+<Layout
+  lang={lang}
+  title="Privacy Policy"
+  description="ED Digital Agency's personal data processing notice, pursuant to the GDPR (EU Regulation 2016/679)."
+>
+  <section class="max-w-3xl mx-auto px-6 md:px-12 py-24 md:py-32">
+
+    <p class="text-xs font-semibold uppercase tracking-widest mb-4" style="color:#FF6A00;">Legal document</p>
+    <h1 class="text-3xl md:text-4xl font-bold mb-3 t-text" style="font-family:'CalSans',sans-serif;">Privacy Policy</h1>
+    <p class="text-sm mb-12 t-muted">Last updated: 15 May 2026</p>
+
+    <div class="prose-content space-y-10 text-sm leading-relaxed" style="color:rgba(var(--c-text),0.75);">
+
+      <div>
+        <h2 class="text-base font-semibold mb-3 t-text">1. Data controller</h2>
+        <p>
+          The controller of your personal data is <strong class="t-text">ED Digital Agency</strong>,
+          based at Via Carlo Torres 17/Interno 13, 31029 Vittorio Veneto (TV) – Italy.<br/>
+          Email: <a href="mailto:info@eddigitalagency.it" class="underline" style="color:#FF6A00;">info@eddigitalagency.it</a><br/>
+          Phone: <a href="tel:+393793248371" class="underline" style="color:#FF6A00;">+39 379 324 8371</a>
+        </p>
+      </div>
+
+      <div>
+        <h2 class="text-base font-semibold mb-3 t-text">2. Types of data processed</h2>
+        <p class="mb-3"><strong class="t-text">Browsing data.</strong> The IT systems and software procedures used to operate this website acquire, in the course of their normal operation, certain data whose transmission is implicit in the use of Internet communication protocols. This includes information such as IP addresses, browser type, operating system, pages visited and access times. This data is used solely to derive anonymous statistical information about the use of the site.</p>
+        <p class="mb-3"><strong class="t-text">Data provided voluntarily by the user.</strong> Submitting the contact form involves collecting the data entered: name, email address, phone number (optional) and message. This data is used solely to reply to your request.</p>
+        <p><strong class="t-text">Cookies and tracking technologies.</strong> The site uses technical cookies and, subject to consent, first-party analytics cookies. For more information, see our <a href="/en/cookie-policy" class="underline" style="color:#FF6A00;">Cookie Policy</a>.</p>
+      </div>
+
+      <div>
+        <h2 class="text-base font-semibold mb-3 t-text">3. Purpose and legal basis of processing</h2>
+        <ul class="space-y-2 list-none pl-0">
+          <li><span class="t-text font-medium">Responding to contact requests</span> — legal basis: performance of pre-contractual measures (Art. 6(1)(b) GDPR).</li>
+          <li><span class="t-text font-medium">Anonymous browsing statistics</span> — legal basis: legitimate interest of the controller in improving the site (Art. 6(1)(f) GDPR).</li>
+          <li><span class="t-text font-medium">Behavioral analytics</span> — legal basis: consent of the data subject (Art. 6(1)(a) GDPR), revocable at any time.</li>
+          <li><span class="t-text font-medium">Compliance with legal obligations</span> — legal basis: legal obligation (Art. 6(1)(c) GDPR).</li>
+        </ul>
+      </div>
+
+      <div>
+        <h2 class="text-base font-semibold mb-3 t-text">4. Data retention</h2>
+        <p>Data submitted through the contact form is retained for as long as necessary to handle the request and, subsequently, for a maximum of 24 months for the purpose of managing the business relationship. Browsing data is retained for a maximum of 12 months. Analytics data is deleted after 12 months.</p>
+      </div>
+
+      <div>
+        <h2 class="text-base font-semibold mb-3 t-text">5. Data disclosure and dissemination</h2>
+        <p>Personal data is not sold to third parties or disseminated. It may be shared with parties who provide technical services to the controller (e.g. hosting providers), acting as data processors, exclusively for the purposes indicated.</p>
+      </div>
+
+      <div>
+        <h2 class="text-base font-semibold mb-3 t-text">6. Transfer of data outside the EU</h2>
+        <p>Personal data is processed within the European Union. Should it become necessary to transfer data to third countries, the transfer will take place in compliance with the safeguards provided by the GDPR (adequacy decisions or standard contractual clauses).</p>
+      </div>
+
+      <div>
+        <h2 class="text-base font-semibold mb-3 t-text">7. Data subject rights</h2>
+        <p class="mb-3">Under Articles 15–22 of the GDPR, data subjects have the right to:</p>
+        <ul class="space-y-1 list-disc pl-5">
+          <li>access their personal data;</li>
+          <li>obtain rectification or erasure;</li>
+          <li>request restriction of processing;</li>
+          <li>object to processing;</li>
+          <li>request data portability;</li>
+          <li>withdraw consent given, without affecting the lawfulness of processing carried out prior to withdrawal;</li>
+          <li>lodge a complaint with a data protection supervisory authority — in Italy, the <a href="https://www.garanteprivacy.it" target="_blank" rel="noopener noreferrer" class="underline" style="color:#FF6A00;">Garante per la protezione dei dati personali</a>, or with the supervisory authority in your own EU member state.</li>
+        </ul>
+        <p class="mt-3">To exercise these rights, simply contact us at <a href="mailto:info@eddigitalagency.it" class="underline" style="color:#FF6A00;">info@eddigitalagency.it</a>.</p>
+      </div>
+
+      <div>
+        <h2 class="text-base font-semibold mb-3 t-text">8. Changes to this notice</h2>
+        <p>The controller reserves the right to make changes to this notice at any time. Changes will be published on this page with an updated date at the bottom. In the event of substantial changes, appropriate notice will be given.</p>
+      </div>
+
+    </div>
+
+    <div class="mt-16 pt-8" style="border-top:1px solid rgba(var(--c-text),0.07);">
+      <a href="/en" class="text-sm footer-link">← Back to home</a>
+      <span class="mx-3 footer-dot">·</span>
+      <a href="/en/cookie-policy" class="text-sm footer-link">Cookie Policy</a>
+    </div>
+
+  </section>
+</Layout>

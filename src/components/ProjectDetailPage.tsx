@@ -1,11 +1,21 @@
 import { motion } from 'framer-motion';
 import type { Project } from '../data/projects';
+import { dict, withLang, type Lang } from '../i18n/dictionary';
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
-export default function ProjectDetailPage({ project }: { project: Project }) {
+export default function ProjectDetailPage({ project, lang = 'it', translationFallback = false }: { project: Project; lang?: Lang; translationFallback?: boolean }) {
+  const t = dict[lang];
   return (
     <div className="t-bg t-text overflow-x-hidden" style={{ fontFamily: 'GraphikLCG, system-ui, sans-serif' }}>
+
+      {translationFallback && (
+        <div className="max-w-[1200px] mx-auto px-5 md:px-12 pt-28">
+          <div className="px-5 py-3 rounded-2xl text-sm" style={{ background: 'rgba(255,106,0,0.08)', border: '1px solid rgba(255,106,0,0.25)', color: 'rgba(var(--c-text),0.7)' }}>
+            {t.notAvailableBanner.text}
+          </div>
+        </div>
+      )}
 
       {/* ── Hero ─────────────────────────────────────────────── */}
       <section className="relative min-h-[70vh] flex items-end overflow-hidden">
@@ -23,9 +33,9 @@ export default function ProjectDetailPage({ project }: { project: Project }) {
         <div className="relative z-10 max-w-[1200px] mx-auto px-5 md:px-12 pb-16 pt-40 w-full">
           <motion.div initial={{ opacity: 0, y: 32 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, ease }}>
             {/* Back link */}
-            <a href="/#casistudio" className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.18em] mb-8 hover:text-[#FF6A00] transition-colors"
+            <a href={withLang('/#casistudio', lang)} className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.18em] mb-8 hover:text-[#FF6A00] transition-colors"
               style={{ color: 'rgba(var(--c-text),0.4)' }}>
-              ← Portfolio
+              {t.project.backPortfolio}
             </a>
 
             <div className="flex flex-wrap items-center gap-3 mb-5">
@@ -58,14 +68,14 @@ export default function ProjectDetailPage({ project }: { project: Project }) {
           {/* Left: description + what we did */}
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, delay: 0.2, ease }}>
             <p className="text-xs uppercase tracking-[0.2em] mb-4 font-medium" style={{ color: 'rgba(var(--c-text),0.35)' }}>
-              Il progetto
+              {t.project.theProject}
             </p>
             <p className="text-base md:text-lg font-[250] leading-8 mb-14" style={{ color: 'rgba(var(--c-muted),1)' }}>
               {project.description}
             </p>
 
             <p className="text-xs uppercase tracking-[0.2em] mb-8 font-medium" style={{ color: 'rgba(var(--c-text),0.35)' }}>
-              Cosa abbiamo fatto
+              {t.project.whatWeDid}
             </p>
             <ul className="space-y-4">
               {project.what.map((item, i) => (
@@ -94,7 +104,7 @@ export default function ProjectDetailPage({ project }: { project: Project }) {
             {/* Results */}
             <div className="rounded-[1.75rem] p-7" style={{ background: 'rgb(var(--c-card))', border: '1px solid rgba(var(--c-text),0.07)' }}>
               <p className="text-xs uppercase tracking-[0.2em] mb-6 font-medium" style={{ color: 'rgba(var(--c-text),0.35)' }}>
-                Risultati
+                {t.project.results}
               </p>
               <div className="space-y-6">
                 {project.results.map((r, i) => (
@@ -108,13 +118,13 @@ export default function ProjectDetailPage({ project }: { project: Project }) {
 
             {/* Service pill(s) */}
             {(project.serviceSlugs ?? [project.serviceSlug]).map((slugItem, i) => (
-              <a key={i} href={`/servizi/${slugItem}`}
+              <a key={i} href={withLang(`/servizi/${slugItem}`, lang)}
                 className="flex items-center justify-between gap-4 rounded-[1.75rem] p-6 group transition-colors duration-300"
                 style={{ background: 'rgb(var(--c-card))', border: '1px solid rgba(var(--c-text),0.07)' }}
               >
                 <div>
                   <p className="text-xs uppercase tracking-widest mb-1" style={{ color: 'rgba(var(--c-text),0.35)' }}>
-                    {i === 0 ? 'Servizio' : 'Anche'}
+                    {i === 0 ? t.project.service : t.project.also}
                   </p>
                   <p className="font-semibold text-sm group-hover:text-[#FF6A00] transition-colors">
                     {(project.services ?? [project.service])[i] ?? slugItem}
@@ -126,10 +136,10 @@ export default function ProjectDetailPage({ project }: { project: Project }) {
             ))}
 
             {/* CTA */}
-            <a href="/contatti"
+            <a href={withLang('/contatti', lang)}
               className="block w-full text-center py-4 rounded-[1.75rem] font-bold text-sm uppercase tracking-widest transition-all duration-200 active:scale-[0.98]"
               style={{ background: '#FF6A00', color: '#000' }}>
-              Vuoi un progetto simile? →
+              {t.project.ctaSimilar}
             </a>
           </motion.div>
         </div>
@@ -155,19 +165,19 @@ export default function ProjectDetailPage({ project }: { project: Project }) {
           className="rounded-[2.5rem] overflow-hidden text-center px-8 py-16 md:py-20"
           style={{ background: 'linear-gradient(135deg, #FF6A00 0%, #FF8C00 100%)' }}
         >
-          <p className="text-black/60 text-xs uppercase tracking-[0.2em] font-medium mb-4">Lavoriamo insieme</p>
+          <p className="text-black/60 text-xs uppercase tracking-[0.2em] font-medium mb-4">{t.project.ctaTagline}</p>
           <h2 className="font-cal font-semibold uppercase italic text-black leading-tight tracking-tight mb-8"
             style={{ fontSize: 'clamp(2rem,5vw,4rem)' }}>
-            Costruiamo il tuo<br className="hidden sm:block" /> prossimo progetto.
+            {t.project.ctaTitle1}<br className="hidden sm:block" /> {t.project.ctaTitle2}
           </h2>
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <a href="/contatti"
+            <a href={withLang('/contatti', lang)}
               className="inline-flex items-center gap-3 px-8 py-4 bg-black text-white font-bold rounded-full hover:scale-[1.04] active:scale-[0.97] transition-transform text-sm uppercase tracking-widest">
-              Inizia ora →
+              {t.project.ctaButtonStart}
             </a>
-            <a href="/#casistudio"
+            <a href={withLang('/#casistudio', lang)}
               className="inline-flex items-center gap-3 px-8 py-4 bg-black/20 text-black font-semibold rounded-full hover:bg-black/30 transition-colors text-sm uppercase tracking-widest">
-              Altri progetti
+              {t.project.ctaButtonOther}
             </a>
           </div>
         </motion.div>

@@ -514,3 +514,45 @@ export function getService(slug: string): Service | undefined {
 export function getRelatedServices(slugs: string[]): Service[] {
   return slugs.map((s) => services.find((sv) => sv.slug === s)).filter(Boolean) as Service[];
 }
+
+// ── Localization ─────────────────────────────────────────────
+// EN/DE copy overlays for each service, keyed by slug. Images, platforms,
+// gallery, related slugs and process `step` numbers are language-independent.
+import { serviceTranslations } from './services.i18n';
+import type { Lang } from '../i18n/dictionary';
+
+function localizeService(s: Service, lang: Lang): Service {
+  if (lang === 'it') return s;
+  const tr = serviceTranslations[s.slug]?.[lang];
+  if (!tr) return s; // fall back to Italian if a translation is missing
+  return {
+    ...s,
+    name: tr.name,
+    tagline: tr.tagline,
+    description: tr.description,
+    longDescription: tr.longDescription,
+    includes: tr.includes,
+    keywords: tr.keywords,
+    process: s.process.map((step, i) => ({ ...step, title: tr.process[i]?.title ?? step.title, description: tr.process[i]?.description ?? step.description })),
+    faq: tr.faq.map((f) => ({ question: f.question, answer: f.answer })),
+  };
+}
+
+export function getLocalizedServices(lang: Lang): Service[] {
+  return services.map((s) => localizeService(s, lang));
+}
+
+export function getLocalizedService(slug: string, lang: Lang): Service | undefined {
+  const s = getService(slug);
+  return s ? localizeService(s, lang) : undefined;
+}
+
+export function getLocalizedRelatedServices(slugs: string[], lang: Lang): Service[] {
+  return getRelatedServices(slugs).map((s) => localizeService(s, lang));
+}
+
+/** Look up a service's localized display name by slug, falling back to the given IT name if unknown. */
+export function getLocalizedServiceName(slug: string, itFallbackName: string, lang: Lang): string {
+  const s = getLocalizedService(slug, lang);
+  return s?.name ?? itFallbackName;
+}

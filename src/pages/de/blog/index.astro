@@ -1,0 +1,67 @@
+---
+export const prerender = false;
+import Layout from '../../../layouts/Layout.astro';
+import BlogPage from '../../../components/BlogPage';
+import { getPool, initDB } from '../../../lib/db';
+
+const lang = 'de' as const;
+await initDB();
+const db = getPool();
+
+type PostRow = {
+  id: number; slug: string; title: string; excerpt: string;
+  category: string; cover_img: string; author: string;
+  read_time: number; created_at: string;
+};
+
+const rows = (await db.query<PostRow>(
+  `SELECT id, slug, COALESCE(NULLIF(title_de,''),title) AS title, COALESCE(NULLIF(excerpt_de,''),excerpt) AS excerpt,
+          category, cover_img, author, read_time, created_at
+   FROM blog_posts
+   WHERE published=true OR (scheduled_at IS NOT NULL AND scheduled_at <= NOW())
+   ORDER BY display_order ASC, created_at DESC`
+)).rows;
+
+const BASE = 'https://eddigitalagency.it';
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  'itemListElement': [
+    { '@type': 'ListItem', 'position': 1, 'name': 'Startseite', 'item': `${BASE}/de` },
+    { '@type': 'ListItem', 'position': 2, 'name': 'Blog', 'item': `${BASE}/de/blog` },
+  ],
+};
+
+const collectionSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  '@id': `${BASE}/de/blog#page`,
+  'name': 'Blog — Ressourcen zu Digitalmarketing — ED Digital Agency',
+  'url': `${BASE}/de/blog`,
+  'description': 'Strategien, Leitfäden und Fallstudien zum digitalen Marketing für kleine und mittlere Unternehmen, von ED Digital Agency.',
+  'inLanguage': 'de-AT',
+  'isPartOf': { '@id': `${BASE}/#website` },
+  'about': { '@id': `${BASE}/#organization` },
+  'hasPart': rows.map(p => ({
+    '@type': 'BlogPosting',
+    'headline': p.title,
+    'url': `${BASE}/de/blog/${p.slug}`,
+    'description': p.excerpt,
+  })),
+};
+---
+
+<Layout
+  lang={lang}
+  title="Blog — Ressourcen zu Digitalmarketing & individueller Software"
+  description="Leitfäden, Strategien und Fallstudien zu digitalem Marketing und individueller Software für wachsende Unternehmen, von ED Digital Agency."
+  pageKeywords="Digitalmarketing Blog, SEO Leitfäden, Social Media Strategie, Advertising für Unternehmen, Webdesign, individuelle Softwareentwicklung, ED Digital Agency Blog"
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(collectionSchema)} />
+  </Fragment>
+
+  <BlogPage client:load posts={rows} lang={lang} />
+</Layout>

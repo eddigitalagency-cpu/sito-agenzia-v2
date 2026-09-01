@@ -1,0 +1,104 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import ServiceDetailPage from '../../../components/ServiceDetailPage';
+import { services, getLocalizedService, getLocalizedRelatedServices } from '../../../data/services';
+
+export const prerender = true;
+
+export function getStaticPaths() {
+  return services.map((s) => ({ params: { slug: s.slug } }));
+}
+
+const lang = 'de' as const;
+const { slug } = Astro.params;
+const service = getLocalizedService(slug!, lang)!;
+const related = getLocalizedRelatedServices(service.related, lang);
+
+const canonicalURL  = `https://eddigitalagency.it/de/servizi/${service.slug}`;
+const serviceImg    = new URL(service.heroImage || '/Images/Logo%20ED%20Digitla.png', 'https://eddigitalagency.it').toString();
+
+const pageTitle    = service.name;
+const pageDesc     = `${service.description} ED Digital Agency — italienische Digitalagentur für Kunden in Italien, Österreich und international. Kostenloses Angebot innerhalb von 24 Stunden.`;
+const pageKeywords = [...service.keywords, 'kostenloses Angebot', 'Digitalagentur Österreich', 'ED Digital Agency'].join(', ');
+
+const areaServed = [
+  { "@type": "Country", "name": "Italien" },
+  { "@type": "Country", "name": "Österreich" },
+  { "@type": "Country", "name": "Deutschland" },
+  { "@type": "Place", "name": "Europa" },
+];
+
+const serviceSchema = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "@id": `${canonicalURL}#service`,
+  "name": service.name,
+  "serviceType": service.name,
+  "description": service.description,
+  "url": canonicalURL,
+  "image": serviceImg,
+  "inLanguage": "de-AT",
+  "provider": {
+    "@type": "LocalBusiness",
+    "@id": "https://eddigitalagency.it/#organization",
+    "name": "ED Digital Agency",
+    "url": "https://eddigitalagency.it",
+    "telephone": "+39 379 3248371",
+    "email": "info@eddigitalagency.it",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Via Carlo Torres, 17/Interno 13",
+      "addressLocality": "Vittorio Veneto",
+      "addressRegion": "Treviso",
+      "postalCode": "31029",
+      "addressCountry": "IT"
+    }
+  },
+  "areaServed": areaServed,
+  "offers": {
+    "@type": "Offer",
+    "name": "Kostenloses Angebot",
+    "url": "https://eddigitalagency.it/de/contatti",
+    "priceCurrency": "EUR",
+    "price": "0",
+    "description": `Fordern Sie ein kostenloses Angebot für ${service.name} innerhalb von 24 Stunden an — unverbindlich.`,
+    "eligibleRegion": [{ "@type": "Country", "name": "IT" }, { "@type": "Country", "name": "AT" }, { "@type": "Country", "name": "DE" }],
+    "availability": "https://schema.org/InStock"
+  }
+};
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Startseite", "item": "https://eddigitalagency.it/de" },
+    { "@type": "ListItem", "position": 2, "name": "Leistungen",  "item": "https://eddigitalagency.it/de/servizi" },
+    { "@type": "ListItem", "position": 3, "name": service.name, "item": canonicalURL }
+  ]
+};
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": service.faq.map(f => ({
+    "@type": "Question",
+    "name": f.question,
+    "acceptedAnswer": { "@type": "Answer", "text": f.answer }
+  }))
+};
+---
+
+<Layout
+  lang={lang}
+  title={pageTitle}
+  description={pageDesc}
+  ogImage={service.heroImage || '/Images/Logo%20ED%20Digitla.png'}
+  pageKeywords={pageKeywords}
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(serviceSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  </Fragment>
+  <ServiceDetailPage client:load service={service} related={related} lang={lang} />
+</Layout>

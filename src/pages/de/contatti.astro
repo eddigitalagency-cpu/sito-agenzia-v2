@@ -1,0 +1,94 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ContattiPage from '../../components/ContattiPage';
+
+export const prerender = true;
+
+const lang = 'de' as const;
+const BASE = 'https://eddigitalagency.it';
+
+const contactSchema = {
+  "@context": "https://schema.org",
+  "@type": "ContactPage",
+  "@id": `${BASE}/de/contatti#page`,
+  "name": "Angebot anfordern — ED Digital Agency",
+  "url": `${BASE}/de/contatti`,
+  "description": "Fordern Sie ein kostenloses Angebot für Ihr digitales Projekt an. ED Digital Agency antwortet innerhalb von 24 Stunden.",
+  "inLanguage": "de-AT",
+  "isPartOf": { "@id": `${BASE}/#website` },
+  "about": { "@id": `${BASE}/#organization` },
+  "breadcrumb": {
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Startseite", "item": `${BASE}/de` },
+      { "@type": "ListItem", "position": 2, "name": "Kontakt",    "item": `${BASE}/de/contatti` }
+    ]
+  }
+};
+
+const offerSchema = {
+  "@context": "https://schema.org",
+  "@type": "Offer",
+  "name": "Kostenlose Beratung & Angebot",
+  "description": "Fordern Sie eine kostenlose Beratung und ein individuelles Angebot für Ihr Unternehmen an. ED Digital Agency antwortet innerhalb von 24 Werkstunden.",
+  "url": `${BASE}/de/contatti`,
+  "priceCurrency": "EUR",
+  "price": "0",
+  "availability": "https://schema.org/InStock",
+  "validFrom": "2024-01-01",
+  "seller": {
+    "@type": "LocalBusiness",
+    "@id": `${BASE}/#organization`,
+    "name": "ED Digital Agency",
+    "telephone": "+39 379 3248371",
+    "email": "info@eddigitalagency.it"
+  },
+  "itemOffered": {
+    "@type": "Service",
+    "name": "Kostenlose Digitalberatung",
+    "description": "Kostenlose Beratung zur passenden digitalen Strategie für Ihr Unternehmen: Social Media, Advertising, Website, E-Commerce, Corporate Design und Automatisierung.",
+    "provider": { "@id": `${BASE}/#organization` }
+  }
+};
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Wie lange dauert es, bis ich ein Angebot erhalte?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Wir beantworten alle Anfragen innerhalb von 24 Werkstunden. In der Regel melden wir uns noch am selben Tag, um Ihre Anforderungen genauer zu verstehen und Ihnen ein detailliertes, individuelles Angebot zu senden." }
+      },
+    {
+      "@type": "Question",
+      "name": "Ist das Angebot wirklich kostenlos und unverbindlich?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Ja, absolut. Die Erstberatung und das Angebot sind vollständig kostenlos und ohne jegliche Kaufverpflichtung. Sie sollen den Vorschlag in aller Ruhe prüfen können." }
+    },
+    {
+      "@type": "Question",
+      "name": "Arbeiten Sie auch mit Unternehmen in Österreich?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Wir haben unseren Sitz in Italien und betreuen Kunden in ganz Italien sowie in Österreich und international — remote und persönlich. Die Distanz ist für uns nie ein Problem." }
+    },
+    {
+      "@type": "Question",
+      "name": "Welche Informationen benötigen Sie für ein Angebot?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Es genügen Ihr Name, Ihr Unternehmen, Ihre Kontaktdaten und eine kurze Beschreibung Ihres Anliegens. Ein detailliertes Briefing ist nicht nötig — die richtigen Fragen klären wir im ersten, stets kostenlosen, Kennenlerngespräch." }
+    }
+  ]
+};
+---
+
+<Layout
+  lang={lang}
+  title="Kostenloses Angebot — Digitalagentur aus Italien"
+  description="Fordern Sie ein kostenloses Angebot von ED Digital Agency an. Social Media, Websites, Advertising, E-Commerce, Video und individuelle Businesssoftware. Garantierte Antwort innerhalb von 24 Stunden — unverbindlich."
+  pageKeywords="kostenloses Angebot Digitalagentur, Webagentur kontaktieren, Website Angebot, Social Media Management Angebot, Digitalberatung Österreich, ED Digital Agency Kontakt"
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(contactSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(offerSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  </Fragment>
+  <ContattiPage client:load lang={lang} />
+</Layout>

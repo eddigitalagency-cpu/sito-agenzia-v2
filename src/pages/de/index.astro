@@ -1,0 +1,43 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import HomePage from '../../components/HomePage';
+import { initDB, getPool } from '../../lib/db';
+import { getLocalizedServiceName } from '../../data/services';
+import { dict } from '../../i18n/dictionary';
+
+export const prerender = false;
+
+const lang = 'de' as const;
+const t = dict[lang];
+
+await initDB();
+type ProjCard = { slug: string; title: string; service: string; services?: string[]; img: string };
+const rows = (await getPool().query<{ slug: string; title: string; service: string; services: string[]; service_slug: string; service_slugs: string[]; cover_img: string }>(
+  "SELECT slug, title, service, services, service_slug, service_slugs, cover_img FROM projects_db WHERE published=true ORDER BY display_order, created_at DESC"
+)).rows;
+const projects: ProjCard[] = rows.map(r => {
+  const slugs = Array.isArray(r.service_slugs) && r.service_slugs.length ? r.service_slugs : [r.service_slug];
+  const names = Array.isArray(r.services) && r.services.length ? r.services : [r.service];
+  return {
+    slug: r.slug, title: r.title,
+    service: getLocalizedServiceName(slugs[0], names[0], lang),
+    services: slugs.map((s, i) => getLocalizedServiceName(s, names[i] ?? names[0], lang)),
+    img: r.cover_img,
+  };
+});
+
+type Partner = { src: string; alt: string; w: number };
+const partnerRows = (await getPool().query<{ name: string; logo_url: string; width: number }>(
+  "SELECT name, logo_url, width FROM technology_partners WHERE published=true ORDER BY display_order, id"
+)).rows;
+const partners: Partner[] = partnerRows.map(r => ({ src: r.logo_url, alt: r.name, w: r.width }));
+---
+
+<Layout
+  lang={lang}
+  title={t.seo.defaultTitle}
+  description={t.seo.defaultDescription}
+  pageKeywords={t.seo.defaultKeywords}
+>
+  <HomePage client:load projects={projects} partners={partners} lang={lang} />
+</Layout>

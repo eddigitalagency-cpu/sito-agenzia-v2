@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
+import { dict, withLang, HTML_LANG, type Lang } from '../i18n/dictionary';
 
 export interface BlogPost {
   id: number;
@@ -15,14 +16,13 @@ export interface BlogPost {
 
 interface Props {
   posts: BlogPost[];
+  lang?: Lang;
 }
 
 const ease = [0.25, 0.1, 0.25, 1.0] as const;
 
-const CATEGORIES = ['Tutti', 'Social Media', 'Advertising', 'Web Design', 'E-Commerce', 'SEO', 'Brand Identity', 'AI & Automazioni'];
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
+function formatDate(iso: string, lang: Lang) {
+  return new Date(iso).toLocaleDateString(`${HTML_LANG[lang]}-${lang === 'it' ? 'IT' : lang === 'de' ? 'AT' : 'US'}`, { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 function FadeIn({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
@@ -41,10 +41,11 @@ function FadeIn({ children, delay = 0, className = '' }: { children: React.React
   );
 }
 
-function PostCard({ post, index }: { post: BlogPost; index: number }) {
+function PostCard({ post, index, lang }: { post: BlogPost; index: number; lang: Lang }) {
+  const t = dict[lang];
   return (
     <motion.a
-      href={`/blog/${post.slug}`}
+      href={withLang(`/blog/${post.slug}`, lang)}
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-40px' }}
@@ -91,12 +92,12 @@ function PostCard({ post, index }: { post: BlogPost; index: number }) {
         )}
         <div className="flex items-center justify-between pt-2">
           <div className="flex items-center gap-3 text-xs" style={{ color: 'rgba(var(--c-text),0.35)' }}>
-            <span>{formatDate(post.created_at)}</span>
+            <span>{formatDate(post.created_at, lang)}</span>
             <span>·</span>
-            <span>{post.read_time} min di lettura</span>
+            <span>{post.read_time} {t.blog.minRead}</span>
           </div>
           <span className="text-xs font-semibold text-[#FF6A00] group-hover:translate-x-1 transition-transform duration-300 inline-block">
-            Leggi →
+            {t.blog.read}
           </span>
         </div>
       </div>
@@ -104,11 +105,14 @@ function PostCard({ post, index }: { post: BlogPost; index: number }) {
   );
 }
 
-export default function BlogPage({ posts }: Props) {
-  const [activeCategory, setActiveCategory] = useState('Tutti');
+const ALL = '__ALL__';
 
-  const categories = ['Tutti', ...Array.from(new Set(posts.map(p => p.category).filter(Boolean)))];
-  const filtered = activeCategory === 'Tutti' ? posts : posts.filter(p => p.category === activeCategory);
+export default function BlogPage({ posts, lang = 'it' }: Props) {
+  const t = dict[lang];
+  const [activeCategory, setActiveCategory] = useState(ALL);
+
+  const categories = [ALL, ...Array.from(new Set(posts.map(p => p.category).filter(Boolean)))];
+  const filtered = activeCategory === ALL ? posts : posts.filter(p => p.category === activeCategory);
 
   const featured = filtered[0] ?? null;
   const rest = filtered.slice(1);
@@ -122,17 +126,17 @@ export default function BlogPage({ posts }: Props) {
           <FadeIn>
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full t-border border t-text-50 text-xs uppercase tracking-widest" style={{ backgroundColor: 'rgba(var(--c-text),0.04)' }}>
               <span className="w-1.5 h-1.5 rounded-full bg-[#FF6A00] inline-block" />
-              Risorse & Approfondimenti
+              {t.blog.badge}
             </div>
           </FadeIn>
           <FadeIn delay={0.07}>
             <h1 className="font-cal font-semibold uppercase tracking-tighter italic t-text text-[clamp(2.8rem,8vw,5.5rem)] leading-[0.9]">
-              Blog <br /><span className="text-[#FF6A00]">ED Digital</span>
+              {t.blog.h1a} <br /><span className="text-[#FF6A00]">{t.blog.h1b}</span>
             </h1>
           </FadeIn>
           <FadeIn delay={0.14}>
             <p className="t-muted font-[250] text-base leading-6 max-w-xl">
-              Strategie, guide e casi studio sul marketing digitale per le piccole e medie imprese italiane.
+              {t.blog.intro}
             </p>
           </FadeIn>
         </div>
@@ -154,7 +158,7 @@ export default function BlogPage({ posts }: Props) {
                       : { background: 'rgba(var(--c-text),0.06)', color: 'rgba(var(--c-text),0.55)', border: '1px solid rgba(var(--c-text),0.1)' }
                   }
                 >
-                  {cat}
+                  {cat === ALL ? t.blog.all : cat}
                 </button>
               ))}
             </div>
@@ -168,10 +172,10 @@ export default function BlogPage({ posts }: Props) {
           <FadeIn>
             <div className="text-center py-24" style={{ color: 'rgba(var(--c-text),0.25)' }}>
               <p className="text-5xl mb-4">✦</p>
-              <p className="text-base">Nessun articolo {activeCategory !== 'Tutti' ? `in "${activeCategory}"` : 'ancora'}.</p>
-              {activeCategory !== 'Tutti' && (
-                <button onClick={() => setActiveCategory('Tutti')} className="mt-4 text-[#FF6A00] text-sm hover:underline">
-                  Vedi tutti gli articoli
+              <p className="text-base">{activeCategory !== ALL ? `${t.blog.noArticlesIn} "${activeCategory}".` : t.blog.noArticlesYet}</p>
+              {activeCategory !== ALL && (
+                <button onClick={() => setActiveCategory(ALL)} className="mt-4 text-[#FF6A00] text-sm hover:underline">
+                  {t.blog.seeAllArticles}
                 </button>
               )}
             </div>
@@ -181,7 +185,7 @@ export default function BlogPage({ posts }: Props) {
             {/* Featured post */}
             {featured && (
               <motion.a
-                href={`/blog/${featured.slug}`}
+                href={withLang(`/blog/${featured.slug}`, lang)}
                 initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-40px' }}
@@ -217,7 +221,7 @@ export default function BlogPage({ posts }: Props) {
                   </div>
                   {/* Content */}
                   <div className="p-8 md:p-12 flex flex-col justify-center space-y-5">
-                    <span className="text-xs text-[#FF6A00] uppercase tracking-widest font-semibold">Articolo in evidenza</span>
+                    <span className="text-xs text-[#FF6A00] uppercase tracking-widest font-semibold">{t.blog.featured}</span>
                     <h2 className="font-cal font-semibold t-text text-2xl md:text-4xl leading-tight group-hover:text-[#FF6A00] transition-colors duration-300">
                       {featured.title}
                     </h2>
@@ -228,12 +232,12 @@ export default function BlogPage({ posts }: Props) {
                     )}
                     <div className="flex items-center justify-between pt-2">
                       <div className="flex items-center gap-3 text-xs" style={{ color: 'rgba(var(--c-text),0.35)' }}>
-                        <span>{formatDate(featured.created_at)}</span>
+                        <span>{formatDate(featured.created_at, lang)}</span>
                         <span>·</span>
-                        <span>{featured.read_time} min</span>
+                        <span>{featured.read_time} {t.blog.min}</span>
                       </div>
                       <span className="text-sm font-semibold text-[#FF6A00] group-hover:translate-x-1 transition-transform duration-300 inline-block">
-                        Leggi l'articolo →
+                        {t.blog.readArticle}
                       </span>
                     </div>
                   </div>
@@ -245,7 +249,7 @@ export default function BlogPage({ posts }: Props) {
             {rest.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {rest.map((post, i) => (
-                  <PostCard key={post.id} post={post} index={i} />
+                  <PostCard key={post.id} post={post} index={i} lang={lang} />
                 ))}
               </div>
             )}
@@ -257,16 +261,16 @@ export default function BlogPage({ posts }: Props) {
       <section className="max-w-[1400px] mx-auto px-5 md:px-12 pb-24 md:pb-32">
         <FadeIn>
           <div className="t-card t-border border rounded-[2rem] p-10 md:p-16 text-center space-y-6">
-            <p className="text-xs text-[#FF6A00] uppercase tracking-widest font-semibold">Vuoi crescere online?</p>
+            <p className="text-xs text-[#FF6A00] uppercase tracking-widest font-semibold">{t.blog.ctaTagline}</p>
             <h2 className="font-cal font-semibold uppercase tracking-tighter italic t-text text-[clamp(2rem,5vw,3.5rem)] leading-[0.95]">
-              Parliamo del <br /><span className="text-[#FF6A00]">tuo progetto</span>
+              {t.blog.ctaTitle1} <br /><span className="text-[#FF6A00]">{t.blog.ctaTitle2}</span>
             </h2>
             <a
-              href="/contatti"
+              href={withLang('/contatti', lang)}
               className="inline-flex items-center gap-2 px-8 py-4 rounded-full font-semibold text-sm uppercase tracking-widest transition-all duration-200 active:scale-95"
               style={{ background: '#FF6A00', color: '#000' }}
             >
-              Inizia ora →
+              {t.blog.ctaButton}
             </a>
           </div>
         </FadeIn>

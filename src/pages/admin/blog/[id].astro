@@ -22,6 +22,10 @@ type PostRow = {
   category: string; cover_img: string; author: string; read_time: number;
   keywords: string; published: boolean; display_order: number;
   scheduled_at: Date | null;
+  title_en: string | null; title_de: string | null;
+  excerpt_en: string | null; excerpt_de: string | null;
+  content_en: string | null; content_de: string | null;
+  keywords_en: string | null; keywords_de: string | null;
 };
 
 let post: PostRow | null = null;
@@ -52,21 +56,36 @@ if (Astro.request.method === 'POST') {
   const scheduledAt   = scheduledRaw ? new Date(scheduledRaw) : null;
   const order         = parseInt(String(form.get('display_order') ?? '0')) || 0;
 
+  // Translations — stored as NULL when left blank so the site falls back to Italian
+  const titleEn    = String(form.get('title_en')    ?? '').trim() || null;
+  const titleDe    = String(form.get('title_de')    ?? '').trim() || null;
+  const excerptEn  = String(form.get('excerpt_en')  ?? '').trim() || null;
+  const excerptDe  = String(form.get('excerpt_de')  ?? '').trim() || null;
+  const contentEn  = String(form.get('content_en')  ?? '').trim() || null;
+  const contentDe  = String(form.get('content_de')  ?? '').trim() || null;
+  const keywordsEn = String(form.get('keywords_en') ?? '').trim() || null;
+  const keywordsDe = String(form.get('keywords_de') ?? '').trim() || null;
+
   if (!title || !slug) {
     errorMsg = 'Titolo e slug sono obbligatori.';
   } else {
     try {
       if (isNew) {
         await db.query(
-          `INSERT INTO blog_posts (slug,title,excerpt,content,category,cover_img,author,read_time,keywords,published,scheduled_at,display_order)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
-          [slug, title, excerpt, content, category, coverImg, author, readTime, keywords, published, scheduledAt, order],
+          `INSERT INTO blog_posts (slug,title,excerpt,content,category,cover_img,author,read_time,keywords,published,scheduled_at,display_order,
+             title_en,title_de,excerpt_en,excerpt_de,content_en,content_de,keywords_en,keywords_de)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)`,
+          [slug, title, excerpt, content, category, coverImg, author, readTime, keywords, published, scheduledAt, order,
+           titleEn, titleDe, excerptEn, excerptDe, contentEn, contentDe, keywordsEn, keywordsDe],
         );
       } else {
         await db.query(
           `UPDATE blog_posts SET slug=$1,title=$2,excerpt=$3,content=$4,category=$5,cover_img=$6,
-           author=$7,read_time=$8,keywords=$9,published=$10,scheduled_at=$11,display_order=$12,updated_at=NOW() WHERE id=$13`,
-          [slug, title, excerpt, content, category, coverImg, author, readTime, keywords, published, scheduledAt, order, postId],
+           author=$7,read_time=$8,keywords=$9,published=$10,scheduled_at=$11,display_order=$12,updated_at=NOW(),
+           title_en=$13,title_de=$14,excerpt_en=$15,excerpt_de=$16,content_en=$17,content_de=$18,keywords_en=$19,keywords_de=$20
+           WHERE id=$21`,
+          [slug, title, excerpt, content, category, coverImg, author, readTime, keywords, published, scheduledAt, order,
+           titleEn, titleDe, excerptEn, excerptDe, contentEn, contentDe, keywordsEn, keywordsDe, postId],
         );
       }
       return Astro.redirect('/admin/blog');
@@ -207,6 +226,14 @@ const initialStato: 'publish' | 'schedule' | 'draft' =
     .schedule-field input[type=datetime-local]:focus{border-color:rgba(255,106,0,.6);}
     .schedule-hint{font-size:11px;color:rgba(255,255,255,.28);}
     .divider{border:none;border-top:1px solid rgba(255,255,255,.06);margin:8px 0;}
+
+    /* i18n translation tabs */
+    .i18n-tabs{display:flex;gap:6px;margin:10px 0 14px;}
+    .i18n-tab-btn{padding:7px 16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.5);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;}
+    .i18n-tab-btn:hover{color:#fff;border-color:rgba(255,255,255,.25);}
+    .i18n-tab-btn.active{background:rgba(255,106,0,.15);border-color:rgba(255,106,0,.4);color:#FF6A00;}
+    .i18n-panel{display:none;padding:16px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:12px;}
+    .i18n-panel.active{display:block;}
     .form-actions{display:flex;gap:12px;align-items:center;margin-top:8px;}
     .btn-save{padding:12px 28px;background:#FF6A00;color:#000;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.07em;transition:opacity .15s;}
     .btn-save:hover{opacity:.85;}
@@ -394,6 +421,55 @@ Esempi:
 
         <hr class="divider form-full"/>
 
+        <!-- Translations (EN/DE) -->
+        <div class="field form-full">
+          <label>🌐 Traduzioni <span style="font-weight:400;text-transform:none;letter-spacing:0;color:rgba(255,255,255,.25);font-size:11px">— opzionali, se lasciate vuote il sito mostra la versione italiana</span></label>
+          <div class="i18n-tabs">
+            <button type="button" class="i18n-tab-btn active" data-i18n-tab="en">🇬🇧 English</button>
+            <button type="button" class="i18n-tab-btn" data-i18n-tab="de">🇦🇹 Deutsch</button>
+          </div>
+
+          <div class="i18n-panel active" id="i18n-panel-en">
+            <div class="field" style="margin-bottom:14px">
+              <label>Title (EN)</label>
+              <input type="text" name="title_en" value={post?.title_en ?? ''} placeholder="English title..."/>
+            </div>
+            <div class="field" style="margin-bottom:14px">
+              <label>Excerpt (EN)</label>
+              <textarea name="excerpt_en" rows="3" placeholder="English excerpt...">{post?.excerpt_en ?? ''}</textarea>
+            </div>
+            <div class="field" style="margin-bottom:14px">
+              <label>Content (EN, HTML)</label>
+              <textarea name="content_en" rows="14" placeholder="English article content in HTML...">{post?.content_en ?? ''}</textarea>
+            </div>
+            <div class="field">
+              <label>Keywords (EN)</label>
+              <input type="text" name="keywords_en" value={post?.keywords_en ?? ''} placeholder="digital marketing, social media agency..."/>
+            </div>
+          </div>
+
+          <div class="i18n-panel" id="i18n-panel-de">
+            <div class="field" style="margin-bottom:14px">
+              <label>Titel (DE)</label>
+              <input type="text" name="title_de" value={post?.title_de ?? ''} placeholder="Deutscher Titel..."/>
+            </div>
+            <div class="field" style="margin-bottom:14px">
+              <label>Kurzbeschreibung (DE)</label>
+              <textarea name="excerpt_de" rows="3" placeholder="Deutsche Kurzbeschreibung...">{post?.excerpt_de ?? ''}</textarea>
+            </div>
+            <div class="field" style="margin-bottom:14px">
+              <label>Inhalt (DE, HTML)</label>
+              <textarea name="content_de" rows="14" placeholder="Deutscher Artikelinhalt in HTML...">{post?.content_de ?? ''}</textarea>
+            </div>
+            <div class="field">
+              <label>Keywords (DE)</label>
+              <input type="text" name="keywords_de" value={post?.keywords_de ?? ''} placeholder="Digitalmarketing, Social Media Agentur..."/>
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider form-full"/>
+
         <!-- Cover image -->
         <div class="field form-full">
           <label>Immagine copertina</label>
@@ -422,6 +498,17 @@ Esempi:
       </div>
     </form>
   </div>
+
+  <script>
+    // ── i18n translation tabs (EN/DE) ──
+    document.querySelectorAll('.i18n-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.getAttribute('data-i18n-tab');
+        document.querySelectorAll('.i18n-tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+        document.querySelectorAll('.i18n-panel').forEach(p => p.classList.toggle('active', p.id === `i18n-panel-${target}`));
+      });
+    });
+  </script>
 
   <script define:vars={{ isNew, initialStato, scheduledAtValue }}>
     // ── Stato pubblicazione (Bozza / Pubblica ora / Programma) ──

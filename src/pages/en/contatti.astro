@@ -1,0 +1,94 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ContattiPage from '../../components/ContattiPage';
+
+export const prerender = true;
+
+const lang = 'en' as const;
+const BASE = 'https://eddigitalagency.it';
+
+const contactSchema = {
+  "@context": "https://schema.org",
+  "@type": "ContactPage",
+  "@id": `${BASE}/en/contatti#page`,
+  "name": "Request a Quote — ED Digital Agency",
+  "url": `${BASE}/en/contatti`,
+  "description": "Request a free quote for your digital project. ED Digital Agency replies within 24 hours.",
+  "inLanguage": "en-US",
+  "isPartOf": { "@id": `${BASE}/#website` },
+  "about": { "@id": `${BASE}/#organization` },
+  "breadcrumb": {
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home",    "item": `${BASE}/en` },
+      { "@type": "ListItem", "position": 2, "name": "Contact", "item": `${BASE}/en/contatti` }
+    ]
+  }
+};
+
+const offerSchema = {
+  "@context": "https://schema.org",
+  "@type": "Offer",
+  "name": "Free Consultation & Quote",
+  "description": "Request a free consultation and a personalized quote for your company. ED Digital Agency replies within 24 business hours.",
+  "url": `${BASE}/en/contatti`,
+  "priceCurrency": "EUR",
+  "price": "0",
+  "availability": "https://schema.org/InStock",
+  "validFrom": "2024-01-01",
+  "seller": {
+    "@type": "LocalBusiness",
+    "@id": `${BASE}/#organization`,
+    "name": "ED Digital Agency",
+    "telephone": "+39 379 3248371",
+    "email": "info@eddigitalagency.it"
+  },
+  "itemOffered": {
+    "@type": "Service",
+    "name": "Free Digital Consultation",
+    "description": "A free consultation on the digital strategy best suited to your company: social media, advertising, website, e-commerce, brand identity and automation.",
+    "provider": { "@id": `${BASE}/#organization` }
+  }
+};
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How long does it take to receive a quote?",
+      "acceptedAnswer": { "@type": "Answer", "text": "We reply to all requests within 24 business hours. We usually get in touch the same day to better understand your needs and send a detailed, personalized quote." }
+    },
+    {
+      "@type": "Question",
+      "name": "Is the quote really free and non-binding?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes, absolutely. The initial consultation and quote are completely free, with no purchase obligation. We want you to be able to evaluate the proposal with no pressure." }
+    },
+    {
+      "@type": "Question",
+      "name": "Do you only work with companies in Italy?",
+      "acceptedAnswer": { "@type": "Answer", "text": "We're based in Italy and work with clients across the country, as well as in Austria and internationally, remotely. Distance is never an issue." }
+    },
+    {
+      "@type": "Question",
+      "name": "What information do you need to prepare a quote?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Just your name, company, contact details and a brief description of what you're looking for. You don't need a detailed brief — we'll ask the right questions during the first, always free, discovery call." }
+    }
+  ]
+};
+---
+
+<Layout
+  lang={lang}
+  title="Free Quote — Digital Agency from Italy"
+  description="Request a free quote from ED Digital Agency. Social media, websites, advertising, e-commerce, video and custom software. Guaranteed reply within 24 hours — no obligation."
+  pageKeywords="free quote digital agency, contact web agency, website quote, social media management quote, digital marketing consultation, ED Digital Agency contact"
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(contactSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(offerSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  </Fragment>
+  <ContattiPage client:load lang={lang} />
+</Layout>

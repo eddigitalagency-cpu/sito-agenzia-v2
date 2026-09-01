@@ -1,0 +1,53 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ServiziPage from '../../components/ServiziPage';
+import { getLocalizedServices } from '../../data/services';
+import { dict } from '../../i18n/dictionary';
+
+export const prerender = true;
+
+const lang = 'en' as const;
+const t = dict[lang];
+const services = getLocalizedServices(lang);
+const BASE = 'https://eddigitalagency.it';
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": t.footer.home,     "item": `${BASE}/en` },
+    { "@type": "ListItem", "position": 2, "name": t.footer.services, "item": `${BASE}/en/servizi` }
+  ]
+};
+
+const collectionSchema = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "@id": `${BASE}/en/servizi#page`,
+  "name": "Digital Marketing & Custom Software Services — ED Digital Agency",
+  "url": `${BASE}/en/servizi`,
+  "description": "All ED Digital Agency services: social media, advertising, websites, e-commerce, photo & video, brand identity, custom business software and automation for companies in Italy, Austria and internationally.",
+  "inLanguage": "en-US",
+  "isPartOf": { "@id": `${BASE}/#website` },
+  "about": { "@id": `${BASE}/#organization` },
+  "hasPart": services.map(s => ({
+    "@type": "WebPage",
+    "name": s.name,
+    "url": `${BASE}/en/servizi/${s.slug}`,
+    "description": s.description
+  }))
+};
+---
+
+<Layout
+  lang={lang}
+  title="Digital Marketing & Custom Software Services"
+  description="Discover ED Digital Agency's services: social media, advertising, websites, e-commerce, photo & video, brand identity, custom business software and automation — for companies in Italy, Austria and internationally."
+  pageKeywords="digital agency services, social media management agency, advertising agency, website development agency, e-commerce agency, custom business software, brand identity agency, MVP development agency, ED Digital Agency"
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(collectionSchema)} />
+  </Fragment>
+  <ServiziPage client:load lang={lang} />
+</Layout>

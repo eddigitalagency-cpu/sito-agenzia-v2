@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
 import { motion, AnimatePresence, useInView, useMotionValue, animate } from 'framer-motion';
+import { dict, withLang, type Lang } from '../i18n/dictionary';
 
 // Apple ease
 const ease = [0.16, 1, 0.3, 1] as const;
@@ -55,31 +56,21 @@ function useCountUp(target: number, suffix = '') {
 }
 
 // ── Cycling hero word ──────────────────────────────────────
-const cyclingWords = [
-  'creatività',
-  'strategia',
-  'innovazione',
-  'identità',
-  'performance',
-  'visione',
-  'crescita',
-];
-
-function CyclingWord() {
+function CyclingWord({ words }: { words: readonly string[] }) {
   const [index, setIndex] = useState(0);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    const id = setInterval(() => setIndex(i => (i + 1) % cyclingWords.length), 2800);
+    const id = setInterval(() => setIndex(i => (i + 1) % words.length), 2800);
     return () => clearInterval(id);
-  }, []);
+  }, [words]);
 
   // SSR + initial client render: plain visible span → LCP measured immediately
   if (!mounted) {
     return (
       <span className="relative inline-block align-bottom" style={{ minWidth: '0.6em' }}>
-        <span className="inline-block text-[#FF6A00]">{cyclingWords[0]}.</span>
+        <span className="inline-block text-[#FF6A00]">{words[0]}.</span>
       </span>
     );
   }
@@ -88,14 +79,14 @@ function CyclingWord() {
     <span className="relative inline-block align-bottom" style={{ minWidth: '0.6em' }}>
       <AnimatePresence mode="wait" initial={false}>
         <motion.span
-          key={cyclingWords[index]}
+          key={words[index]}
           className="inline-block text-[#FF6A00]"
           initial={{ clipPath: 'inset(0 0 100% 0)', y: '60%', opacity: 0 }}
           animate={{ clipPath: 'inset(0 0 0% 0)', y: '0%', opacity: 1 }}
           exit={{ clipPath: 'inset(100% 0 0% 0)', y: '-60%', opacity: 0 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         >
-          {cyclingWords[index]}.
+          {words[index]}.
         </motion.span>
       </AnimatePresence>
     </span>
@@ -103,14 +94,8 @@ function CyclingWord() {
 }
 
 // ── Marquee strip ──────────────────────────────────────────
-const marqueeItems = [
-  'Social Media', 'Advertising', 'Web Design', 'E-Commerce',
-  'Photo & Video', 'Visual Identity', 'MVP & SaaS', 'App Development',
-  'Brand Strategy', 'Digital Growth',
-];
-
-function Marquee() {
-  const items = [...marqueeItems, ...marqueeItems];
+function Marquee({ items }: { items: readonly string[] }) {
+  const all = [...items, ...items];
   return (
     <div className="overflow-hidden py-5 border-y" style={{ borderColor: 'rgba(var(--c-text),0.06)' }}>
       <motion.div
@@ -118,7 +103,7 @@ function Marquee() {
         transition={{ duration: 24, repeat: Infinity, ease: 'linear' }}
         className="flex gap-10 whitespace-nowrap"
       >
-        {items.map((item, i) => (
+        {all.map((item, i) => (
           <span key={i} className="flex items-center gap-10 text-sm font-medium uppercase tracking-[0.18em]" style={{ color: 'rgba(var(--c-text),0.50)' }}>
             {item}
             <span className="text-[#FF6A00]">✦</span>
@@ -129,17 +114,16 @@ function Marquee() {
   );
 }
 
-// ── Services bento ─────────────────────────────────────────
-const services = [
-  { name: 'Social Media Management', slug: 'social-media-management', tagline: 'Community che converte.', span: 'lg:col-span-2', gradient: 'from-orange-500/10 via-transparent' },
-  { name: 'Advertising',             slug: 'advertising',             tagline: 'ROI misurabile.',       span: 'lg:col-span-1', gradient: 'from-violet-500/8 via-transparent' },
-  { name: 'Website',                 slug: 'website',                 tagline: '24/7 per te.',          span: 'lg:col-span-1', gradient: 'from-blue-500/8 via-transparent' },
-  { name: 'E-Commerce',              slug: 'ecommerce',               tagline: 'Negozi che vendono.',   span: 'lg:col-span-2', gradient: 'from-emerald-500/8 via-transparent' },
-  { name: 'Photo & Video',           slug: 'photo-video',             tagline: 'Contenuti straordinari.', span: 'lg:col-span-1', gradient: 'from-pink-500/8 via-transparent' },
-  { name: 'Visual Identity',         slug: 'visual-identity',         tagline: 'Brand memorabile.',    span: 'lg:col-span-1', gradient: 'from-yellow-500/8 via-transparent' },
-  { name: 'MVP & SaaS',              slug: 'mvp-saas',                tagline: 'Idea → Prodotto.',      span: 'lg:col-span-1', gradient: 'from-cyan-500/8 via-transparent' },
-  { name: 'App',                     slug: 'app',                     tagline: 'Nelle loro tasche.',    span: 'lg:col-span-1', gradient: 'from-indigo-500/8 via-transparent' },
-  { name: 'Integrazioni & Automazioni', slug: 'integrazioni',         tagline: 'Stack connesso, zero sprechi.', span: 'lg:col-span-1', gradient: 'from-teal-500/8 via-transparent' },
+const bentoStyle = [
+  { span: 'lg:col-span-2', gradient: 'from-orange-500/10 via-transparent' },
+  { span: 'lg:col-span-1', gradient: 'from-violet-500/8 via-transparent' },
+  { span: 'lg:col-span-1', gradient: 'from-blue-500/8 via-transparent' },
+  { span: 'lg:col-span-2', gradient: 'from-emerald-500/8 via-transparent' },
+  { span: 'lg:col-span-1', gradient: 'from-pink-500/8 via-transparent' },
+  { span: 'lg:col-span-1', gradient: 'from-yellow-500/8 via-transparent' },
+  { span: 'lg:col-span-1', gradient: 'from-cyan-500/8 via-transparent' },
+  { span: 'lg:col-span-1', gradient: 'from-indigo-500/8 via-transparent' },
+  { span: 'lg:col-span-1', gradient: 'from-teal-500/8 via-transparent' },
 ];
 
 type CaseStudy = { slug: string; title: string; service: string; services?: string[]; img: string };
@@ -160,9 +144,11 @@ function StatItem({ value, suffix, label }: { value: number; suffix: string; lab
   );
 }
 
-export default function HomePage({ projects = [], partners = [] }: { projects?: CaseStudy[]; partners?: Partner[] }) {
+export default function HomePage({ projects = [], partners = [], lang = 'it' }: { projects?: CaseStudy[]; partners?: Partner[]; lang?: Lang }) {
+  const t = dict[lang];
   const caseStudies = projects;
   const caseScrollRef = useRef<HTMLDivElement>(null);
+  const services = t.home.servicesBento.map((s, i) => ({ ...s, ...bentoStyle[i] }));
 
   // Wheel → horizontal scroll with lerp for case studies
   useEffect(() => {
@@ -217,7 +203,7 @@ export default function HomePage({ projects = [], partners = [] }: { projects?: 
             style={{ borderColor:'rgba(var(--c-text),0.1)', backgroundColor:'rgba(var(--c-text),0.04)', color:'rgba(var(--c-text),0.5)' }}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-[#FF6A00] animate-pulse inline-block" />
-            Partner Strategico Digitale
+            {t.home.badge}
           </div>
 
           {/* Headline — CSS animation, LCP element visible immediately */}
@@ -226,8 +212,8 @@ export default function HomePage({ projects = [], partners = [] }: { projects?: 
               className="hero-headline font-cal font-semibold uppercase italic t-text leading-[0.88] tracking-[-0.03em]"
               style={{ fontSize: 'clamp(3.2rem, 9vw, 8rem)' }}
             >
-              La nostra <CyclingWord />
-              <br />La tua visione.
+              {t.home.headlinePrefix} <CyclingWord words={t.home.cyclingWords} />
+              <br />{t.home.headlineSuffix}
             </h1>
           </div>
 
@@ -235,20 +221,19 @@ export default function HomePage({ projects = [], partners = [] }: { projects?: 
             className="hero-desc font-[250] text-base md:text-xl leading-relaxed max-w-xl mx-auto mt-8 mb-10"
             style={{ color:'rgba(var(--c-muted),1)' }}
           >
-            Strategie sartoriali per brand che non temono di farsi notare.
-            <br className="hidden md:block" /> Dal digitale al fisico, sempre con un obiettivo: far crescere il tuo business.
+            {t.home.desc}
           </p>
 
           {/* Buttons */}
           <div className="hero-buttons flex flex-wrap items-center justify-center gap-4">
             <a href="#casistudio" className="px-8 py-4 bg-[#FF6A00] text-black font-bold rounded-full hover:scale-[1.03] active:scale-[0.97] transition-transform text-sm uppercase tracking-widest shadow-lg shadow-orange-500/20">
-              I Nostri Lavori
+              {t.home.ctaWork}
             </a>
-            <a href="/contatti" className="px-8 py-4 rounded-full font-semibold text-sm uppercase tracking-widest transition-all active:scale-[0.97]"
+            <a href={withLang('/contatti', lang)} className="px-8 py-4 rounded-full font-semibold text-sm uppercase tracking-widest transition-all active:scale-[0.97]"
               style={{ border:'1px solid rgba(var(--c-text),0.15)', color:'rgb(var(--c-text))' }}
               onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(var(--c-text),0.07)'; }}
               onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = ''; }}>
-              Inizia un progetto →
+              {t.home.ctaStart}
             </a>
           </div>
         </div>
@@ -258,23 +243,23 @@ export default function HomePage({ projects = [], partners = [] }: { projects?: 
         <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:1.6, duration:0.8 }}
           className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
           aria-hidden="true">
-          <span className="text-[10px] uppercase tracking-[0.2em]" style={{ color:'rgba(var(--c-text),0.2)' }}>Scorri</span>
+          <span className="text-[10px] uppercase tracking-[0.2em]" style={{ color:'rgba(var(--c-text),0.2)' }}>{t.home.scrollHint}</span>
           <motion.div animate={{ y:[0,6,0] }} transition={{ duration:1.5, repeat:Infinity, ease:'easeInOut' }}
             className="w-px h-8" style={{ background:'linear-gradient(to bottom, rgba(var(--c-text),0.3), transparent)' }} />
         </motion.div>
       </section>
 
       {/* ── MARQUEE ──────────────────────────────────────── */}
-      <Marquee />
+      <Marquee items={t.home.marqueeItems} />
 
       {/* ── STATS ────────────────────────────────────────── */}
       <section className="py-24 md:py-32">
         <div className="max-w-[1200px] mx-auto px-5 md:px-12">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-10 md:gap-16">
-            <StatItem value={200} suffix="+" label="Progetti completati" />
-            <StatItem value={5}   suffix="+"  label="Anni di esperienza" />
-            <StatItem value={98}  suffix="%" label="Clienti soddisfatti" />
-            <StatItem value={3}   suffix="×"  label="Crescita media" />
+            <StatItem value={200} suffix="+" label={t.home.statProjects} />
+            <StatItem value={5}   suffix="+"  label={t.home.statYears} />
+            <StatItem value={98}  suffix="%" label={t.home.statClients} />
+            <StatItem value={3}   suffix="×"  label={t.home.statGrowth} />
           </div>
         </div>
       </section>
@@ -286,9 +271,9 @@ export default function HomePage({ projects = [], partners = [] }: { projects?: 
             <motion.p variants={clipReveal}
               className="font-cal font-semibold italic t-text leading-tight tracking-tight text-center"
               style={{ fontSize:'clamp(1.8rem,4.5vw,3.5rem)', letterSpacing:'-0.03em' }}>
-              Non siamo solo un'agenzia. <br />
-              <span className="text-[#FF6A00]">Siamo il motore digitale</span> <br />
-              della tua crescita.
+              {t.home.statementLine1} <br />
+              <span className="text-[#FF6A00]">{t.home.statementLine2}</span> <br />
+              {t.home.statementLine3}
             </motion.p>
           </Section>
         </div>
@@ -300,14 +285,14 @@ export default function HomePage({ projects = [], partners = [] }: { projects?: 
           <Section>
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row sm:items-end justify-between mb-14 gap-6">
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] mb-4 font-medium" style={{ color:'rgba(var(--c-text),0.55)' }}>Cosa facciamo</p>
+                <p className="text-xs uppercase tracking-[0.2em] mb-4 font-medium" style={{ color:'rgba(var(--c-text),0.55)' }}>{t.home.whatWeDo}</p>
                 <h2 className="font-cal font-semibold uppercase italic t-text leading-tight"
                   style={{ fontSize:'clamp(2.2rem,5vw,3.8rem)', letterSpacing:'-0.03em' }}>
-                  Servizi<span className="text-[#FF6A00]">.</span>
+                  {t.home.servicesTitle}<span className="text-[#FF6A00]">.</span>
                 </h2>
               </div>
-              <a href="/servizi" className="text-sm font-semibold text-[#FF6A00] hover:opacity-70 transition-opacity shrink-0">
-                Vedi tutti →
+              <a href={withLang('/servizi', lang)} className="text-sm font-semibold text-[#FF6A00] hover:opacity-70 transition-opacity shrink-0">
+                {t.home.seeAll}
               </a>
             </motion.div>
           </Section>
@@ -317,7 +302,7 @@ export default function HomePage({ projects = [], partners = [] }: { projects?: 
             {services.map((s, i) => (
               <motion.a
                 key={s.slug}
-                href={`/servizi/${s.slug}`}
+                href={withLang(`/servizi/${s.slug}`, lang)}
                 initial={{ opacity:0, y:32, scale:0.97 }}
                 whileInView={{ opacity:1, y:0, scale:1 }}
                 viewport={{ once:true, margin:'-40px' }}
@@ -358,10 +343,10 @@ export default function HomePage({ projects = [], partners = [] }: { projects?: 
           <Section>
             <motion.div variants={fadeUp} className="flex items-end justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] mb-4 font-medium" style={{ color:'rgba(var(--c-text),0.55)' }}>Portfolio</p>
+                <p className="text-xs uppercase tracking-[0.2em] mb-4 font-medium" style={{ color:'rgba(var(--c-text),0.55)' }}>{t.home.portfolioLabel}</p>
                 <h2 className="font-cal font-semibold uppercase italic t-text leading-tight"
                   style={{ fontSize:'clamp(2.2rem,5vw,3.8rem)', letterSpacing:'-0.03em' }}>
-                  Progetti<span className="text-[#FF6A00]">.</span>
+                  {t.home.projectsTitle}<span className="text-[#FF6A00]">.</span>
                 </h2>
               </div>
             </motion.div>
@@ -370,14 +355,14 @@ export default function HomePage({ projects = [], partners = [] }: { projects?: 
 
         {/* Swipe hint — mobile only */}
         <p className="md:hidden text-center text-[11px] uppercase tracking-[0.18em] mb-4 px-5" style={{ color: 'rgba(var(--c-text),0.50)' }}>
-          ← scorri per vedere altri →
+          {t.home.swipeHint}
         </p>
 
         <div ref={caseScrollRef} className="flex gap-4 md:gap-5 overflow-x-auto px-5 md:px-12 pb-6 no-scrollbar" style={{ cursor: 'grab', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
           {caseStudies.map((s, i) => (
             <motion.a
               key={s.title}
-              href={`/progetti/${s.slug}`}
+              href={withLang(`/progetti/${s.slug}`, lang)}
               initial={{ opacity:0, x:40 }}
               whileInView={{ opacity:1, x:0 }}
               viewport={{ once:true, margin:'-40px' }}
@@ -412,14 +397,14 @@ export default function HomePage({ projects = [], partners = [] }: { projects?: 
             >
               <div className="absolute inset-0" style={{ background:'radial-gradient(ellipse at top, rgba(255,255,255,0.15) 0%, transparent 60%)' }} />
               <div className="relative z-10">
-                <p className="text-black/60 text-xs uppercase tracking-[0.2em] font-medium mb-6">Pronto a crescere?</p>
+                <p className="text-black/60 text-xs uppercase tracking-[0.2em] font-medium mb-6">{t.home.ctaTagline}</p>
                 <h2 className="font-cal font-semibold uppercase italic text-black leading-tight tracking-tight mb-10"
                   style={{ fontSize:'clamp(2.4rem,6vw,5rem)', letterSpacing:'-0.03em' }}>
-                  Costruiamo qualcosa<br className="hidden sm:block" /> di straordinario.
+                  {t.home.ctaTitle1}<br className="hidden sm:block" /> {t.home.ctaTitle2}
                 </h2>
-                <a href="/contatti"
+                <a href={withLang('/contatti', lang)}
                   className="inline-flex items-center gap-3 px-10 py-4 bg-black text-white font-bold rounded-full hover:scale-[1.04] active:scale-[0.97] transition-transform text-sm uppercase tracking-widest shadow-xl shadow-black/30">
-                  Inizia ora
+                  {t.home.ctaButton}
                   <span>→</span>
                 </a>
               </div>
@@ -434,7 +419,7 @@ export default function HomePage({ projects = [], partners = [] }: { projects?: 
           <div className="max-w-[1200px] mx-auto px-5 md:px-12">
             <Section>
               <motion.p variants={fadeUp} className="text-center text-[10px] uppercase tracking-[0.2em] mb-12 font-medium" style={{ color:'rgba(var(--c-text),0.2)' }}>
-                Technology partners
+                {t.home.partnersLabel}
               </motion.p>
               <motion.div variants={stagger} className="flex flex-wrap justify-center items-center gap-10 md:gap-16">
                 {partners.map(p => (

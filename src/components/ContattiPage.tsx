@@ -1,43 +1,10 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { dict, type Lang } from '../i18n/dictionary';
 
 const ease = [0.25, 0.1, 0.25, 1.0] as const;
 
-const serviceOptions = [
-  'Social Media Management',
-  'Advertising',
-  'Website',
-  'E-Commerce',
-  'Photo & Video',
-  'Visual Identity',
-  'MVP & SaaS',
-  'App',
-  'Non so ancora',
-];
-
-const contacts = [
-  {
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-        <polyline points="22,6 12,13 2,6"/>
-      </svg>
-    ),
-    label: 'Email',
-    value: 'info@eddigitalagency.it',
-    href: 'mailto:info@eddigitalagency.it',
-  },
-  {
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 8.81 19.79 19.79 0 01.22 2.2 2 2 0 012.22 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
-      </svg>
-    ),
-    label: 'Telefono',
-    value: '+39 379 324 8371',
-    href: 'tel:+393793248371',
-  },
-];
+const SERVICE_NAMES = ['Social Media Management', 'Advertising', 'Website', 'E-Commerce', 'Photo & Video', 'Visual Identity', 'MVP & SaaS', 'App'];
 
 interface FormState {
   name: string; email: string; phone: string;
@@ -46,7 +13,33 @@ interface FormState {
 
 type Status = 'idle' | 'sending' | 'success' | 'error';
 
-export default function ContattiPage() {
+export default function ContattiPage({ lang = 'it' }: { lang?: Lang }) {
+  const t = dict[lang];
+  const serviceOptions = [...SERVICE_NAMES, t.contatti.form.serviceOther];
+  const contacts = [
+    {
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+          <polyline points="22,6 12,13 2,6"/>
+        </svg>
+      ),
+      label: t.contatti.contactEmail,
+      value: 'info@eddigitalagency.it',
+      href: 'mailto:info@eddigitalagency.it',
+    },
+    {
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 8.81 19.79 19.79 0 01.22 2.2 2 2 0 012.22 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+        </svg>
+      ),
+      label: t.contatti.contactPhone,
+      value: '+39 379 324 8371',
+      href: 'tel:+393793248371',
+    },
+  ];
+
   const [form, setForm] = useState<FormState>({
     name: '', email: '', phone: '', company: '', service: '', message: '', website: '',
   });
@@ -61,10 +54,10 @@ export default function ContattiPage() {
 
   const validate = () => {
     const e: Partial<FormState> = {};
-    if (!form.name.trim())    e.name    = 'Il nome è obbligatorio.';
-    if (!form.email.trim())   e.email   = "L'email è obbligatoria.";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Email non valida.';
-    if (!form.message.trim()) e.message = 'Il messaggio è obbligatorio.';
+    if (!form.name.trim())    e.name    = t.contatti.form.errName;
+    if (!form.email.trim())   e.email   = t.contatti.form.errEmail;
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = t.contatti.form.errEmailInvalid;
+    if (!form.message.trim()) e.message = t.contatti.form.errMessage;
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -84,11 +77,11 @@ export default function ContattiPage() {
         setStatus('success');
         setForm({ name: '', email: '', phone: '', company: '', service: '', message: '', website: '' });
       } else {
-        setErrorMsg(data.error || 'Errore sconosciuto.');
+        setErrorMsg(data.error || t.contatti.form.errUnknown);
         setStatus('error');
       }
     } catch {
-      setErrorMsg('Errore di connessione. Riprova tra qualche secondo.');
+      setErrorMsg(t.contatti.form.errNetwork);
       setStatus('error');
     }
   };
@@ -101,13 +94,13 @@ export default function ContattiPage() {
         <motion.div initial={{ opacity:0, y:24 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.9, ease }}>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full t-border border t-text-50 text-xs uppercase tracking-widest mb-8" style={{ backgroundColor:'rgba(var(--c-text),0.04)' }}>
             <span className="w-1.5 h-1.5 rounded-full bg-[#FF6A00] inline-block" />
-            Inizia la conversazione
+            {t.contatti.badge}
           </div>
           <h1 className="font-cal font-semibold uppercase tracking-tighter italic t-text text-[clamp(2.8rem,7vw,5rem)] leading-[0.9] mb-6">
-            Parliamo del <br /><span className="text-[#FF6A00]">tuo progetto.</span>
+            {t.contatti.h1a} <br /><span className="text-[#FF6A00]">{t.contatti.h1b}</span>
           </h1>
           <p className="t-muted font-[250] text-base leading-7 max-w-lg">
-            Rispondiamo entro 24 ore. Nessun impegno, nessuna pressione — solo una conversazione onesta su come possiamo aiutarti.
+            {t.contatti.intro}
           </p>
         </motion.div>
       </section>
@@ -131,15 +124,15 @@ export default function ContattiPage() {
                       <polyline points="20 6 9 17 4 12"/>
                     </svg>
                   </div>
-                  <h2 className="font-cal font-semibold t-text text-3xl uppercase italic">Messaggio inviato!</h2>
+                  <h2 className="font-cal font-semibold t-text text-3xl uppercase italic">{t.contatti.sent.title}</h2>
                   <p className="t-muted font-[250] text-base leading-7 max-w-sm">
-                    Grazie per averci scritto. Ti risponderemo all'indirizzo fornito entro 24 ore lavorative.
+                    {t.contatti.sent.desc}
                   </p>
                   <button
                     onClick={() => setStatus('idle')}
                     className="mt-2 px-8 py-3 t-border border t-text rounded-full text-sm font-semibold hover:bg-[#FF6A00] hover:border-[#FF6A00] hover:text-black transition-all duration-200"
                   >
-                    Invia un altro messaggio
+                    {t.contatti.sent.another}
                   </button>
                 </motion.div>
               ) : (
@@ -149,37 +142,37 @@ export default function ContattiPage() {
 
                   {/* Row 1: name + email */}
                   <div className="grid sm:grid-cols-2 gap-5">
-                    <Field label="Nome completo *" error={errors.name}>
-                      <input type="text" autoComplete="name" placeholder="Mario Rossi" value={form.name} onChange={set('name')} className={field(!!errors.name)} />
+                    <Field label={t.contatti.form.name} error={errors.name}>
+                      <input type="text" autoComplete="name" placeholder={t.contatti.form.namePh} value={form.name} onChange={set('name')} className={field(!!errors.name)} />
                     </Field>
-                    <Field label="Email *" error={errors.email}>
-                      <input type="email" autoComplete="email" inputMode="email" placeholder="mario@esempio.it" value={form.email} onChange={set('email')} className={field(!!errors.email)} />
+                    <Field label={t.contatti.form.email} error={errors.email}>
+                      <input type="email" autoComplete="email" inputMode="email" placeholder={t.contatti.form.emailPh} value={form.email} onChange={set('email')} className={field(!!errors.email)} />
                     </Field>
                   </div>
 
                   {/* Row 2: phone + company */}
                   <div className="grid sm:grid-cols-2 gap-5">
-                    <Field label="Telefono">
-                      <input type="tel" autoComplete="tel" inputMode="tel" placeholder="+39 333 000 0000" value={form.phone} onChange={set('phone')} className={field(false)} />
+                    <Field label={t.contatti.form.phone}>
+                      <input type="tel" autoComplete="tel" inputMode="tel" placeholder={t.contatti.form.phonePh} value={form.phone} onChange={set('phone')} className={field(false)} />
                     </Field>
-                    <Field label="Azienda">
-                      <input type="text" autoComplete="organization" placeholder="Nome azienda" value={form.company} onChange={set('company')} className={field(false)} />
+                    <Field label={t.contatti.form.company}>
+                      <input type="text" autoComplete="organization" placeholder={t.contatti.form.companyPh} value={form.company} onChange={set('company')} className={field(false)} />
                     </Field>
                   </div>
 
                   {/* Service */}
-                  <Field label="Servizio di interesse">
+                  <Field label={t.contatti.form.service}>
                     <select value={form.service} onChange={set('service')} className={field(false) + ' appearance-none'}>
-                      <option value="">Seleziona un servizio...</option>
+                      <option value="">{t.contatti.form.serviceSelect}</option>
                       {serviceOptions.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </Field>
 
                   {/* Message */}
-                  <Field label="Messaggio *" error={errors.message}>
+                  <Field label={t.contatti.form.message} error={errors.message}>
                     <textarea
                       rows={6}
-                      placeholder="Raccontaci il tuo progetto, i tuoi obiettivi, o semplicemente salutaci..."
+                      placeholder={t.contatti.form.messagePh}
                       value={form.message}
                       onChange={set('message')}
                       className={field(!!errors.message) + ' resize-none'}
@@ -206,13 +199,13 @@ export default function ContattiPage() {
                     {status === 'sending' ? (
                       <>
                         <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeOpacity=".25"/><path d="M21 12a9 9 0 00-9-9"/></svg>
-                        Invio in corso...
+                        {t.contatti.form.sending}
                       </>
-                    ) : 'Invia il messaggio →'}
+                    ) : t.contatti.form.submit}
                   </motion.button>
 
                   <p className="text-xs t-text-25 text-center leading-5">
-                    Inviando il modulo accetti la nostra privacy policy. Non condividiamo i tuoi dati con terze parti.
+                    {t.contatti.form.privacyNote}
                   </p>
                 </motion.form>
               )}
@@ -229,7 +222,6 @@ export default function ContattiPage() {
               <motion.a
                 key={c.label}
                 href={c.href}
-                target={c.label === 'Indirizzo' ? '_blank' : undefined}
                 rel="noopener noreferrer"
                 initial={{ opacity:0, x:20 }}
                 animate={{ opacity:1, x:0 }}
@@ -257,7 +249,7 @@ export default function ContattiPage() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF6A00] opacity-60" />
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#FF6A00]" />
               </span>
-              <p className="text-xs t-muted font-[250]">Risposta garantita entro <strong className="t-text font-semibold">24 ore</strong> lavorative.</p>
+              <p className="text-xs t-muted font-[250]">{t.contatti.responseTime} <strong className="t-text font-semibold">{t.contatti.responseTimeStrong}</strong> {t.contatti.responseTimeSuffix}</p>
             </motion.div>
           </motion.div>
 

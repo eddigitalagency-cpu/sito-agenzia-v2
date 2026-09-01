@@ -23,6 +23,11 @@ type ProjRow = {
   tagline: string; description: string; what: string[];
   results: { value: string; label: string }[]; year: string;
   cover_img: string; display_order: number; published: boolean;
+  tagline_en: string | null; tagline_de: string | null;
+  description_en: string | null; description_de: string | null;
+  what_en: string[] | null; what_de: string[] | null;
+  results_en: { value: string; label: string }[] | null;
+  results_de: { value: string; label: string }[] | null;
 };
 
 let project: ProjRow | null = null;
@@ -70,22 +75,48 @@ if (Astro.request.method === 'POST') {
     if (v || l) results.push({ value: v, label: l });
   }
 
+  // Translations — stored as NULL when left blank so the site falls back to Italian
+  const taglineEn     = String(form.get('tagline_en')     ?? '').trim() || null;
+  const taglineDe     = String(form.get('tagline_de')     ?? '').trim() || null;
+  const descriptionEn = String(form.get('description_en') ?? '').trim() || null;
+  const descriptionDe = String(form.get('description_de') ?? '').trim() || null;
+  const whatEnRaw = String(form.get('what_en') ?? '');
+  const whatDeRaw = String(form.get('what_de') ?? '');
+  const whatEn = whatEnRaw.trim() ? whatEnRaw.split('\n').map(s => s.trim()).filter(Boolean) : null;
+  const whatDe = whatDeRaw.trim() ? whatDeRaw.split('\n').map(s => s.trim()).filter(Boolean) : null;
+  const resultsEn: { value: string; label: string }[] = [];
+  const resultsDe: { value: string; label: string }[] = [];
+  for (let i = 0; i < 3; i++) {
+    const vEn = String(form.get(`res_${i}_val_en`) ?? '').trim();
+    const lEn = String(form.get(`res_${i}_lbl_en`) ?? '').trim();
+    if (vEn || lEn) resultsEn.push({ value: vEn || results[i]?.value || '', label: lEn });
+    const vDe = String(form.get(`res_${i}_val_de`) ?? '').trim();
+    const lDe = String(form.get(`res_${i}_lbl_de`) ?? '').trim();
+    if (vDe || lDe) resultsDe.push({ value: vDe || results[i]?.value || '', label: lDe });
+  }
+
   if (!title || !slug) {
     errorMsg = 'Titolo e slug sono obbligatori.';
   } else {
     try {
       if (isNew) {
         await db.query(
-          `INSERT INTO projects_db (slug,title,service,service_slug,services,service_slugs,tagline,description,what,results,year,cover_img,published,display_order)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
-          [slug,title,service,serviceSlug,services,serviceSlugs,tagline,description,what,JSON.stringify(results),year,coverImg,published,order],
+          `INSERT INTO projects_db (slug,title,service,service_slug,services,service_slugs,tagline,description,what,results,year,cover_img,published,display_order,
+             tagline_en,tagline_de,description_en,description_de,what_en,what_de,results_en,results_de)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)`,
+          [slug,title,service,serviceSlug,services,serviceSlugs,tagline,description,what,JSON.stringify(results),year,coverImg,published,order,
+           taglineEn,taglineDe,descriptionEn,descriptionDe,whatEn,whatDe,
+           resultsEn.length ? JSON.stringify(resultsEn) : null, resultsDe.length ? JSON.stringify(resultsDe) : null],
         );
       } else {
         await db.query(
           `UPDATE projects_db SET slug=$1,title=$2,service=$3,service_slug=$4,services=$5,service_slugs=$6,
-           tagline=$7,description=$8,what=$9,results=$10,year=$11,cover_img=$12,published=$13,display_order=$14,updated_at=NOW()
-           WHERE id=$15`,
-          [slug,title,service,serviceSlug,services,serviceSlugs,tagline,description,what,JSON.stringify(results),year,coverImg,published,order,projId],
+           tagline=$7,description=$8,what=$9,results=$10,year=$11,cover_img=$12,published=$13,display_order=$14,updated_at=NOW(),
+           tagline_en=$15,tagline_de=$16,description_en=$17,description_de=$18,what_en=$19,what_de=$20,results_en=$21,results_de=$22
+           WHERE id=$23`,
+          [slug,title,service,serviceSlug,services,serviceSlugs,tagline,description,what,JSON.stringify(results),year,coverImg,published,order,
+           taglineEn,taglineDe,descriptionEn,descriptionDe,whatEn,whatDe,
+           resultsEn.length ? JSON.stringify(resultsEn) : null, resultsDe.length ? JSON.stringify(resultsDe) : null, projId],
         );
       }
       return Astro.redirect('/admin/progetti');
@@ -102,8 +133,12 @@ const v = (field: string, fallback = '') => {
   if (errorMsg) return ''; // after error, form has been re-submitted but no data cached
   return p ? String((p as Record<string, unknown>)[field] ?? fallback) : fallback;
 };
-const whatStr = p ? (p.what ?? []).join('\n') : '';
-const r = (i: number, key: 'value' | 'label') => p?.results?.[i]?.[key] ?? '';
+const whatStr   = p ? (p.what ?? []).join('\n') : '';
+const whatStrEn = p ? (p.what_en ?? []).join('\n') : '';
+const whatStrDe = p ? (p.what_de ?? []).join('\n') : '';
+const r   = (i: number, key: 'value' | 'label') => p?.results?.[i]?.[key] ?? '';
+const rEn = (i: number, key: 'value' | 'label') => p?.results_en?.[i]?.[key] ?? '';
+const rDe = (i: number, key: 'value' | 'label') => p?.results_de?.[i]?.[key] ?? '';
 
 const serviceOptions = [
   { label: 'Web Design',         slug: 'website' },
@@ -208,6 +243,14 @@ const pageTitle = isNew ? 'Nuovo Progetto' : `Modifica: ${p?.title ?? ''}`;
 
     /* Divider */
     .divider{border:none;border-top:1px solid rgba(255,255,255,.06);margin:8px 0;}
+
+    /* i18n translation tabs */
+    .i18n-tabs{display:flex;gap:6px;margin:10px 0 14px;}
+    .i18n-tab-btn{padding:7px 16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.5);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;}
+    .i18n-tab-btn:hover{color:#fff;border-color:rgba(255,255,255,.25);}
+    .i18n-tab-btn.active{background:rgba(255,106,0,.15);border-color:rgba(255,106,0,.4);color:#FF6A00;}
+    .i18n-panel{display:none;padding:16px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:12px;}
+    .i18n-panel.active{display:block;}
 
     /* Submit */
     .form-actions{display:flex;gap:12px;align-items:center;margin-top:8px;}
@@ -351,6 +394,69 @@ const pageTitle = isNew ? 'Nuovo Progetto' : `Modifica: ${p?.title ?? ''}`;
 
         <hr class="divider form-full"/>
 
+        <!-- Translations (EN/DE) -->
+        <div class="field form-full">
+          <label>🌐 Traduzioni <span style="font-weight:400;text-transform:none;letter-spacing:0;color:rgba(255,255,255,.25);font-size:11px">— opzionali, se lasciate vuote il sito mostra la versione italiana</span></label>
+          <div class="i18n-tabs">
+            <button type="button" class="i18n-tab-btn active" data-i18n-tab="en">🇬🇧 English</button>
+            <button type="button" class="i18n-tab-btn" data-i18n-tab="de">🇦🇹 Deutsch</button>
+          </div>
+
+          <div class="i18n-panel active" id="i18n-panel-en">
+            <div class="field" style="margin-bottom:14px">
+              <label>Tagline (EN)</label>
+              <input type="text" name="tagline_en" value={p?.tagline_en ?? ''} placeholder="A short line summarizing the project"/>
+            </div>
+            <div class="field" style="margin-bottom:14px">
+              <label>Description (EN)</label>
+              <textarea name="description_en" rows="4" placeholder="Project description for the detail page...">{p?.description_en ?? ''}</textarea>
+            </div>
+            <div class="field" style="margin-bottom:14px">
+              <label>What we did (EN)</label>
+              <textarea name="what_en" rows="5" placeholder={"One bullet per line:\nUX/UI design\nWebsite development\n..."}>{whatStrEn}</textarea>
+            </div>
+            <div class="field">
+              <label>Results (EN)</label>
+              <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
+                {[0, 1, 2].map(i => (
+                  <div class="row2">
+                    <input type="text" name={`res_${i}_val_en`} value={rEn(i, 'value')} placeholder="e.g. +320%" style="font-weight:700;color:#FF6A00;"/>
+                    <input type="text" name={`res_${i}_lbl_en`} value={rEn(i, 'label')} placeholder="e.g. Followers in 6 months"/>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div class="i18n-panel" id="i18n-panel-de">
+            <div class="field" style="margin-bottom:14px">
+              <label>Tagline (DE)</label>
+              <input type="text" name="tagline_de" value={p?.tagline_de ?? ''} placeholder="Eine kurze Zeile, die das Projekt zusammenfasst"/>
+            </div>
+            <div class="field" style="margin-bottom:14px">
+              <label>Beschreibung (DE)</label>
+              <textarea name="description_de" rows="4" placeholder="Projektbeschreibung für die Detailseite...">{p?.description_de ?? ''}</textarea>
+            </div>
+            <div class="field" style="margin-bottom:14px">
+              <label>Was wir umgesetzt haben (DE)</label>
+              <textarea name="what_de" rows="5" placeholder={"Ein Punkt pro Zeile:\nUX/UI-Design\nWebsite-Entwicklung\n..."}>{whatStrDe}</textarea>
+            </div>
+            <div class="field">
+              <label>Ergebnisse (DE)</label>
+              <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
+                {[0, 1, 2].map(i => (
+                  <div class="row2">
+                    <input type="text" name={`res_${i}_val_de`} value={rDe(i, 'value')} placeholder="z. B. +320%" style="font-weight:700;color:#FF6A00;"/>
+                    <input type="text" name={`res_${i}_lbl_de`} value={rDe(i, 'label')} placeholder="z. B. Follower in 6 Monaten"/>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider form-full"/>
+
         <!-- Cover image -->
         <div class="field form-full">
           <label>Immagine copertina</label>
@@ -380,6 +486,17 @@ const pageTitle = isNew ? 'Nuovo Progetto' : `Modifica: ${p?.title ?? ''}`;
       </div>
     </form>
   </div>
+
+  <script>
+    // ── i18n translation tabs (EN/DE) ──
+    document.querySelectorAll('.i18n-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.getAttribute('data-i18n-tab');
+        document.querySelectorAll('.i18n-tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+        document.querySelectorAll('.i18n-panel').forEach(p => p.classList.toggle('active', p.id === `i18n-panel-${target}`));
+      });
+    });
+  </script>
 
   <script define:vars={{ isNew, initServices, initServiceSlugs }}>
     // ── Auto-slug from title ───────────────────────────────

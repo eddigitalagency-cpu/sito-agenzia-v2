@@ -1,0 +1,101 @@
+---
+export const prerender = false;
+
+import Layout from '../../../layouts/Layout.astro';
+import ProjectDetailPage from '../../../components/ProjectDetailPage';
+import { initDB, getPool } from '../../../lib/db';
+import { getProject } from '../../../data/projects';
+import { getLocalizedServiceName } from '../../../data/services';
+import type { Project } from '../../../data/projects';
+
+const lang = 'en' as const;
+const { slug } = Astro.params;
+
+await initDB();
+type ProjRow = {
+  slug: string; title: string; service: string; service_slug: string;
+  services: string[]; service_slugs: string[];
+  cover_img: string; tagline: string; description: string;
+  what: string[]; results: { value: string; label: string }[]; year: string;
+  has_translation: boolean;
+};
+const res = await getPool().query<ProjRow>(
+  `SELECT slug, title, service, service_slug, services, service_slugs, cover_img, year,
+          COALESCE(NULLIF(tagline_en,''), tagline)         AS tagline,
+          COALESCE(NULLIF(description_en,''), description) AS description,
+          COALESCE(what_en, what)                           AS what,
+          COALESCE(results_en, results)                     AS results,
+          (tagline_en IS NOT NULL AND tagline_en != '')     AS has_translation
+   FROM projects_db WHERE slug=$1 AND published=true`, [slug]
+);
+
+let project: Project | undefined;
+let hasTranslation = true;
+if (res.rowCount) {
+  const r = res.rows[0];
+  const serviceSlugs = Array.isArray(r.service_slugs) && r.service_slugs.length ? r.service_slugs : [r.service_slug];
+  const rawServices  = Array.isArray(r.services)      && r.services.length      ? r.services      : [r.service];
+  const services = serviceSlugs.map((s, i) => getLocalizedServiceName(s, rawServices[i] ?? rawServices[0], lang));
+  project = {
+    slug: r.slug, title: r.title,
+    service: services[0] ?? r.service, serviceSlug: serviceSlugs[0] ?? r.service_slug,
+    services, serviceSlugs,
+    img: r.cover_img, tagline: r.tagline, description: r.description,
+    what: Array.isArray(r.what) ? r.what : [],
+    results: Array.isArray(r.results) ? r.results : [],
+    year: r.year,
+  };
+  hasTranslation = r.has_translation;
+} else {
+  project = getProject(slug!);
+}
+
+if (!project) return Astro.redirect('/en');
+
+const canonicalURL  = `https://eddigitalagency.it/en/progetti/${project.slug}`;
+const projectImg    = new URL(project.img || '/Images/Logo%20ED%20Digitla.png', 'https://eddigitalagency.it').toString();
+const servicesList  = project.services?.length ? project.services : [project.service];
+const pageKeywords  = [
+  project.title, ...servicesList, project.service + ' case study', 'ED Digital Agency project',
+  'digital agency Italy',
+].join(', ');
+
+const creativeWorkSchema = {
+  "@context": "https://schema.org",
+  "@type": "CreativeWork",
+  "@id": `${canonicalURL}#project`,
+  "name": project.title,
+  "headline": project.tagline,
+  "description": project.description,
+  "url": canonicalURL,
+  "image": projectImg,
+  "inLanguage": "en-US",
+  "creator": { "@id": "https://eddigitalagency.it/#organization" },
+  "about": servicesList.map(s => ({ "@type": "Thing", "name": s })),
+  ...(project.year ? { "datePublished": project.year } : {}),
+};
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home",     "item": "https://eddigitalagency.it/en" },
+    { "@type": "ListItem", "position": 2, "name": "Projects", "item": "https://eddigitalagency.it/en/#casistudio" },
+    { "@type": "ListItem", "position": 3, "name": project.title, "item": canonicalURL }
+  ]
+};
+---
+
+<Layout
+  lang={lang}
+  title={`${project.title} — ${project.service}`}
+  description={`${project.tagline} See how ED Digital Agency delivered the ${project.title} project: ${project.description.slice(0, 120)}...`}
+  pageKeywords={pageKeywords}
+  ogImage={project.img}
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(creativeWorkSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+  </Fragment>
+  <ProjectDetailPage client:load project={project} lang={lang} translationFallback={!hasTranslation} />
+</Layout>

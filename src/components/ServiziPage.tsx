@@ -1,6 +1,7 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
-import { services } from '../data/services';
+import { getLocalizedServices } from '../data/services';
+import { dict, withLang, type Lang } from '../i18n/dictionary';
 
 const ease = [0.25, 0.1, 0.25, 1.0] as const;
 const reveal = {
@@ -19,7 +20,9 @@ function Section({ children, className = '' }: { children: React.ReactNode; clas
   );
 }
 
-export default function ServiziPage() {
+export default function ServiziPage({ lang = 'it' }: { lang?: Lang }) {
+  const t = dict[lang];
+  const services = getLocalizedServices(lang);
   return (
     <div className="t-bg t-text overflow-x-hidden" style={{ fontFamily: 'GraphikLCG, Inter, system-ui, sans-serif' }}>
 
@@ -28,15 +31,15 @@ export default function ServiziPage() {
         <Section className="space-y-7 md:space-y-8">
           <motion.div variants={reveal} className="inline-flex items-center gap-2 px-4 py-2 rounded-full t-border border t-text-50 text-xs uppercase tracking-widest" style={{ backgroundColor: 'rgba(var(--c-text),0.04)' }}>
             <span className="w-1.5 h-1.5 rounded-full bg-[#FF6A00] inline-block" />
-            Cosa facciamo
+            {t.serviziHub.badge}
           </motion.div>
           <motion.h1 variants={reveal} custom={1}
             className="font-cal font-semibold uppercase tracking-tighter italic t-text text-[clamp(2.8rem,8vw,5.5rem)] leading-[0.9]"
           >
-            Servizi che <br /><span className="text-[#FF6A00]">fanno la</span> <br />differenza.
+            {t.serviziHub.h1a} <br /><span className="text-[#FF6A00]">{t.serviziHub.h1b}</span> <br />{t.serviziHub.h1c}
           </motion.h1>
           <motion.p variants={reveal} custom={2} className="t-muted font-[250] text-base leading-6 max-w-xl">
-            Ogni servizio è studiato per portare risultati concreti e misurabili. Lavoriamo come un'estensione del tuo team, non come fornitori anonimi.
+            {t.serviziHub.intro}
           </motion.p>
         </Section>
       </section>
@@ -47,7 +50,7 @@ export default function ServiziPage() {
           {services.map((service, i) => (
             <motion.a
               key={service.slug}
-              href={`/servizi/${service.slug}`}
+              href={withLang(`/servizi/${service.slug}`, lang)}
               initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-50px' }}
@@ -59,7 +62,7 @@ export default function ServiziPage() {
                   <div className="flex items-center gap-3">
                     <span className="text-xs t-text-25 uppercase tracking-widest">0{i + 1}</span>
                     <span className="w-6 h-px" style={{ backgroundColor: 'rgba(var(--c-text),0.1)' }} />
-                    <span className="text-xs text-[#FF6A00] uppercase tracking-widest">Digital Service</span>
+                    <span className="text-xs text-[#FF6A00] uppercase tracking-widest">{t.serviziHub.digitalService}</span>
                   </div>
                   <h2 className="font-cal font-semibold t-text text-2xl md:text-4xl leading-tight group-hover:text-[#FF6A00] transition-colors duration-300">
                     {service.name}
@@ -76,7 +79,7 @@ export default function ServiziPage() {
                 </div>
 
                 <div className="md:pl-10 md:border-l t-border">
-                  <p className="text-xs t-text-30 uppercase tracking-widest mb-5 md:mb-6">Cosa include</p>
+                  <p className="text-xs t-text-30 uppercase tracking-widest mb-5 md:mb-6">{t.serviziHub.whatIncludes}</p>
                   <ul className="space-y-3 md:space-y-4">
                     {service.includes.map(item => (
                       <li key={item} className="flex items-start gap-3">
@@ -91,7 +94,7 @@ export default function ServiziPage() {
               </div>
 
               <div className="px-8 md:px-14 py-5 flex items-center justify-between gap-4" style={{ borderTop: '1px solid rgba(var(--c-text),0.05)' }}>
-                <span className="font-[250] t-muted text-xs md:text-sm">Scopri di più su questo servizio</span>
+                <span className="font-[250] t-muted text-xs md:text-sm">{t.serviziHub.learnMore}</span>
                 <span className="w-9 h-9 rounded-full flex items-center justify-center t-text t-border border group-hover:bg-[#FF6A00] group-hover:border-[#FF6A00] group-hover:text-black transition-all duration-300 text-sm flex-shrink-0">→</span>
               </div>
             </motion.a>
@@ -104,12 +107,12 @@ export default function ServiziPage() {
         <Section>
           <motion.div variants={reveal} className="relative rounded-[2.5rem] md:rounded-[3rem] overflow-hidden bg-[#FF6A00] px-8 py-14 md:p-24 text-center">
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
-            <p className="text-black/60 text-xs uppercase tracking-widest mb-4 font-medium">Hai un progetto in mente?</p>
+            <p className="text-black/60 text-xs uppercase tracking-widest mb-4 font-medium">{t.serviziHub.ctaTagline}</p>
             <h2 className="font-cal font-semibold uppercase tracking-tighter italic text-black text-3xl md:text-6xl leading-tight mb-8">
-              Iniziamo a <br className="hidden sm:block" /> costruire insieme.
+              {t.serviziHub.ctaTitle1} <br className="hidden sm:block" /> {t.serviziHub.ctaTitle2}
             </h2>
-            <a href="/contatti" className="inline-block px-8 md:px-10 py-4 bg-black text-white font-bold rounded-full hover:scale-105 active:scale-95 transition-transform uppercase tracking-widest text-sm">
-              Scrivici ora
+            <a href={withLang('/contatti', lang)} className="inline-block px-8 md:px-10 py-4 bg-black text-white font-bold rounded-full hover:scale-105 active:scale-95 transition-transform uppercase tracking-widest text-sm">
+              {t.serviziHub.ctaButton}
             </a>
           </motion.div>
         </Section>

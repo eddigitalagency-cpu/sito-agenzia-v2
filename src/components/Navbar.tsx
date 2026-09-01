@@ -1,18 +1,22 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { dict, withLang, stripLangPrefix, LOCALES, LOCALE_LABELS, LOCALE_NAMES, type Lang } from '../i18n/dictionary';
 
-const links = [
-  { label: 'Home',     href: '/' },
-  { label: 'Servizi',  href: '/servizi' },
-  { label: 'Progetti', href: '/#casistudio' },
-  { label: 'Blog',     href: '/blog' },
-  { label: 'Contatti', href: '/contatti' },
-];
+export default function Navbar({ lang = 'it' }: { lang?: Lang }) {
+  const t = dict[lang];
+  const links = [
+    { label: t.nav.home,     href: '/' },
+    { label: t.nav.services, href: '/servizi' },
+    { label: t.nav.projects, href: '/#casistudio' },
+    { label: t.nav.blog,     href: '/blog' },
+    { label: t.nav.contact,  href: '/contatti' },
+  ];
 
-export default function Navbar() {
   const [open, setOpen]     = useState(false);
   const [theme, setTheme]   = useState<'dark' | 'light'>('dark');
   const [scrolled, setScrolled] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
+  const langMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem('ed-theme') as 'dark' | 'light' | null;
@@ -25,6 +29,14 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  useEffect(() => {
+    const onClickOutside = (e: MouseEvent) => {
+      if (langMenuRef.current && !langMenuRef.current.contains(e.target as Node)) setLangOpen(false);
+    };
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
+  }, []);
+
   const toggle = () => {
     const next = theme === 'dark' ? 'light' : 'dark';
     setTheme(next);
@@ -34,13 +46,20 @@ export default function Navbar() {
 
   const isDark = theme === 'dark';
 
+  // Path of the current page in the other locales (preserves slug, strips existing /en or /de prefix)
+  function switchTo(newLang: Lang) {
+    if (typeof window === 'undefined') return withLang('/', newLang);
+    const base = stripLangPrefix(window.location.pathname) + window.location.hash;
+    return withLang(base, newLang);
+  }
+
   return (
     <>
       <header className={`fixed top-0 left-0 right-0 z-50 nav-bg backdrop-blur-md nav-border transition-shadow duration-500 ${scrolled ? 'shadow-lg shadow-black/10' : ''}`}>
         <nav className="max-w-[1400px] mx-auto px-6 md:px-12 h-[68px] flex items-center justify-between gap-6">
 
           {/* Logo */}
-          <a href="/" className="shrink-0">
+          <a href={withLang('/', lang)} className="shrink-0">
             <img
               src="/Images/Logo%20ED%20Digitla.png"
               alt="ED Digital Agency"
@@ -51,24 +70,65 @@ export default function Navbar() {
           </a>
 
           {/* Desktop links */}
-          <nav aria-label="Navigazione principale">
+          <nav aria-label={t.nav.mainNavLabel}>
             <ul className="hidden md:flex items-center gap-8 text-[13px] font-medium flex-1 justify-center">
               {links.map(l => (
                 <li key={l.href}>
-                  <a href={l.href} className="nav-link tracking-wide">{l.label}</a>
+                  <a href={withLang(l.href, lang)} className="nav-link tracking-wide">{l.label}</a>
                 </li>
               ))}
             </ul>
           </nav>
 
-          {/* Right: theme + CTA + hamburger */}
+          {/* Right: lang + theme + CTA + hamburger */}
           <div className="flex items-center gap-2">
+
+            {/* Language switcher */}
+            <div className="relative" ref={langMenuRef}>
+              <motion.button
+                onClick={() => setLangOpen(v => !v)}
+                whileTap={{ scale: 0.92 }}
+                className="h-9 px-3 rounded-full nav-icon-btn flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider"
+                aria-label={t.langSwitcher.label}
+                aria-expanded={langOpen}
+              >
+                {LOCALE_LABELS[lang]}
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ transform: langOpen ? 'rotate(180deg)' : 'none', transition: 'transform .2s' }}>
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </motion.button>
+              <AnimatePresence>
+                {langOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -6, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.96 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 top-11 min-w-[140px] rounded-xl overflow-hidden nav-bg nav-border border shadow-lg"
+                  >
+                    {LOCALES.map(l => (
+                      <a
+                        key={l}
+                        href={switchTo(l)}
+                        onClick={() => setLangOpen(false)}
+                        className="flex items-center justify-between gap-3 px-4 py-2.5 text-[13px] nav-link"
+                        style={l === lang ? { color: '#FF6A00', fontWeight: 600 } : undefined}
+                      >
+                        {LOCALE_NAMES[l]}
+                        <span className="text-[10px] uppercase opacity-50">{LOCALE_LABELS[l]}</span>
+                      </a>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
             {/* Theme toggle */}
             <motion.button
               onClick={toggle}
               whileTap={{ scale: 0.88 }}
               className="w-9 h-9 rounded-full nav-icon-btn flex items-center justify-center"
-              aria-label="Cambia tema"
+              aria-label={t.nav.themeToggle}
             >
               <AnimatePresence mode="wait" initial={false}>
                 {isDark ? (
@@ -89,17 +149,17 @@ export default function Navbar() {
 
             {/* CTA desktop */}
             <a
-              href="/contatti"
+              href={withLang('/contatti', lang)}
               className="hidden md:inline-flex items-center nav-cta text-[13px] font-semibold px-5 py-2 rounded-full transition-all duration-200 active:scale-95"
             >
-              Inizia un progetto
+              {t.nav.ctaDesktop}
             </a>
 
             {/* Hamburger */}
             <button
               onClick={() => setOpen(!open)}
               className="md:hidden w-9 h-9 flex flex-col items-center justify-center gap-[5px] rounded-full nav-icon-btn"
-              aria-label={open ? 'Chiudi menu' : 'Apri menu'}
+              aria-label={open ? t.nav.closeMenu : t.nav.openMenu}
             >
               <motion.span animate={open ? { rotate: 45, y: 7 }  : { rotate: 0, y: 0 }}  transition={{ duration: 0.3 }} className="block w-5 h-[1.5px] ham-bar" />
               <motion.span animate={open ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }} transition={{ duration: 0.2 }} className="block w-5 h-[1.5px] ham-bar" />
@@ -122,11 +182,11 @@ export default function Navbar() {
             {/* spacer for header height */}
             <div className="h-[68px] shrink-0" />
 
-            <nav aria-label="Navigazione mobile" className="flex-1 flex flex-col items-center justify-center gap-1 px-8 pb-24">
+            <nav aria-label={t.nav.mobileNavLabel} className="flex-1 flex flex-col items-center justify-center gap-1 px-8 pb-24">
               {links.map((l, i) => (
                 <motion.a
                   key={l.href}
-                  href={l.href}
+                  href={withLang(l.href, lang)}
                   initial={{ opacity: 0, y: 28 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 16 }}
@@ -139,7 +199,7 @@ export default function Navbar() {
               ))}
 
               <motion.a
-                href="/contatti"
+                href={withLang('/contatti', lang)}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
@@ -147,7 +207,7 @@ export default function Navbar() {
                 onClick={() => setOpen(false)}
                 className="mt-10 px-10 py-4 bg-[#FF6A00] text-black font-bold rounded-full uppercase tracking-widest text-sm active:scale-95 transition-transform"
               >
-                Lavoriamo insieme
+                {t.nav.ctaMobile}
               </motion.a>
             </nav>
 

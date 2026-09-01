@@ -90,6 +90,14 @@ export async function initDB(): Promise<void> {
     );
     ALTER TABLE projects_db ADD COLUMN IF NOT EXISTS services      text[] NOT NULL DEFAULT '{}';
     ALTER TABLE projects_db ADD COLUMN IF NOT EXISTS service_slugs text[] NOT NULL DEFAULT '{}';
+    ALTER TABLE projects_db ADD COLUMN IF NOT EXISTS tagline_en     TEXT;
+    ALTER TABLE projects_db ADD COLUMN IF NOT EXISTS tagline_de     TEXT;
+    ALTER TABLE projects_db ADD COLUMN IF NOT EXISTS description_en TEXT;
+    ALTER TABLE projects_db ADD COLUMN IF NOT EXISTS description_de TEXT;
+    ALTER TABLE projects_db ADD COLUMN IF NOT EXISTS what_en        TEXT[];
+    ALTER TABLE projects_db ADD COLUMN IF NOT EXISTS what_de        TEXT[];
+    ALTER TABLE projects_db ADD COLUMN IF NOT EXISTS results_en     JSONB;
+    ALTER TABLE projects_db ADD COLUMN IF NOT EXISTS results_de     JSONB;
     UPDATE projects_db
       SET services = ARRAY[service], service_slugs = ARRAY[service_slug]
       WHERE (array_length(services, 1) IS NULL OR array_length(services, 1) = 0)
@@ -113,6 +121,14 @@ export async function initDB(): Promise<void> {
     ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS keywords TEXT NOT NULL DEFAULT '';
     ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
     ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS scheduled_at TIMESTAMPTZ;
+    ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS title_en    TEXT;
+    ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS title_de    TEXT;
+    ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS excerpt_en  TEXT;
+    ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS excerpt_de  TEXT;
+    ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS content_en  TEXT;
+    ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS content_de  TEXT;
+    ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS keywords_en TEXT;
+    ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS keywords_de TEXT;
     CREATE INDEX IF NOT EXISTS idx_blog_published ON blog_posts(published, display_order);
     CREATE INDEX IF NOT EXISTS idx_blog_scheduled ON blog_posts(scheduled_at) WHERE scheduled_at IS NOT NULL;
 

@@ -1,0 +1,125 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+export const prerender = true;
+const lang = 'de' as const;
+---
+
+<Layout
+  lang={lang}
+  title="Cookie-Richtlinie"
+  description="Informationen zur Verwendung von Cookies auf der Website von ED Digital Agency, gemäß DSGVO und den geltenden Vorgaben der Datenschutzbehörden."
+>
+  <section class="max-w-3xl mx-auto px-6 md:px-12 py-24 md:py-32">
+
+    <p class="text-xs font-semibold uppercase tracking-widest mb-4" style="color:#FF6A00;">Rechtliches Dokument</p>
+    <h1 class="text-3xl md:text-4xl font-bold mb-3 t-text" style="font-family:'CalSans',sans-serif;">Cookie-Richtlinie</h1>
+    <p class="text-sm mb-12 t-muted">Letzte Aktualisierung: 15. Mai 2026</p>
+
+    <div class="prose-content space-y-10 text-sm leading-relaxed" style="color:rgba(var(--c-text),0.75);">
+
+      <div>
+        <h2 class="text-base font-semibold mb-3 t-text">1. Was sind Cookies</h2>
+        <p>Cookies sind kleine Textdateien, die von besuchten Websites an das Endgerät des Nutzers (Computer, Tablet, Smartphone) gesendet werden, wo sie gespeichert und beim nächsten Besuch an dieselbe Website erneut übermittelt werden. Cookies ermöglichen es einer Website, das Gerät wiederzuerkennen, Einstellungen zu speichern und Informationen über die Nutzung der Website zu sammeln.</p>
+      </div>
+
+      <div>
+        <h2 class="text-base font-semibold mb-3 t-text">2. Von dieser Website verwendete Cookies</h2>
+
+        <div class="rounded-xl overflow-hidden mb-6" style="border:1px solid rgba(var(--c-text),0.08);">
+          <table class="w-full text-xs">
+            <thead>
+              <tr style="background:rgba(var(--c-text),0.04); border-bottom:1px solid rgba(var(--c-text),0.08);">
+                <th class="text-left px-4 py-3 t-text font-semibold">Name</th>
+                <th class="text-left px-4 py-3 t-text font-semibold">Art</th>
+                <th class="text-left px-4 py-3 t-text font-semibold">Zweck</th>
+                <th class="text-left px-4 py-3 t-text font-semibold">Dauer</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom:1px solid rgba(var(--c-text),0.05);">
+                <td class="px-4 py-3 font-mono" style="color:rgba(var(--c-text),0.6);">ed-theme</td>
+                <td class="px-4 py-3">Technisch notwendig</td>
+                <td class="px-4 py-3">Speichert die bevorzugte Darstellung (hell/dunkel) des Nutzers.</td>
+                <td class="px-4 py-3">Dauerhaft (localStorage)</td>
+              </tr>
+              <tr style="border-bottom:1px solid rgba(var(--c-text),0.05);">
+                <td class="px-4 py-3 font-mono" style="color:rgba(var(--c-text),0.6);">ed-cookie-consent</td>
+                <td class="px-4 py-3">Technisch notwendig</td>
+                <td class="px-4 py-3">Speichert die Cookie-Einwilligung des Nutzers.</td>
+                <td class="px-4 py-3">12 Monate (localStorage)</td>
+              </tr>
+              <tr style="border-bottom:1px solid rgba(var(--c-text),0.05);">
+                <td class="px-4 py-3 font-mono" style="color:rgba(var(--c-text),0.6);">_ed_sid</td>
+                <td class="px-4 py-3">Analyse (eigener Anbieter)</td>
+                <td class="px-4 py-3">Identifiziert anonym die Browsing-Sitzung, um Nutzungsstatistiken zu erheben (aufgerufene Seiten, Verweildauer, Klicks).</td>
+                <td class="px-4 py-3">Sitzung (sessionStorage)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Technisch notwendige Cookies erfordern keine Einwilligung, da sie für den Betrieb der Website zwingend erforderlich sind. Das Analyse-Cookie <span class="font-mono" style="color:rgba(var(--c-text),0.6);">_ed_sid</span> wird erst nach erteilter Einwilligung aktiviert.</p>
+      </div>
+
+      <div>
+        <h2 class="text-base font-semibold mb-3 t-text">3. Cookies von Drittanbietern</h2>
+        <p>Diese Website setzt keine Profiling-Cookies von Drittanbietern ein und verwendet keine Tracking-Tools wie Google Analytics, Meta Pixel oder ähnliches. Alle Statistiken werden über eigene Systeme erhoben.</p>
+      </div>
+
+      <div>
+        <h2 class="text-base font-semibold mb-3 t-text">4. Einwilligungsverwaltung</h2>
+        <p class="mb-3">Beim ersten Besuch der Website wird ein Banner angezeigt, über das Sie wählen können zwischen:</p>
+        <ul class="list-disc pl-5 space-y-1">
+          <li><strong class="t-text">Alle akzeptieren</strong> — aktiviert sowohl technisch notwendige als auch Analyse-Cookies;</li>
+          <li><strong class="t-text">Nur notwendige</strong> — deaktiviert Analyse-Cookies und aktiviert nur technisch notwendige.</li>
+        </ul>
+        <p class="mt-3">Sie können Ihre Einstellungen jederzeit über die folgende Schaltfläche ändern.</p>
+
+        <button
+          id="reset-cookie-consent"
+          class="mt-4 px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-widest transition-all duration-200 active:scale-95"
+          style="border:1px solid rgba(var(--c-text),0.2); color:rgb(var(--c-text));">
+          Cookie-Einstellungen verwalten
+        </button>
+      </div>
+
+      <div>
+        <h2 class="text-base font-semibold mb-3 t-text">5. Cookies über den Browser deaktivieren</h2>
+        <p class="mb-3">Sie können Cookies auch über die Einstellungen Ihres Browsers deaktivieren. Nachfolgend finden Sie Links zu den Anleitungen der wichtigsten Browser:</p>
+        <ul class="space-y-2 list-none pl-0">
+          <li><a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener noreferrer" class="underline" style="color:#FF6A00;">Google Chrome</a></li>
+          <li><a href="https://support.mozilla.org/de/kb/verbesserter-schutz-vor-aktivitatenverfolgung-fire" target="_blank" rel="noopener noreferrer" class="underline" style="color:#FF6A00;">Mozilla Firefox</a></li>
+          <li><a href="https://support.apple.com/de-de/guide/safari/sfri11471/mac" target="_blank" rel="noopener noreferrer" class="underline" style="color:#FF6A00;">Safari</a></li>
+          <li><a href="https://support.microsoft.com/de-de/microsoft-edge/cookies-in-microsoft-edge-loschen-63947406-40ac-c3b8-57b9-2a946a29ae09" target="_blank" rel="noopener noreferrer" class="underline" style="color:#FF6A00;">Microsoft Edge</a></li>
+        </ul>
+        <p class="mt-3">Hinweis: Das Deaktivieren von Cookies kann einzelne Funktionen der Website beeinträchtigen (z. B. wird die Hell/Dunkel-Einstellung nicht gespeichert).</p>
+      </div>
+
+      <div>
+        <h2 class="text-base font-semibold mb-3 t-text">6. Verantwortlicher für die Verarbeitung</h2>
+        <p>
+          <strong class="t-text">ED Digital Agency</strong><br/>
+          Via Carlo Torres 17/Interno 13, 31029 Vittorio Veneto (TV), Italien<br/>
+          <a href="mailto:info@eddigitalagency.it" class="underline" style="color:#FF6A00;">info@eddigitalagency.it</a>
+        </p>
+        <p class="mt-3">Weitere Informationen zur Verarbeitung personenbezogener Daten finden Sie in unserer <a href="/de/privacy-policy" class="underline" style="color:#FF6A00;">Datenschutzerklärung</a>.</p>
+      </div>
+
+    </div>
+
+    <div class="mt-16 pt-8" style="border-top:1px solid rgba(var(--c-text),0.07);">
+      <a href="/de" class="text-sm footer-link">← Zurück zur Startseite</a>
+      <span class="mx-3 footer-dot">·</span>
+      <a href="/de/privacy-policy" class="text-sm footer-link">Datenschutzerklärung</a>
+    </div>
+
+  </section>
+</Layout>
+
+<script is:inline>
+  document.getElementById('reset-cookie-consent')?.addEventListener('click', function() {
+    localStorage.removeItem('ed-cookie-consent');
+    window.location.reload();
+  });
+</script>

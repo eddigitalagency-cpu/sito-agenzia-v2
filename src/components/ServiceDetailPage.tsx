@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Service } from '../data/services';
+import { dict, withLang, type Lang } from '../i18n/dictionary';
 
 const ease = [0.25, 0.1, 0.25, 1.0] as const;
 const reveal = (i = 0) => ({
@@ -51,9 +52,10 @@ function FaqAccordion({ faq }: { faq: Service['faq'] }) {
   );
 }
 
-interface Props { service: Service; related: Service[]; }
+interface Props { service: Service; related: Service[]; lang?: Lang; }
 
-export default function ServiceDetailPage({ service, related }: Props) {
+export default function ServiceDetailPage({ service, related, lang = 'it' }: Props) {
+  const t = dict[lang];
   return (
     <div className="t-bg t-text overflow-x-hidden" style={{ fontFamily: 'GraphikLCG, Inter, system-ui, sans-serif' }}>
 
@@ -67,7 +69,7 @@ export default function ServiceDetailPage({ service, related }: Props) {
         <div className="relative z-10 w-full max-w-[1400px] mx-auto px-5 md:px-12 pb-12 md:pb-16">
           <motion.div {...reveal(0)} className="inline-flex items-center gap-2 px-4 py-2 rounded-full border mb-5" style={{ borderColor: 'rgba(255,255,255,0.12)', backgroundColor: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(8px)', color: 'rgba(255,255,255,0.5)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.15em' }}>
             <span className="w-1.5 h-1.5 rounded-full bg-[#FF6A00] inline-block" />
-            Servizio
+            {t.serviceDetail.badge}
           </motion.div>
 
           <motion.h1 {...reveal(1)} className="font-cal font-semibold uppercase tracking-tighter italic text-white text-[clamp(2.4rem,7vw,5.5rem)] leading-[0.9]">
@@ -88,7 +90,7 @@ export default function ServiceDetailPage({ service, related }: Props) {
           className="space-y-6 md:space-y-8"
         >
           <motion.p variants={{ hidden: { opacity:0 }, visible: { opacity:1, transition:{ duration:0.6 } } }} className="text-xs t-text-30 uppercase tracking-widest">
-            Overview
+            {t.serviceDetail.overview}
           </motion.p>
           <motion.p variants={{ hidden:{opacity:0,y:20}, visible:{opacity:1,y:0,transition:{duration:0.85,ease}} }} className="font-[250] t-muted text-base md:text-lg leading-7 md:leading-8">
             {service.longDescription}
@@ -102,10 +104,10 @@ export default function ServiceDetailPage({ service, related }: Props) {
           )}
           <motion.a
             variants={{ hidden:{opacity:0,y:16}, visible:{opacity:1,y:0,transition:{duration:0.7,ease}} }}
-            href="/contatti"
+            href={withLang('/contatti', lang)}
             className="inline-block px-8 py-4 bg-[#FF6A00] text-black font-bold rounded-full hover:scale-105 active:scale-95 transition-transform uppercase tracking-widest text-sm"
           >
-            Inizia il progetto
+            {t.serviceDetail.startProject}
           </motion.a>
         </motion.div>
 
@@ -119,7 +121,7 @@ export default function ServiceDetailPage({ service, related }: Props) {
       <section style={{ borderTop: '1px solid rgba(var(--c-text),0.06)', borderBottom: '1px solid rgba(var(--c-text),0.06)' }}>
         <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-16 md:py-20">
           <motion.p initial={{ opacity:0 }} whileInView={{ opacity:1 }} viewport={{ once:true }} transition={{ duration:0.6 }} className="text-xs t-text-30 uppercase tracking-widest mb-8 md:mb-12">
-            Cosa include
+            {t.serviceDetail.whatIncludes}
           </motion.p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
             {service.includes.map((item, i) => (
@@ -137,7 +139,7 @@ export default function ServiceDetailPage({ service, related }: Props) {
       {/* ── Process ───────────────────────────────────────── */}
       <section className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-24">
         <motion.p initial={{ opacity:0 }} whileInView={{ opacity:1 }} viewport={{ once:true }} transition={{ duration:0.6 }} className="text-xs t-text-30 uppercase tracking-widest mb-10 md:mb-14">
-          Come lavoriamo
+          {t.serviceDetail.howWeWork}
         </motion.p>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-6">
           {service.process.map((step, i) => (
@@ -153,7 +155,7 @@ export default function ServiceDetailPage({ service, related }: Props) {
       {/* ── Gallery ───────────────────────────────────────── */}
       <section className="max-w-[1400px] mx-auto px-5 md:px-12 pb-20 md:pb-24">
         <motion.p initial={{ opacity:0 }} whileInView={{ opacity:1 }} viewport={{ once:true }} transition={{ duration:0.6 }} className="text-xs t-text-30 uppercase tracking-widest mb-8 md:mb-12">
-          Lavori correlati
+          {t.serviceDetail.relatedWork}
         </motion.p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {service.gallery.map((img, i) => (
@@ -175,12 +177,12 @@ export default function ServiceDetailPage({ service, related }: Props) {
         <section style={{ borderTop: '1px solid rgba(var(--c-text),0.06)' }} className="py-20 md:py-24">
           <div className="max-w-[1400px] mx-auto px-5 md:px-12">
             <motion.p initial={{ opacity:0 }} whileInView={{ opacity:1 }} viewport={{ once:true }} transition={{ duration:0.6 }} className="text-xs t-text-30 uppercase tracking-widest mb-10 md:mb-12">
-              Servizi correlati
+              {t.serviceDetail.relatedServices}
             </motion.p>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {related.map((rel, i) => (
                 <motion.a
-                  key={rel.slug} href={`/servizi/${rel.slug}`}
+                  key={rel.slug} href={withLang(`/servizi/${rel.slug}`, lang)}
                   initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.6, delay:i*0.08, ease }}
                   whileHover={{ y:-4 }}
                   className="group block t-card t-border border rounded-[2rem] overflow-hidden hover:border-[rgba(255,106,0,0.3)] transition-colors duration-300"
@@ -189,7 +191,7 @@ export default function ServiceDetailPage({ service, related }: Props) {
                     <img src={rel.heroImage} alt={rel.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                   </div>
                   <div className="p-5 md:p-6">
-                    <p className="text-[10px] text-[#FF6A00] uppercase tracking-widest mb-1.5">Digital Service</p>
+                    <p className="text-[10px] text-[#FF6A00] uppercase tracking-widest mb-1.5">{t.serviceDetail.digitalService}</p>
                     <h3 className="font-cal font-semibold t-text text-base md:text-lg group-hover:text-[#FF6A00] transition-colors">{rel.name}</h3>
                     <p className="font-[250] t-muted text-xs md:text-sm leading-5 mt-1.5 line-clamp-2">{rel.tagline}</p>
                   </div>
@@ -204,14 +206,14 @@ export default function ServiceDetailPage({ service, related }: Props) {
       {service.faq.length > 0 && (
         <section className="max-w-[1400px] mx-auto px-5 md:px-12 pb-20 md:pb-24">
           <motion.p initial={{ opacity:0 }} whileInView={{ opacity:1 }} viewport={{ once:true }} transition={{ duration:0.6 }} className="text-xs t-text-30 uppercase tracking-widest mb-8 md:mb-12">
-            Domande frequenti
+            {t.serviceDetail.faqTitle}
           </motion.p>
           <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.7, ease }} className="max-w-3xl">
             <FaqAccordion faq={service.faq} />
           </motion.div>
           <motion.div initial={{ opacity:0 }} whileInView={{ opacity:1 }} viewport={{ once:true }} transition={{ duration:0.6, delay:0.2 }} className="mt-8">
-            <a href="/contatti" className="inline-flex items-center gap-2 text-[#FF6A00] text-sm font-medium hover:underline">
-              Hai altre domande? Contattaci →
+            <a href={withLang('/contatti', lang)} className="inline-flex items-center gap-2 text-[#FF6A00] text-sm font-medium hover:underline">
+              {t.serviceDetail.faqCta}
             </a>
           </motion.div>
         </section>
@@ -221,12 +223,12 @@ export default function ServiceDetailPage({ service, related }: Props) {
       <section className="max-w-[1400px] mx-auto px-5 md:px-12 pb-24 md:pb-32">
         <motion.div initial={{ opacity:0, y:40 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.9, ease }} className="relative rounded-[2.5rem] md:rounded-[3rem] overflow-hidden bg-[#FF6A00] px-8 py-14 md:p-24 text-center">
           <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
-          <p className="text-black/60 text-xs uppercase tracking-widest mb-4 font-medium">Inizia oggi</p>
+          <p className="text-black/60 text-xs uppercase tracking-widest mb-4 font-medium">{t.serviceDetail.ctaTagline}</p>
           <h2 className="font-cal font-semibold uppercase tracking-tighter italic text-black text-3xl md:text-6xl leading-tight mb-8">
-            Parliamo del <br className="hidden sm:block" /> tuo progetto.
+            {t.serviceDetail.ctaTitle1} <br className="hidden sm:block" /> {t.serviceDetail.ctaTitle2}
           </h2>
-          <a href="/contatti" className="inline-block px-8 md:px-10 py-4 bg-black text-white font-bold rounded-full hover:scale-105 active:scale-95 transition-transform uppercase tracking-widest text-sm">
-            Scrivici ora
+          <a href={withLang('/contatti', lang)} className="inline-block px-8 md:px-10 py-4 bg-black text-white font-bold rounded-full hover:scale-105 active:scale-95 transition-transform uppercase tracking-widest text-sm">
+            {t.serviceDetail.ctaButton}
           </a>
         </motion.div>
       </section>

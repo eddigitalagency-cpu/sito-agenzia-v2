@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import { dict, withLang, type Lang } from '../i18n/dictionary';
 
-export default function CookieBanner() {
+export default function CookieBanner({ lang = 'it' }: { lang?: Lang }) {
+  const t = dict[lang];
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -25,7 +27,7 @@ export default function CookieBanner() {
   return (
     <div
       role="dialog"
-      aria-label="Gestione cookie"
+      aria-label={t.cookieBanner.dialogLabel}
       style={{
         position: 'fixed',
         bottom: '1.5rem',
@@ -45,16 +47,16 @@ export default function CookieBanner() {
     >
       <div>
         <p style={{ fontSize: '0.8rem', fontWeight: 600, color: 'rgb(var(--c-text))', marginBottom: '0.35rem' }}>
-          Questo sito utilizza i cookie
+          {t.cookieBanner.title}
         </p>
         <p style={{ fontSize: '0.75rem', color: 'rgba(var(--c-text),0.55)', lineHeight: 1.6 }}>
-          Utilizziamo cookie tecnici (necessari al funzionamento) e cookie analitici di prima parte per migliorare l'esperienza. Nessun dato viene condiviso con terze parti.{' '}
-          <a href="/cookie-policy" style={{ color: '#FF6A00', textDecoration: 'underline' }}>
-            Cookie Policy
+          {t.cookieBanner.desc}{' '}
+          <a href={withLang('/cookie-policy', lang)} style={{ color: '#FF6A00', textDecoration: 'underline' }}>
+            {t.cookieBanner.cookiePolicy}
           </a>{' '}
           ·{' '}
-          <a href="/privacy-policy" style={{ color: '#FF6A00', textDecoration: 'underline' }}>
-            Privacy Policy
+          <a href={withLang('/privacy-policy', lang)} style={{ color: '#FF6A00', textDecoration: 'underline' }}>
+            {t.cookieBanner.privacyPolicy}
           </a>
         </p>
       </div>
@@ -77,7 +79,7 @@ export default function CookieBanner() {
             whiteSpace: 'nowrap',
           }}
         >
-          Accetta tutti
+          {t.cookieBanner.acceptAll}
         </button>
         <button
           onClick={necessary}
@@ -96,7 +98,7 @@ export default function CookieBanner() {
             whiteSpace: 'nowrap',
           }}
         >
-          Solo necessari
+          {t.cookieBanner.onlyNecessary}
         </button>
       </div>
     </div>
