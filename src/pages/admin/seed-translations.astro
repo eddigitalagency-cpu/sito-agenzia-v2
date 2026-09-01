@@ -1,0 +1,129 @@
+---
+export const prerender = false;
+import { getPool, initDB } from '../../lib/db';
+import { TRANSLATIONS } from '../../data/translations-seed';
+import { createHash } from 'node:crypto';
+
+function sessionToken(pwd: string) {
+  return createHash('sha256').update(`ed-admin-session:${pwd}`).digest('hex');
+}
+const auth   = Astro.cookies.get('ed-admin');
+const stored = process.env.ADMIN_PASSWORD ?? '';
+if (!stored || auth?.value !== sessionToken(stored)) return Astro.redirect('/admin/login');
+
+await initDB();
+const db = getPool();
+
+type Result = { updatedPosts: number; skippedPosts: string[]; updatedProjects: number; skippedProjects: string[] } | null;
+let result: Result = null;
+let errorMsg = '';
+
+if (Astro.request.method === 'POST') {
+  try {
+    let updatedPosts = 0;
+    const skippedPosts: string[] = [];
+    for (const p of TRANSLATIONS.blogPosts) {
+      const res = await db.query(
+        `UPDATE blog_posts SET
+           title_en=COALESCE(title_en,$1), title_de=COALESCE(title_de,$2),
+           excerpt_en=COALESCE(excerpt_en,$3), excerpt_de=COALESCE(excerpt_de,$4),
+           content_en=COALESCE(content_en,$5), content_de=COALESCE(content_de,$6),
+           keywords_en=COALESCE(keywords_en,$7), keywords_de=COALESCE(keywords_de,$8)
+         WHERE slug=$9`,
+        [p.title_en, p.title_de, p.excerpt_en, p.excerpt_de, p.content_en, p.content_de, p.keywords_en, p.keywords_de, p.slug],
+      );
+      if (res.rowCount) updatedPosts++; else skippedPosts.push(p.slug);
+    }
+
+    let updatedProjects = 0;
+    const skippedProjects: string[] = [];
+    for (const proj of TRANSLATIONS.projects) {
+      const res = await db.query(
+        `UPDATE projects_db SET
+           tagline_en=COALESCE(tagline_en,$1), tagline_de=COALESCE(tagline_de,$2),
+           description_en=COALESCE(description_en,$3), description_de=COALESCE(description_de,$4),
+           what_en=COALESCE(what_en,$5::text[]), what_de=COALESCE(what_de,$6::text[]),
+           results_en=COALESCE(results_en,$7::jsonb), results_de=COALESCE(results_de,$8::jsonb)
+         WHERE slug=$9`,
+        [proj.tagline_en, proj.tagline_de, proj.description_en, proj.description_de,
+         proj.what_en, proj.what_de, JSON.stringify(proj.results_en), JSON.stringify(proj.results_de), proj.slug],
+      );
+      if (res.rowCount) updatedProjects++; else skippedProjects.push(proj.slug);
+    }
+
+    result = { updatedPosts, skippedPosts, updatedProjects, skippedProjects };
+  } catch (e: unknown) {
+    errorMsg = e instanceof Error ? e.message : String(e);
+  }
+}
+---
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Applica Traduzioni — Admin</title>
+  <meta name="robots" content="noindex,nofollow"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#080808;color:#fff;font-family:system-ui,sans-serif;min-height:100vh;}
+    a{color:inherit;text-decoration:none;}
+    .topbar{display:flex;align-items:center;gap:16px;padding:0 28px;border-bottom:1px solid rgba(255,255,255,.07);background:#0d0d0d;position:sticky;top:0;z-index:20;height:56px;}
+    .brand{font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.4);}
+    .badge{background:#FF6A00;color:#000;font-size:10px;font-weight:800;padding:3px 8px;border-radius:99px;letter-spacing:.08em;text-transform:uppercase;}
+    .btn-back{padding:7px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.45);font-size:12px;cursor:pointer;white-space:nowrap;text-decoration:none;margin-left:auto;}
+    .btn-back:hover{color:#fff;border-color:rgba(255,255,255,.25);}
+    .wrap{max-width:640px;margin:0 auto;padding:48px 24px;}
+    .page-title{font-size:22px;font-weight:800;margin-bottom:10px;}
+    .page-desc{font-size:13px;color:rgba(255,255,255,.4);line-height:1.6;margin-bottom:28px;}
+    .card{background:#111;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:24px;margin-bottom:16px;}
+    .card-title{font-size:13px;font-weight:700;color:rgba(255,255,255,.8);margin-bottom:8px;}
+    .card-list{font-size:12px;color:rgba(255,255,255,.4);line-height:1.8;}
+    .btn-run{padding:14px 28px;background:#FF6A00;color:#000;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.07em;}
+    .btn-run:hover{opacity:.85;}
+    .result-box{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3);border-radius:12px;padding:18px;margin-bottom:20px;font-size:13px;line-height:1.8;}
+    .error-box{background:rgba(255,68,68,.1);border:1px solid rgba(255,68,68,.3);border-radius:10px;padding:14px 18px;color:#ff6666;font-size:13px;margin-bottom:20px;}
+    .skip{color:rgba(255,255,255,.3);}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <span class="brand">ED Digital</span>
+    <span class="badge">Admin</span>
+    <a href="/admin" class="btn-back">← Dashboard</a>
+  </div>
+
+  <div class="wrap">
+    <div class="page-title">Applica traduzioni EN/DE</div>
+    <p class="page-desc">
+      Questo strumento scrive le traduzioni inglesi e tedesche già pronte per i {TRANSLATIONS.blogPosts.length} articoli blog
+      e i {TRANSLATIONS.projects.length} progetti attualmente pubblicati. È sicuro da rilanciare più volte: aggiorna solo i campi
+      ancora vuoti, senza mai sovrascrivere una traduzione già inserita a mano.
+    </p>
+
+    {errorMsg && <div class="error-box">Errore: {errorMsg}</div>}
+
+    {result && (
+      <div class="result-box">
+        ✓ Articoli aggiornati: {result.updatedPosts}/{TRANSLATIONS.blogPosts.length}<br/>
+        ✓ Progetti aggiornati: {result.updatedProjects}/{TRANSLATIONS.projects.length}
+        {result.skippedPosts.length > 0 && <><br/><span class="skip">Slug articolo non trovati nel DB: {result.skippedPosts.join(', ')}</span></>}
+        {result.skippedProjects.length > 0 && <><br/><span class="skip">Slug progetto non trovati nel DB: {result.skippedProjects.join(', ')}</span></>}
+      </div>
+    )}
+
+    <div class="card">
+      <div class="card-title">Articoli inclusi</div>
+      <div class="card-list">{TRANSLATIONS.blogPosts.map(p => p.slug).join(' · ')}</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Progetti inclusi</div>
+      <div class="card-list">{TRANSLATIONS.projects.map(p => p.slug).join(' · ')}</div>
+    </div>
+
+    <form method="POST">
+      <button type="submit" class="btn-run">Applica traduzioni ora</button>
+    </form>
+  </div>
+</body>
+</html>

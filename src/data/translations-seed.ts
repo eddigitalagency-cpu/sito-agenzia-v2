@@ -1,25 +1,20 @@
-#!/usr/bin/env node
-/**
- * Seed EN/DE translations into blog_posts and projects_db.
- *
- * Idempotent: only fills columns that are currently NULL (via COALESCE),
- * so it will never overwrite manual edits made later through the admin panel.
- *
- * Requires the _en/_de columns to already exist on blog_posts and projects_db
- * (added via a separate schema migration in src/lib/db.ts). Requires
- * DATABASE_URL to be set in the environment.
- *
- * Usage:
- *   DATABASE_URL=postgres://... node scripts/seed-translations.mjs
- */
-import pkg from 'pg';
-const { Pool } = pkg;
+export interface BlogTranslation {
+  slug: string;
+  title_en: string; title_de: string;
+  excerpt_en: string; excerpt_de: string;
+  content_en: string; content_de: string;
+  keywords_en: string; keywords_de: string;
+}
+export interface ProjectTranslation {
+  slug: string;
+  tagline_en: string; tagline_de: string;
+  description_en: string; description_de: string;
+  what_en: string[]; what_de: string[];
+  results_en: { value: string; label: string }[];
+  results_de: { value: string; label: string }[];
+}
 
-// ---------------------------------------------------------------------------
-// Translations data (embedded so this script is fully self-contained and
-// still works if the scratchpad JSON file that generated it is deleted).
-// ---------------------------------------------------------------------------
-const TRANSLATIONS = {
+export const TRANSLATIONS: { blogPosts: BlogTranslation[]; projects: ProjectTranslation[] } = {
   "blogPosts": [
     {
       "slug": "intelligenza-artificiale-novita-e-trasparenza",
@@ -679,95 +674,3 @@ const TRANSLATIONS = {
     }
   ]
 };
-
-async function main() {
-  const url = process.env.DATABASE_URL;
-  if (!url) {
-    console.error("DATABASE_URL non configurata. Imposta la variabile d'ambiente e riprova.");
-    process.exit(1);
-  }
-
-  const pool = new Pool({
-    connectionString: url,
-    ssl: { rejectUnauthorized: false },
-    max: 5,
-    idleTimeoutMillis: 30_000,
-  });
-
-  let updatedPosts = 0, skippedPosts = 0;
-  let updatedProjects = 0, skippedProjects = 0;
-
-  try {
-    // ---- Blog posts ---------------------------------------------------------
-    for (const p of TRANSLATIONS.blogPosts) {
-      const res = await pool.query(
-        `UPDATE blog_posts SET
-           title_en    = COALESCE(title_en, $1),
-           title_de    = COALESCE(title_de, $2),
-           excerpt_en  = COALESCE(excerpt_en, $3),
-           excerpt_de  = COALESCE(excerpt_de, $4),
-           content_en  = COALESCE(content_en, $5),
-           content_de  = COALESCE(content_de, $6),
-           keywords_en = COALESCE(keywords_en, $7),
-           keywords_de = COALESCE(keywords_de, $8)
-         WHERE slug = $9`,
-        [
-          p.title_en, p.title_de,
-          p.excerpt_en, p.excerpt_de,
-          p.content_en, p.content_de,
-          p.keywords_en, p.keywords_de,
-          p.slug,
-        ]
-      );
-      if (res.rowCount && res.rowCount > 0) {
-        updatedPosts++;
-        console.log(`[blog_posts] updated: ${p.slug}`);
-      } else {
-        skippedPosts++;
-        console.warn(`[blog_posts] skipped (slug not found in DB): ${p.slug}`);
-      }
-    }
-
-    // ---- Projects -------------------------------------------------------------
-    for (const proj of TRANSLATIONS.projects) {
-      const res = await pool.query(
-        `UPDATE projects_db SET
-           tagline_en     = COALESCE(tagline_en, $1),
-           tagline_de     = COALESCE(tagline_de, $2),
-           description_en = COALESCE(description_en, $3),
-           description_de = COALESCE(description_de, $4),
-           what_en        = COALESCE(what_en, $5::text[]),
-           what_de        = COALESCE(what_de, $6::text[]),
-           results_en     = COALESCE(results_en, $7::jsonb),
-           results_de     = COALESCE(results_de, $8::jsonb)
-         WHERE slug = $9`,
-        [
-          proj.tagline_en, proj.tagline_de,
-          proj.description_en, proj.description_de,
-          proj.what_en, proj.what_de,
-          JSON.stringify(proj.results_en), JSON.stringify(proj.results_de),
-          proj.slug,
-        ]
-      );
-      if (res.rowCount && res.rowCount > 0) {
-        updatedProjects++;
-        console.log(`[projects_db] updated: ${proj.slug}`);
-      } else {
-        skippedProjects++;
-        console.warn(`[projects_db] skipped (slug not found in DB): ${proj.slug}`);
-      }
-    }
-
-    console.log('---');
-    console.log(`Blog posts: ${updatedPosts} updated, ${skippedPosts} skipped`);
-    console.log(`Projects:   ${updatedProjects} updated, ${skippedProjects} skipped`);
-    console.log('Done.');
-  } catch (err) {
-    console.error('Seed error:', err);
-    process.exitCode = 1;
-  } finally {
-    await pool.end();
-  }
-}
-
-main();
