@@ -251,6 +251,11 @@ const pageTitle = isNew ? 'Nuovo Progetto' : `Modifica: ${p?.title ?? ''}`;
     .i18n-tab-btn.active{background:rgba(255,106,0,.15);border-color:rgba(255,106,0,.4);color:#FF6A00;}
     .i18n-panel{display:none;padding:16px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:12px;}
     .i18n-panel.active{display:block;}
+    .i18n-translate-row{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+    .btn-translate{padding:8px 16px;background:rgba(255,106,0,.15);border:1px solid rgba(255,106,0,.35);border-radius:8px;color:#FF6A00;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;letter-spacing:.04em;}
+    .btn-translate:hover{background:rgba(255,106,0,.28);border-color:rgba(255,106,0,.6);}
+    .btn-translate:disabled{opacity:.45;cursor:not-allowed;}
+    .i18n-translate-status{font-size:12px;color:rgba(255,255,255,.4);}
 
     /* Submit */
     .form-actions{display:flex;gap:12px;align-items:center;margin-top:8px;}
@@ -403,25 +408,29 @@ const pageTitle = isNew ? 'Nuovo Progetto' : `Modifica: ${p?.title ?? ''}`;
           </div>
 
           <div class="i18n-panel active" id="i18n-panel-en">
+            <div class="i18n-translate-row">
+              <button type="button" class="btn-translate" data-translate-lang="en">✦ Traduci con AI</button>
+              <span class="i18n-translate-status" id="i18n-status-en"></span>
+            </div>
             <div class="field" style="margin-bottom:14px">
               <label>Tagline (EN)</label>
-              <input type="text" name="tagline_en" value={p?.tagline_en ?? ''} placeholder="A short line summarizing the project"/>
+              <input type="text" name="tagline_en" id="field-tagline_en" value={p?.tagline_en ?? ''} placeholder="A short line summarizing the project"/>
             </div>
             <div class="field" style="margin-bottom:14px">
               <label>Description (EN)</label>
-              <textarea name="description_en" rows="4" placeholder="Project description for the detail page...">{p?.description_en ?? ''}</textarea>
+              <textarea name="description_en" id="field-description_en" rows="4" placeholder="Project description for the detail page...">{p?.description_en ?? ''}</textarea>
             </div>
             <div class="field" style="margin-bottom:14px">
               <label>What we did (EN)</label>
-              <textarea name="what_en" rows="5" placeholder={"One bullet per line:\nUX/UI design\nWebsite development\n..."}>{whatStrEn}</textarea>
+              <textarea name="what_en" id="field-what_en" rows="5" placeholder={"One bullet per line:\nUX/UI design\nWebsite development\n..."}>{whatStrEn}</textarea>
             </div>
             <div class="field">
               <label>Results (EN)</label>
               <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
                 {[0, 1, 2].map(i => (
                   <div class="row2">
-                    <input type="text" name={`res_${i}_val_en`} value={rEn(i, 'value')} placeholder="e.g. +320%" style="font-weight:700;color:#FF6A00;"/>
-                    <input type="text" name={`res_${i}_lbl_en`} value={rEn(i, 'label')} placeholder="e.g. Followers in 6 months"/>
+                    <input type="text" name={`res_${i}_val_en`} id={`field-res_${i}_val_en`} value={rEn(i, 'value')} placeholder="e.g. +320%" style="font-weight:700;color:#FF6A00;"/>
+                    <input type="text" name={`res_${i}_lbl_en`} id={`field-res_${i}_lbl_en`} value={rEn(i, 'label')} placeholder="e.g. Followers in 6 months"/>
                   </div>
                 ))}
               </div>
@@ -429,25 +438,29 @@ const pageTitle = isNew ? 'Nuovo Progetto' : `Modifica: ${p?.title ?? ''}`;
           </div>
 
           <div class="i18n-panel" id="i18n-panel-de">
+            <div class="i18n-translate-row">
+              <button type="button" class="btn-translate" data-translate-lang="de">✦ Mit KI übersetzen</button>
+              <span class="i18n-translate-status" id="i18n-status-de"></span>
+            </div>
             <div class="field" style="margin-bottom:14px">
               <label>Tagline (DE)</label>
-              <input type="text" name="tagline_de" value={p?.tagline_de ?? ''} placeholder="Eine kurze Zeile, die das Projekt zusammenfasst"/>
+              <input type="text" name="tagline_de" id="field-tagline_de" value={p?.tagline_de ?? ''} placeholder="Eine kurze Zeile, die das Projekt zusammenfasst"/>
             </div>
             <div class="field" style="margin-bottom:14px">
               <label>Beschreibung (DE)</label>
-              <textarea name="description_de" rows="4" placeholder="Projektbeschreibung für die Detailseite...">{p?.description_de ?? ''}</textarea>
+              <textarea name="description_de" id="field-description_de" rows="4" placeholder="Projektbeschreibung für die Detailseite...">{p?.description_de ?? ''}</textarea>
             </div>
             <div class="field" style="margin-bottom:14px">
               <label>Was wir umgesetzt haben (DE)</label>
-              <textarea name="what_de" rows="5" placeholder={"Ein Punkt pro Zeile:\nUX/UI-Design\nWebsite-Entwicklung\n..."}>{whatStrDe}</textarea>
+              <textarea name="what_de" id="field-what_de" rows="5" placeholder={"Ein Punkt pro Zeile:\nUX/UI-Design\nWebsite-Entwicklung\n..."}>{whatStrDe}</textarea>
             </div>
             <div class="field">
               <label>Ergebnisse (DE)</label>
               <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
                 {[0, 1, 2].map(i => (
                   <div class="row2">
-                    <input type="text" name={`res_${i}_val_de`} value={rDe(i, 'value')} placeholder="z. B. +320%" style="font-weight:700;color:#FF6A00;"/>
-                    <input type="text" name={`res_${i}_lbl_de`} value={rDe(i, 'label')} placeholder="z. B. Follower in 6 Monaten"/>
+                    <input type="text" name={`res_${i}_val_de`} id={`field-res_${i}_val_de`} value={rDe(i, 'value')} placeholder="z. B. +320%" style="font-weight:700;color:#FF6A00;"/>
+                    <input type="text" name={`res_${i}_lbl_de`} id={`field-res_${i}_lbl_de`} value={rDe(i, 'label')} placeholder="z. B. Follower in 6 Monaten"/>
                   </div>
                 ))}
               </div>
@@ -494,6 +507,57 @@ const pageTitle = isNew ? 'Nuovo Progetto' : `Modifica: ${p?.title ?? ''}`;
         const target = btn.getAttribute('data-i18n-tab');
         document.querySelectorAll('.i18n-tab-btn').forEach(b => b.classList.toggle('active', b === btn));
         document.querySelectorAll('.i18n-panel').forEach(p => p.classList.toggle('active', p.id === `i18n-panel-${target}`));
+      });
+    });
+
+    // ── AI translation ──
+    document.querySelectorAll('.btn-translate').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const lang = btn.getAttribute('data-translate-lang');
+        const status = document.getElementById(`i18n-status-${lang}`);
+        const taglineIt     = document.getElementById('input-tagline')?.value?.trim() ?? '';
+        const descriptionIt = document.getElementById('input-description')?.value?.trim() ?? '';
+        const whatIt = (document.getElementById('what-ta')?.value ?? '').split('\n').map(s => s.trim()).filter(Boolean);
+        const resultsIt = [0, 1, 2].map(i => ({
+          value: document.querySelector(`input[name="res_${i}_val"]`)?.value?.trim() ?? '',
+          label: document.querySelector(`input[name="res_${i}_lbl"]`)?.value?.trim() ?? '',
+        })).filter(r => r.value || r.label);
+        if (!taglineIt && !descriptionIt) {
+          status.textContent = '⚠ Scrivi prima il contenuto in italiano.';
+          status.style.color = '#ff6666';
+          return;
+        }
+        btn.disabled = true;
+        status.textContent = '⏳ Traduzione in corso...';
+        status.style.color = 'rgba(255,255,255,.45)';
+        try {
+          const res = await fetch('/api/admin/translate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'project', lang, tagline: taglineIt, description: descriptionIt, what: whatIt, results: resultsIt }),
+          });
+          const data = await res.json();
+          if (!res.ok || data.error) {
+            status.textContent = '✗ ' + (data.error || 'Errore traduzione');
+            status.style.color = '#ff6666';
+          } else {
+            document.getElementById(`field-tagline_${lang}`).value = data.tagline || '';
+            document.getElementById(`field-description_${lang}`).value = data.description || '';
+            document.getElementById(`field-what_${lang}`).value = Array.isArray(data.what) ? data.what.join('\n') : '';
+            (data.results || []).slice(0, 3).forEach((r, i) => {
+              const valInp = document.getElementById(`field-res_${i}_val_${lang}`);
+              const lblInp = document.getElementById(`field-res_${i}_lbl_${lang}`);
+              if (valInp) valInp.value = r.value ?? '';
+              if (lblInp) lblInp.value = r.label ?? '';
+            });
+            status.textContent = '✓ Tradotto — controlla e modifica se necessario.';
+            status.style.color = '#4caf50';
+          }
+        } catch {
+          status.textContent = '✗ Errore di rete. Riprova.';
+          status.style.color = '#ff6666';
+        }
+        btn.disabled = false;
       });
     });
   </script>

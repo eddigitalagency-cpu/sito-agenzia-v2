@@ -234,6 +234,11 @@ const initialStato: 'publish' | 'schedule' | 'draft' =
     .i18n-tab-btn.active{background:rgba(255,106,0,.15);border-color:rgba(255,106,0,.4);color:#FF6A00;}
     .i18n-panel{display:none;padding:16px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:12px;}
     .i18n-panel.active{display:block;}
+    .i18n-translate-row{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+    .btn-translate{padding:8px 16px;background:rgba(255,106,0,.15);border:1px solid rgba(255,106,0,.35);border-radius:8px;color:#FF6A00;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;letter-spacing:.04em;}
+    .btn-translate:hover{background:rgba(255,106,0,.28);border-color:rgba(255,106,0,.6);}
+    .btn-translate:disabled{opacity:.45;cursor:not-allowed;}
+    .i18n-translate-status{font-size:12px;color:rgba(255,255,255,.4);}
     .form-actions{display:flex;gap:12px;align-items:center;margin-top:8px;}
     .btn-save{padding:12px 28px;background:#FF6A00;color:#000;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.07em;transition:opacity .15s;}
     .btn-save:hover{opacity:.85;}
@@ -430,40 +435,48 @@ Esempi:
           </div>
 
           <div class="i18n-panel active" id="i18n-panel-en">
+            <div class="i18n-translate-row">
+              <button type="button" class="btn-translate" data-translate-lang="en">✦ Traduci con AI</button>
+              <span class="i18n-translate-status" id="i18n-status-en"></span>
+            </div>
             <div class="field" style="margin-bottom:14px">
               <label>Title (EN)</label>
-              <input type="text" name="title_en" value={post?.title_en ?? ''} placeholder="English title..."/>
+              <input type="text" name="title_en" id="field-title_en" value={post?.title_en ?? ''} placeholder="English title..."/>
             </div>
             <div class="field" style="margin-bottom:14px">
               <label>Excerpt (EN)</label>
-              <textarea name="excerpt_en" rows="3" placeholder="English excerpt...">{post?.excerpt_en ?? ''}</textarea>
+              <textarea name="excerpt_en" id="field-excerpt_en" rows="3" placeholder="English excerpt...">{post?.excerpt_en ?? ''}</textarea>
             </div>
             <div class="field" style="margin-bottom:14px">
               <label>Content (EN, HTML)</label>
-              <textarea name="content_en" rows="14" placeholder="English article content in HTML...">{post?.content_en ?? ''}</textarea>
+              <textarea name="content_en" id="field-content_en" rows="14" placeholder="English article content in HTML...">{post?.content_en ?? ''}</textarea>
             </div>
             <div class="field">
               <label>Keywords (EN)</label>
-              <input type="text" name="keywords_en" value={post?.keywords_en ?? ''} placeholder="digital marketing, social media agency..."/>
+              <input type="text" name="keywords_en" id="field-keywords_en" value={post?.keywords_en ?? ''} placeholder="digital marketing, social media agency..."/>
             </div>
           </div>
 
           <div class="i18n-panel" id="i18n-panel-de">
+            <div class="i18n-translate-row">
+              <button type="button" class="btn-translate" data-translate-lang="de">✦ Mit KI übersetzen</button>
+              <span class="i18n-translate-status" id="i18n-status-de"></span>
+            </div>
             <div class="field" style="margin-bottom:14px">
               <label>Titel (DE)</label>
-              <input type="text" name="title_de" value={post?.title_de ?? ''} placeholder="Deutscher Titel..."/>
+              <input type="text" name="title_de" id="field-title_de" value={post?.title_de ?? ''} placeholder="Deutscher Titel..."/>
             </div>
             <div class="field" style="margin-bottom:14px">
               <label>Kurzbeschreibung (DE)</label>
-              <textarea name="excerpt_de" rows="3" placeholder="Deutsche Kurzbeschreibung...">{post?.excerpt_de ?? ''}</textarea>
+              <textarea name="excerpt_de" id="field-excerpt_de" rows="3" placeholder="Deutsche Kurzbeschreibung...">{post?.excerpt_de ?? ''}</textarea>
             </div>
             <div class="field" style="margin-bottom:14px">
               <label>Inhalt (DE, HTML)</label>
-              <textarea name="content_de" rows="14" placeholder="Deutscher Artikelinhalt in HTML...">{post?.content_de ?? ''}</textarea>
+              <textarea name="content_de" id="field-content_de" rows="14" placeholder="Deutscher Artikelinhalt in HTML...">{post?.content_de ?? ''}</textarea>
             </div>
             <div class="field">
               <label>Keywords (DE)</label>
-              <input type="text" name="keywords_de" value={post?.keywords_de ?? ''} placeholder="Digitalmarketing, Social Media Agentur..."/>
+              <input type="text" name="keywords_de" id="field-keywords_de" value={post?.keywords_de ?? ''} placeholder="Digitalmarketing, Social Media Agentur..."/>
             </div>
           </div>
         </div>
@@ -506,6 +519,49 @@ Esempi:
         const target = btn.getAttribute('data-i18n-tab');
         document.querySelectorAll('.i18n-tab-btn').forEach(b => b.classList.toggle('active', b === btn));
         document.querySelectorAll('.i18n-panel').forEach(p => p.classList.toggle('active', p.id === `i18n-panel-${target}`));
+      });
+    });
+
+    // ── AI translation ──
+    document.querySelectorAll('.btn-translate').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const lang = btn.getAttribute('data-translate-lang');
+        const status = document.getElementById(`i18n-status-${lang}`);
+        const titleIt   = document.querySelector('input[name="title"]')?.value?.trim() ?? '';
+        const excerptIt = document.querySelector('textarea[name="excerpt"]')?.value?.trim() ?? '';
+        const contentIt = document.getElementById('content-ta')?.value?.trim() ?? '';
+        const keywordsIt = document.querySelector('input[name="keywords"]')?.value?.trim() ?? '';
+        if (!titleIt && !contentIt) {
+          status.textContent = '⚠ Scrivi prima il contenuto in italiano.';
+          status.style.color = '#ff6666';
+          return;
+        }
+        btn.disabled = true;
+        status.textContent = '⏳ Traduzione in corso...';
+        status.style.color = 'rgba(255,255,255,.45)';
+        try {
+          const res = await fetch('/api/admin/translate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'blog', lang, title: titleIt, excerpt: excerptIt, content: contentIt, keywords: keywordsIt }),
+          });
+          const data = await res.json();
+          if (!res.ok || data.error) {
+            status.textContent = '✗ ' + (data.error || 'Errore traduzione');
+            status.style.color = '#ff6666';
+          } else {
+            document.getElementById(`field-title_${lang}`).value = data.title || '';
+            document.getElementById(`field-excerpt_${lang}`).value = data.excerpt || '';
+            document.getElementById(`field-content_${lang}`).value = data.content || '';
+            document.getElementById(`field-keywords_${lang}`).value = data.keywords || '';
+            status.textContent = '✓ Tradotto — controlla e modifica se necessario.';
+            status.style.color = '#4caf50';
+          }
+        } catch {
+          status.textContent = '✗ Errore di rete. Riprova.';
+          status.style.color = '#ff6666';
+        }
+        btn.disabled = false;
       });
     });
   </script>
