@@ -21,8 +21,11 @@ function isSessionExpired(expCookie: string | undefined, adminPassword: string):
 }
 
 export const onRequest = defineMiddleware(async (ctx, next) => {
-  const path = ctx.url.pathname;
-  const isAdminApi  = path.startsWith('/api/admin/');
+  const path = ctx.url.pathname.replace(/\/$/, '') || '/';
+  // /api/admin/login and /logout must stay reachable even with an expired/missing
+  // session — otherwise nobody could ever renew or clear a stale session.
+  const EXEMPT_API = ['/api/admin/login', '/api/admin/logout'];
+  const isAdminApi  = path.startsWith('/api/admin/') && !EXEMPT_API.includes(path);
   const isAdminPage = path.startsWith('/admin') && path !== '/admin/login';
 
   if (isAdminApi || isAdminPage) {
