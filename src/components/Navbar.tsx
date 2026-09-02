@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { dict, withLang, stripLangPrefix, LOCALES, LOCALE_LABELS, LOCALE_NAMES, type Lang } from '../i18n/dictionary';
+import { dict, withLang, stripLangPrefix, LOCALES, LOCALE_LABELS, type Lang } from '../i18n/dictionary';
 
 export default function Navbar({ lang = 'it' }: { lang?: Lang }) {
   const t = dict[lang];
@@ -89,6 +89,7 @@ export default function Navbar({ lang = 'it' }: { lang?: Lang }) {
                 onClick={() => setLangOpen(v => !v)}
                 whileTap={{ scale: 0.92 }}
                 className="h-9 px-3 rounded-full nav-icon-btn flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider"
+                style={{ outline: 'none', boxShadow: 'none' }}
                 aria-label={t.langSwitcher.label}
                 aria-expanded={langOpen}
               >
@@ -104,18 +105,17 @@ export default function Navbar({ lang = 'it' }: { lang?: Lang }) {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -6, scale: 0.96 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-11 min-w-[140px] rounded-xl overflow-hidden nav-bg nav-border border shadow-lg"
+                    className="absolute right-0 top-11 min-w-[64px] rounded-xl overflow-hidden nav-bg nav-border border shadow-lg"
                   >
                     {LOCALES.map(l => (
                       <a
                         key={l}
                         href={switchTo(l)}
                         onClick={() => setLangOpen(false)}
-                        className="flex items-center justify-between gap-3 px-4 py-2.5 text-[13px] nav-link"
-                        style={l === lang ? { color: '#FF6A00', fontWeight: 600 } : undefined}
+                        className="flex items-center justify-center px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wider nav-link"
+                        style={{ outline: 'none', ...(l === lang ? { color: '#FF6A00' } : {}) }}
                       >
-                        {LOCALE_NAMES[l]}
-                        <span className="text-[10px] uppercase opacity-50">{LOCALE_LABELS[l]}</span>
+                        {LOCALE_LABELS[l]}
                       </a>
                     ))}
                   </motion.div>
