@@ -12,8 +12,8 @@ export interface OfficeMarker {
 
 /** Published offices, mapped to globe markers with a localized label. Call initDB() first. */
 export async function getPublishedOfficeMarkers(lang: Lang): Promise<OfficeMarker[]> {
-  const rows = (await getPool().query<{ country_code: string; region: string; province: string; city: string; street: string }>(
-    'SELECT country_code, region, province, city, street FROM offices WHERE published=true ORDER BY display_order, id'
+  const rows = (await getPool().query<{ country_code: string; region: string; province: string; city: string; street: string; lat: number | null; lng: number | null }>(
+    'SELECT country_code, region, province, city, street, lat, lng FROM offices WHERE published=true ORDER BY display_order, id'
   )).rows;
   return rows.map((r) => {
     const c = getCountryByCode(r.country_code);
@@ -24,6 +24,9 @@ export async function getPublishedOfficeMarkers(lang: Lang): Promise<OfficeMarke
     // Full address for the Google Maps query — as much detail as was entered.
     const fullAddress = [r.street, r.city, r.province, r.region, countryName].filter(Boolean).join(', ');
     const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`;
-    return { code: r.country_code, lat: c?.lat ?? 0, lng: c?.lng ?? 0, label, mapsUrl };
+    // Geocoded address if we have one, otherwise fall back to the country's centroid.
+    const lat = r.lat ?? c?.lat ?? 0;
+    const lng = r.lng ?? c?.lng ?? 0;
+    return { code: r.country_code, lat, lng, label, mapsUrl };
   });
 }

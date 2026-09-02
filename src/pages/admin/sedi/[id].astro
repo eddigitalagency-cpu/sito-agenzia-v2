@@ -1,7 +1,8 @@
 ---
 export const prerender = false;
 import { getPool, initDB } from '../../../lib/db';
-import { countries } from '../../../data/countries';
+import { countries, getCountryByCode } from '../../../data/countries';
+import { geocodeAddress } from '../../../lib/geocode';
 import { createHash } from 'node:crypto';
 
 function sessionToken(pwd: string) {
@@ -48,17 +49,26 @@ if (Astro.request.method === 'POST') {
     errorMsg = 'Seleziona un paese.';
   } else {
     try {
+      // Geocode the most precise address we have, so the map pin lands on the
+      // real city/street instead of the country's centroid. Falls back to
+      // null (handled by getPublishedOfficeMarkers) if it can't be resolved.
+      const countryName = getCountryByCode(countryCode)?.it ?? countryCode;
+      const query = [street, city, province, region, countryName].filter(Boolean).join(', ');
+      const geo = await geocodeAddress(query);
+      const lat = geo?.lat ?? null;
+      const lng = geo?.lng ?? null;
+
       if (isNew) {
         await db.query(
-          `INSERT INTO offices (country_code,region,province,city,street,published,display_order)
-           VALUES ($1,$2,$3,$4,$5,$6,$7)`,
-          [countryCode, region, province, city, street, published, order],
+          `INSERT INTO offices (country_code,region,province,city,street,published,display_order,lat,lng)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+          [countryCode, region, province, city, street, published, order, lat, lng],
         );
       } else {
         await db.query(
-          `UPDATE offices SET country_code=$1,region=$2,province=$3,city=$4,street=$5,published=$6,display_order=$7,updated_at=NOW()
-           WHERE id=$8`,
-          [countryCode, region, province, city, street, published, order, officeId],
+          `UPDATE offices SET country_code=$1,region=$2,province=$3,city=$4,street=$5,published=$6,display_order=$7,lat=$8,lng=$9,updated_at=NOW()
+           WHERE id=$10`,
+          [countryCode, region, province, city, street, published, order, lat, lng, officeId],
         );
       }
       return Astro.redirect('/admin/sedi');

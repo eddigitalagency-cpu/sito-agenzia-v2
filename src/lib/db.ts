@@ -145,6 +145,8 @@ export async function initDB(): Promise<void> {
       updated_at    TIMESTAMPTZ  DEFAULT NOW()
     );
     ALTER TABLE offices ADD COLUMN IF NOT EXISTS city TEXT NOT NULL DEFAULT '';
+    ALTER TABLE offices ADD COLUMN IF NOT EXISTS lat DOUBLE PRECISION;
+    ALTER TABLE offices ADD COLUMN IF NOT EXISTS lng DOUBLE PRECISION;
 
     CREATE TABLE IF NOT EXISTS technology_partners (
       id            SERIAL       PRIMARY KEY,
