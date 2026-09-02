@@ -105,7 +105,7 @@ export default function Navbar({ lang = 'it' }: { lang?: Lang }) {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -6, scale: 0.96 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-11 min-w-[64px] rounded-xl overflow-hidden nav-bg nav-border border shadow-lg"
+                    className="absolute right-0 top-11 min-w-[64px] rounded-xl overflow-hidden nav-bg backdrop-blur-md nav-border border shadow-lg"
                   >
                     {LOCALES.map(l => (
                       <a
