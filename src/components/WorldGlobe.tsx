@@ -37,8 +37,11 @@ export default function WorldGlobe({ offices }: Props) {
   const measure = useCallback(() => {
     const el = containerRef.current;
     if (!el) return;
-    const width = el.clientWidth;
-    setSize({ width, height: Math.min(width, 560) });
+    // Square canvas — a sphere in a non-square box gets clipped top/bottom (or
+    // left/right) once zoomed in, since the frame runs out of room on the
+    // shorter side first.
+    const s = Math.min(el.clientWidth, 560);
+    setSize({ width: s, height: s });
   }, []);
 
   useEffect(() => {
@@ -47,14 +50,20 @@ export default function WorldGlobe({ offices }: Props) {
     return () => window.removeEventListener('resize', measure);
   }, [measure]);
 
-  // Slow auto-rotate; pauses naturally while the user drags
+  // Slow auto-rotate; pauses naturally while the user drags.
+  // minDistance caps how far the user can zoom in, so the globe can never grow
+  // past the edges of its (square) frame and get clipped.
   useEffect(() => {
     const g = globeRef.current;
     if (!g) return;
-    const controls = g.controls();
+    const controls = g.controls() as unknown as {
+      autoRotate: boolean; autoRotateSpeed: number; minDistance: number; maxDistance: number;
+    } | null;
     if (controls) {
-      (controls as unknown as { autoRotate: boolean; autoRotateSpeed: number }).autoRotate = true;
-      (controls as unknown as { autoRotate: boolean; autoRotateSpeed: number }).autoRotateSpeed = 0.5;
+      controls.autoRotate = true;
+      controls.autoRotateSpeed = 0.5;
+      controls.minDistance = 145;
+      controls.maxDistance = 500;
     }
     g.pointOfView({ altitude: 2.2 }, 0);
   }, [size]);
