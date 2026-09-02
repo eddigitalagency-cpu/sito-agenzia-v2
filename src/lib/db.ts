@@ -132,6 +132,18 @@ export async function initDB(): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_blog_published ON blog_posts(published, display_order);
     CREATE INDEX IF NOT EXISTS idx_blog_scheduled ON blog_posts(scheduled_at) WHERE scheduled_at IS NOT NULL;
 
+    CREATE TABLE IF NOT EXISTS offices (
+      id            SERIAL       PRIMARY KEY,
+      country_code  TEXT         NOT NULL,
+      region        TEXT         NOT NULL DEFAULT '',
+      province      TEXT         NOT NULL DEFAULT '',
+      street        TEXT         NOT NULL DEFAULT '',
+      display_order INT          NOT NULL DEFAULT 0,
+      published     BOOLEAN      NOT NULL DEFAULT true,
+      created_at    TIMESTAMPTZ  DEFAULT NOW(),
+      updated_at    TIMESTAMPTZ  DEFAULT NOW()
+    );
+
     CREATE TABLE IF NOT EXISTS technology_partners (
       id            SERIAL       PRIMARY KEY,
       name          TEXT         NOT NULL,

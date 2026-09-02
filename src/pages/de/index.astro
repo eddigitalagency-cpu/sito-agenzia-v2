@@ -1,8 +1,10 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import HomePage from '../../components/HomePage';
+import OfficesGlobeSection from '../../components/OfficesGlobeSection';
 import { initDB, getPool } from '../../lib/db';
 import { getLocalizedServiceName } from '../../data/services';
+import { getPublishedOfficeMarkers } from '../../lib/offices';
 import { dict } from '../../i18n/dictionary';
 
 export const prerender = false;
@@ -31,6 +33,8 @@ const partnerRows = (await getPool().query<{ name: string; logo_url: string; wid
   "SELECT name, logo_url, width FROM technology_partners WHERE published=true ORDER BY display_order, id"
 )).rows;
 const partners: Partner[] = partnerRows.map(r => ({ src: r.logo_url, alt: r.name, w: r.width }));
+
+const offices = await getPublishedOfficeMarkers(lang);
 ---
 
 <Layout
@@ -40,4 +44,5 @@ const partners: Partner[] = partnerRows.map(r => ({ src: r.logo_url, alt: r.name
   pageKeywords={t.seo.defaultKeywords}
 >
   <HomePage client:load projects={projects} partners={partners} lang={lang} />
+  {offices.length > 0 && <OfficesGlobeSection client:only="react" offices={offices} lang={lang} />}
 </Layout>

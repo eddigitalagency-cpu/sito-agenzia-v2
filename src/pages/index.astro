@@ -1,7 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import HomePage from '../components/HomePage';
+import OfficesGlobeSection from '../components/OfficesGlobeSection';
 import { initDB, getPool } from '../lib/db';
+import { getPublishedOfficeMarkers } from '../lib/offices';
 
 export const prerender = false;
 
@@ -21,6 +23,8 @@ const partnerRows = (await getPool().query<{ name: string; logo_url: string; wid
   "SELECT name, logo_url, width FROM technology_partners WHERE published=true ORDER BY display_order, id"
 )).rows;
 const partners: Partner[] = partnerRows.map(r => ({ src: r.logo_url, alt: r.name, w: r.width }));
+
+const offices = await getPublishedOfficeMarkers('it');
 ---
 
 <Layout
@@ -29,4 +33,5 @@ const partners: Partner[] = partnerRows.map(r => ({ src: r.logo_url, alt: r.name
   pageKeywords="agenzia digitale Treviso, web agency Vittorio Veneto, agenzia marketing Treviso, social media management Treviso, siti web Treviso, advertising Meta Google Treviso, e-commerce Treviso, agenzia comunicazione Veneto, marketing PMI Treviso, preventivo gratuito agenzia digitale Treviso, ED Digital Agency, agenzia digitale Conegliano, web design Veneto, software gestionale personalizzato, sviluppo applicazioni web su misura, gestionale custom PMI, sviluppo MVP e SaaS Treviso, sviluppo app mobile Veneto"
 >
   <HomePage client:load projects={projects} partners={partners} />
+  {offices.length > 0 && <OfficesGlobeSection client:only="react" offices={offices} lang="it" />}
 </Layout>

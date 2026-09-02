@@ -183,6 +183,7 @@ const en: typeof it = {
     portfolioLabel: 'Portfolio', projectsTitle: 'Projects', swipeHint: '← swipe to see more →',
     ctaTagline: 'Ready to grow?', ctaTitle1: "Let's build something", ctaTitle2: 'extraordinary.', ctaButton: 'Start now',
     partnersLabel: 'Technology partners',
+    officesLabel: 'Where we are', officesTitle: 'Our offices',
     marqueeItems: ['Social Media', 'Advertising', 'Web Design', 'E-Commerce', 'Photo & Video', 'Visual Identity', 'MVP & SaaS', 'App Development', 'Brand Strategy', 'Digital Growth'],
     servicesBento: [
       { name: 'Social Media Management', slug: 'social-media-management', tagline: 'Community that converts.' },
@@ -319,6 +320,7 @@ const de: typeof it = {
     portfolioLabel: 'Portfolio', projectsTitle: 'Projekte', swipeHint: '← wischen für mehr →',
     ctaTagline: 'Bereit zu wachsen?', ctaTitle1: 'Lassen Sie uns etwas', ctaTitle2: 'Außergewöhnliches schaffen.', ctaButton: 'Jetzt starten',
     partnersLabel: 'Technologiepartner',
+    officesLabel: 'Wo wir sind', officesTitle: 'Unsere Standorte',
     marqueeItems: ['Social Media', 'Advertising', 'Webdesign', 'E-Commerce', 'Foto & Video', 'Visual Identity', 'MVP & SaaS', 'App-Entwicklung', 'Markenstrategie', 'Digitales Wachstum'],
     servicesBento: [
       { name: 'Social Media Management', slug: 'social-media-management', tagline: 'Eine Community, die konvertiert.' },

@@ -20,7 +20,9 @@
     "pg": "^8.20.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "resend": "^6.12.2"
+    "react-globe.gl": "^2.38.0",
+    "resend": "^6.12.2",
+    "three": "^0.185.1"
   },
   "devDependencies": {
     "@astrojs/tailwind": "^5.1.4",

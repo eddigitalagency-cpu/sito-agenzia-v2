@@ -1,0 +1,150 @@
+---
+export const prerender = false;
+import { getPool, initDB } from '../../../lib/db';
+import { getCountryByCode } from '../../../data/countries';
+import { createHash } from 'node:crypto';
+
+function sessionToken(pwd: string) {
+  return createHash('sha256').update(`ed-admin-session:${pwd}`).digest('hex');
+}
+const auth   = Astro.cookies.get('ed-admin');
+const stored = process.env.ADMIN_PASSWORD ?? '';
+if (!stored || auth?.value !== sessionToken(stored)) return Astro.redirect('/admin/login');
+
+await initDB();
+const db = getPool();
+
+// Handle delete / toggle visibility
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const id = parseInt(String(form.get('id') ?? '0'));
+  const action = String(form.get('action') ?? 'delete');
+  if (id) {
+    if (action === 'toggle') {
+      await db.query('UPDATE offices SET published = NOT published, updated_at = NOW() WHERE id=$1', [id]);
+    } else {
+      await db.query('DELETE FROM offices WHERE id=$1', [id]);
+    }
+  }
+  return Astro.redirect('/admin/sedi');
+}
+
+type Row = { id: number; country_code: string; region: string; province: string; street: string; display_order: number; published: boolean };
+const rows = (await db.query<Row>(
+  'SELECT id,country_code,region,province,street,display_order,published FROM offices ORDER BY display_order ASC, id ASC'
+)).rows;
+---
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Sedi — Admin</title>
+  <meta name="robots" content="noindex,nofollow"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#080808;color:#fff;font-family:system-ui,sans-serif;min-height:100vh;}
+    a{color:inherit;text-decoration:none;}
+    .topbar{display:flex;align-items:center;gap:16px;padding:0 28px;border-bottom:1px solid rgba(255,255,255,.07);background:#0d0d0d;position:sticky;top:0;z-index:20;height:56px;}
+    .brand{font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.4);}
+    .badge{background:#FF6A00;color:#000;font-size:10px;font-weight:800;padding:3px 8px;border-radius:99px;letter-spacing:.08em;text-transform:uppercase;}
+    .btn-back{padding:7px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.45);font-size:12px;cursor:pointer;white-space:nowrap;text-decoration:none;}
+    .btn-back:hover{color:#fff;border-color:rgba(255,255,255,.25);}
+    .btn-add{padding:8px 18px;background:#FF6A00;color:#000;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;text-decoration:none;}
+    .btn-add:hover{opacity:.85;}
+    .wrap{max-width:900px;margin:0 auto;padding:32px 24px;}
+    .page-header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px;flex-wrap:wrap;}
+    .page-title{font-size:22px;font-weight:800;}
+    .page-subtitle{font-size:13px;color:rgba(255,255,255,.35);margin-top:4px;}
+    .row-grid{display:flex;flex-direction:column;gap:10px;}
+    .item-row{background:#111;border:1px solid rgba(255,255,255,.07);border-radius:14px;display:flex;align-items:center;gap:16px;padding:14px 18px;transition:border-color .15s;}
+    .item-row:hover{border-color:rgba(255,255,255,.15);}
+    .item-info{flex:1;min-width:0;}
+    .item-title{font-weight:700;font-size:15px;margin-bottom:3px;}
+    .item-meta{font-size:12px;color:rgba(255,255,255,.35);display:flex;gap:10px;flex-wrap:wrap;}
+    .status-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px;}
+    .status-dot.on{background:#22c55e;}
+    .status-dot.off{background:#555;}
+    .item-actions{display:flex;gap:8px;flex-shrink:0;}
+    .btn-eye{width:32px;height:32px;display:flex;align-items:center;justify-content:center;padding:0;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:7px;color:rgba(255,255,255,.6);font-size:14px;cursor:pointer;transition:all .15s;flex-shrink:0;}
+    .btn-eye:hover{color:#fff;border-color:rgba(255,255,255,.25);}
+    .btn-eye.is-hidden{color:rgba(255,255,255,.25);}
+    .btn-edit{padding:6px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:7px;color:rgba(255,255,255,.6);font-size:12px;cursor:pointer;text-decoration:none;transition:all .15s;white-space:nowrap;}
+    .btn-edit:hover{color:#fff;border-color:rgba(255,255,255,.25);}
+    .btn-del{padding:6px 14px;background:transparent;border:1px solid rgba(255,68,68,.2);border-radius:7px;color:rgba(255,68,68,.5);font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+    .btn-del:hover{color:#ff4444;border-color:rgba(255,68,68,.5);background:rgba(255,68,68,.06);}
+    .empty{text-align:center;padding:60px 24px;color:rgba(255,255,255,.25);font-size:14px;}
+    .order-badge{font-size:11px;color:rgba(255,255,255,.2);min-width:20px;}
+    .info-box{background:rgba(255,106,0,.06);border:1px solid rgba(255,106,0,.18);border-radius:12px;padding:14px 18px;font-size:12px;color:rgba(255,255,255,.55);line-height:1.6;margin-bottom:20px;}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="brand">ED Digital</span>
+      <span class="badge">Admin</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
+      <a href="/admin" class="btn-back">← Dashboard</a>
+      <a href="/admin/sedi/nuova" class="btn-add">+ Aggiungi Sede</a>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Sedi</div>
+        <div class="page-subtitle">{rows.length} sed{rows.length === 1 ? 'e' : 'i'} — mostrate nel footer e nella mappa in homepage</div>
+      </div>
+      <a href="/admin/sedi/nuova" class="btn-add">+ Aggiungi Sede</a>
+    </div>
+
+    <div class="info-box">
+      La mappa e la lista sedi nel footer compaiono solo se c'è almeno una sede <strong>visibile</strong> qui sotto. Nascondendole tutte, quelle sezioni spariscono dal sito automaticamente.
+    </div>
+
+    {rows.length === 0
+      ? <div class="empty">Nessuna sede ancora. Aggiungi la prima!</div>
+      : (
+        <div class="row-grid">
+          {rows.map(o => {
+            const c = getCountryByCode(o.country_code);
+            const title = [c?.it ?? o.country_code, o.province, o.region].filter(Boolean).join(' — ');
+            return (
+              <div class="item-row">
+                <span class="order-badge">{o.display_order}</span>
+                <div class="item-info">
+                  <div class="item-title">{title}</div>
+                  <div class="item-meta">
+                    <span>
+                      {o.published
+                        ? <><span class="status-dot on"></span>Visibile</>
+                        : <><span class="status-dot off"></span>Nascosta</>
+                      }
+                    </span>
+                    {o.street && <span style="color:rgba(255,255,255,.25)">{o.street}</span>}
+                  </div>
+                </div>
+                <div class="item-actions">
+                  <form method="POST" style="display:inline">
+                    <input type="hidden" name="id" value={o.id}/>
+                    <input type="hidden" name="action" value="toggle"/>
+                    <button type="submit" class={`btn-eye${o.published ? '' : ' is-hidden'}`} title={o.published ? 'Nascondi dal sito' : 'Rendi visibile sul sito'}>
+                      {o.published ? '👁' : '🚫'}
+                    </button>
+                  </form>
+                  <a href={`/admin/sedi/${o.id}`} class="btn-edit">Modifica</a>
+                  <form method="POST" style="display:inline" onsubmit={`return confirm('Eliminare la sede «${title.replace(/'/g, "\\'")}»?')`}>
+                    <input type="hidden" name="id" value={o.id}/>
+                    <button type="submit" class="btn-del">Elimina</button>
+                  </form>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )
+    }
+  </div>
+</body>
+</html>
