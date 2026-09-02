@@ -34,16 +34,23 @@ export default function OfficesGlobeSection({ offices, lang = 'it' }: Props) {
             {t.home.officesTitle}<span className="text-[#FF6A00]">.</span>
           </h2>
 
-          <div className="rounded-[2rem] overflow-hidden" style={{ background: 'rgb(var(--c-card))', border: '1px solid rgba(var(--c-text),0.07)' }}>
-            <div className="pt-8 pb-4 px-4">
+          <div>
+            <div className="pt-4 pb-4 px-4">
               <WorldGlobe offices={offices} />
             </div>
-            <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 px-6 pb-8 pt-2">
+            <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 px-6 pt-2">
               {offices.map((o) => (
-                <span key={`${o.code}-${o.label}`} className="flex items-center gap-2 text-xs md:text-sm" style={{ color: 'rgba(var(--c-text),0.6)' }}>
+                <a
+                  key={`${o.code}-${o.label}`}
+                  href={o.mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-xs md:text-sm hover:text-[#FF6A00] transition-colors"
+                  style={{ color: 'rgba(var(--c-text),0.6)' }}
+                >
                   <span className="w-1.5 h-1.5 rounded-full bg-[#FF6A00] inline-block flex-shrink-0" />
                   {o.label}
-                </span>
+                </a>
               ))}
             </div>
           </div>

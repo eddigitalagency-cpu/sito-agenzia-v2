@@ -29,9 +29,9 @@ if (Astro.request.method === 'POST') {
   return Astro.redirect('/admin/sedi');
 }
 
-type Row = { id: number; country_code: string; region: string; province: string; street: string; display_order: number; published: boolean };
+type Row = { id: number; country_code: string; region: string; province: string; city: string; street: string; display_order: number; published: boolean };
 const rows = (await db.query<Row>(
-  'SELECT id,country_code,region,province,street,display_order,published FROM offices ORDER BY display_order ASC, id ASC'
+  'SELECT id,country_code,region,province,city,street,display_order,published FROM offices ORDER BY display_order ASC, id ASC'
 )).rows;
 ---
 <!doctype html>
@@ -109,7 +109,7 @@ const rows = (await db.query<Row>(
         <div class="row-grid">
           {rows.map(o => {
             const c = getCountryByCode(o.country_code);
-            const title = [c?.it ?? o.country_code, o.province, o.region].filter(Boolean).join(' — ');
+            const title = [o.city || o.province, c?.it ?? o.country_code].filter(Boolean).join(' — ');
             return (
               <div class="item-row">
                 <span class="order-badge">{o.display_order}</span>

@@ -6,6 +6,7 @@ export interface OfficeMarker {
   lat: number;
   lng: number;
   label: string;
+  mapsUrl: string;
 }
 
 interface Props {

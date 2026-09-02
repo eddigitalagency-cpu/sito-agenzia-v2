@@ -34,7 +34,7 @@ const {
 
 const t = dict[lang];
 
-let footerOffices: { code: string; lat: number; lng: number; label: string }[] = [];
+let footerOffices: { code: string; lat: number; lng: number; label: string; mapsUrl: string }[] = [];
 try {
   await initDB();
   footerOffices = await getPublishedOfficeMarkers(lang);
@@ -446,9 +446,11 @@ const jsonLdGraph = {
                 </a>
               </li>
               {footerOffices.map(o => (
-                <li class="flex items-start gap-2 footer-link" style="cursor:default;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="flex-shrink:0;margin-top:2px;"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                  <span>{o.label}</span>
+                <li>
+                  <a href={o.mapsUrl} target="_blank" rel="noopener noreferrer" class="footer-link flex items-start gap-2">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="flex-shrink:0;margin-top:2px;"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    <span>{o.label}</span>
+                  </a>
                 </li>
               ))}
             </ul>

@@ -137,12 +137,14 @@ export async function initDB(): Promise<void> {
       country_code  TEXT         NOT NULL,
       region        TEXT         NOT NULL DEFAULT '',
       province      TEXT         NOT NULL DEFAULT '',
+      city          TEXT         NOT NULL DEFAULT '',
       street        TEXT         NOT NULL DEFAULT '',
       display_order INT          NOT NULL DEFAULT 0,
       published     BOOLEAN      NOT NULL DEFAULT true,
       created_at    TIMESTAMPTZ  DEFAULT NOW(),
       updated_at    TIMESTAMPTZ  DEFAULT NOW()
     );
+    ALTER TABLE offices ADD COLUMN IF NOT EXISTS city TEXT NOT NULL DEFAULT '';
 
     CREATE TABLE IF NOT EXISTS technology_partners (
       id            SERIAL       PRIMARY KEY,
