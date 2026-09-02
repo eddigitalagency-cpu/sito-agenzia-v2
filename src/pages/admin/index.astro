@@ -1,15 +1,10 @@
 ---
 export const prerender = false;
 import { getPool, initDB } from '../../lib/db';
-import { createHash } from 'node:crypto';
+import { hasPermission } from '../../lib/adminAuth';
 
-function sessionToken(pwd: string) {
-  return createHash('sha256').update(`ed-admin-session:${pwd}`).digest('hex');
-}
-
-const auth   = Astro.cookies.get('ed-admin');
-const stored = process.env.ADMIN_PASSWORD ?? '';
-if (!stored || auth?.value !== sessionToken(stored)) return Astro.redirect('/admin/login');
+// Auth already enforced by src/middleware.ts
+const me = Astro.locals.adminUser!;
 
 await initDB();
 const db = getPool();
@@ -72,7 +67,9 @@ const wk       = weekViews.rows[0].count;
 const mo       = monthViews.rows[0].count;
 const tf       = totalForms.rows[0].count;
 const unreplied = unrepliedQ.rows[0].count;
-const forms         = submissions.rows;
+// Keep customer PII out of the rendered HTML entirely for collaborators
+// without the "richieste" permission (not just hidden behind a nav tab).
+const forms         = hasPermission(me, 'richieste') ? submissions.rows : [];
 const archivedCount = forms.filter(f => f.archived_at).length;
 const pages    = topPages.rows;
 const daily    = dailyViews.rows;
@@ -249,12 +246,14 @@ function shortSession(id: string) {
     </div>
     <nav class="tab-nav">
       <button class="tab-btn active" data-tab="overview">Overview</button>
-      <button class="tab-btn" data-tab="richieste">Richieste <span style="opacity:.5">({tf})</span></button>
+      {hasPermission(me, 'richieste') && <button class="tab-btn" data-tab="richieste">Richieste <span style="opacity:.5">({tf})</span></button>}
       <button class="tab-btn" data-tab="sessioni">Sessioni</button>
-      <a href="/admin/progetti" class="tab-btn" style="text-decoration:none">Progetti</a>
-      <a href="/admin/blog" class="tab-btn" style="text-decoration:none">Blog</a>
-      <a href="/admin/partners" class="tab-btn" style="text-decoration:none">Partners</a>
-      <a href="/admin/sedi" class="tab-btn" style="text-decoration:none">Sedi</a>
+      {hasPermission(me, 'email')     && <a href="/admin/email" class="tab-btn" style="text-decoration:none">Email</a>}
+      {hasPermission(me, 'progetti')  && <a href="/admin/progetti" class="tab-btn" style="text-decoration:none">Progetti</a>}
+      {hasPermission(me, 'blog')      && <a href="/admin/blog" class="tab-btn" style="text-decoration:none">Blog</a>}
+      {hasPermission(me, 'partners')  && <a href="/admin/partners" class="tab-btn" style="text-decoration:none">Partners</a>}
+      {hasPermission(me, 'sedi')      && <a href="/admin/sedi" class="tab-btn" style="text-decoration:none">Sedi</a>}
+      {me.isOwner && <a href="/admin/impostazioni" class="tab-btn" style="text-decoration:none">Impostazioni</a>}
     </nav>
     <form class="logout-form" method="POST" action="/api/admin/logout" style="flex-shrink:0">
       <button type="submit">Esci</button>

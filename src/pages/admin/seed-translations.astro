@@ -2,14 +2,7 @@
 export const prerender = false;
 import { getPool, initDB } from '../../lib/db';
 import { TRANSLATIONS } from '../../data/translations-seed';
-import { createHash } from 'node:crypto';
-
-function sessionToken(pwd: string) {
-  return createHash('sha256').update(`ed-admin-session:${pwd}`).digest('hex');
-}
-const auth   = Astro.cookies.get('ed-admin');
-const stored = process.env.ADMIN_PASSWORD ?? '';
-if (!stored || auth?.value !== sessionToken(stored)) return Astro.redirect('/admin/login');
+// Auth + owner-only access already enforced by src/middleware.ts
 
 await initDB();
 const db = getPool();

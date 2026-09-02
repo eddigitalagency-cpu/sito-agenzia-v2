@@ -3,14 +3,7 @@ export const prerender = false;
 import { getPool, initDB } from '../../../lib/db';
 import { countries, getCountryByCode } from '../../../data/countries';
 import { geocodeAddress } from '../../../lib/geocode';
-import { createHash } from 'node:crypto';
-
-function sessionToken(pwd: string) {
-  return createHash('sha256').update(`ed-admin-session:${pwd}`).digest('hex');
-}
-const auth   = Astro.cookies.get('ed-admin');
-const stored = process.env.ADMIN_PASSWORD ?? '';
-if (!stored || auth?.value !== sessionToken(stored)) return Astro.redirect('/admin/login');
+// Auth + "sedi" permission already enforced by src/middleware.ts
 
 await initDB();
 const db = getPool();

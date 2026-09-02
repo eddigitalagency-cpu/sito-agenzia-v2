@@ -1,38 +1,40 @@
 ---
 export const prerender = false;
 import { getPool, initDB } from '../../../lib/db';
-import { getCountryByCode } from '../../../data/countries';
-// Auth + "sedi" permission already enforced by src/middleware.ts
+import { PERMISSIONS } from '../../../lib/adminAuth';
+// Owner-only access already enforced by src/middleware.ts
 
 await initDB();
 const db = getPool();
 
-// Handle delete / toggle visibility
+// Handle delete / toggle active
 if (Astro.request.method === 'POST') {
   const form = await Astro.request.formData();
   const id = parseInt(String(form.get('id') ?? '0'));
   const action = String(form.get('action') ?? 'delete');
   if (id) {
     if (action === 'toggle') {
-      await db.query('UPDATE offices SET published = NOT published, updated_at = NOW() WHERE id=$1', [id]);
+      await db.query('UPDATE admin_users SET active = NOT active, updated_at = NOW() WHERE id=$1', [id]);
     } else {
-      await db.query('DELETE FROM offices WHERE id=$1', [id]);
+      await db.query('DELETE FROM admin_users WHERE id=$1', [id]);
     }
   }
-  return Astro.redirect('/admin/sedi');
+  return Astro.redirect('/admin/impostazioni');
 }
 
-type Row = { id: number; country_code: string; region: string; province: string; city: string; street: string; display_order: number; published: boolean };
+type Row = { id: number; email: string; name: string; permissions: string[]; active: boolean };
 const rows = (await db.query<Row>(
-  'SELECT id,country_code,region,province,city,street,display_order,published FROM offices ORDER BY display_order ASC, id ASC'
+  'SELECT id,email,name,permissions,active FROM admin_users ORDER BY created_at ASC'
 )).rows;
+
+const permLabel = (k: string) => PERMISSIONS.find(p => p.key === k)?.label ?? k;
 ---
 <!doctype html>
 <html lang="it">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Sedi — Admin</title>
+  <title>Impostazioni — Admin</title>
   <meta name="robots" content="noindex,nofollow"/>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
@@ -53,8 +55,10 @@ const rows = (await db.query<Row>(
     .item-row{background:#111;border:1px solid rgba(255,255,255,.07);border-radius:14px;display:flex;align-items:center;gap:16px;padding:14px 18px;transition:border-color .15s;}
     .item-row:hover{border-color:rgba(255,255,255,.15);}
     .item-info{flex:1;min-width:0;}
-    .item-title{font-weight:700;font-size:15px;margin-bottom:3px;}
-    .item-meta{font-size:12px;color:rgba(255,255,255,.35);display:flex;gap:10px;flex-wrap:wrap;}
+    .item-title{font-weight:700;font-size:15px;margin-bottom:5px;}
+    .item-meta{font-size:12px;color:rgba(255,255,255,.35);}
+    .perm-pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+    .perm-pill{background:rgba(255,106,0,.12);color:#FF6A00;padding:2px 9px;border-radius:99px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
     .status-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px;}
     .status-dot.on{background:#22c55e;}
     .status-dot.off{background:#555;}
@@ -67,8 +71,7 @@ const rows = (await db.query<Row>(
     .btn-del{padding:6px 14px;background:transparent;border:1px solid rgba(255,68,68,.2);border-radius:7px;color:rgba(255,68,68,.5);font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap;}
     .btn-del:hover{color:#ff4444;border-color:rgba(255,68,68,.5);background:rgba(255,68,68,.06);}
     .empty{text-align:center;padding:60px 24px;color:rgba(255,255,255,.25);font-size:14px;}
-    .order-badge{font-size:11px;color:rgba(255,255,255,.2);min-width:20px;}
-    .info-box{background:rgba(255,106,0,.06);border:1px solid rgba(255,106,0,.18);border-radius:12px;padding:14px 18px;font-size:12px;color:rgba(255,255,255,.55);line-height:1.6;margin-bottom:20px;}
+    .owner-card{background:rgba(255,106,0,.06);border:1px solid rgba(255,106,0,.18);border-radius:12px;padding:14px 18px;font-size:12px;color:rgba(255,255,255,.55);line-height:1.6;margin-bottom:20px;}
   </style>
 </head>
 <body>
@@ -79,62 +82,64 @@ const rows = (await db.query<Row>(
     </div>
     <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
       <a href="/admin" class="btn-back">← Dashboard</a>
-      <a href="/admin/sedi/nuova" class="btn-add">+ Aggiungi Sede</a>
+      <a href="/admin/impostazioni/nuovo" class="btn-add">+ Nuovo Collaboratore</a>
     </div>
   </div>
 
   <div class="wrap">
     <div class="page-header">
       <div>
-        <div class="page-title">Sedi</div>
-        <div class="page-subtitle">{rows.length} sed{rows.length === 1 ? 'e' : 'i'} — mostrate nel footer e nella mappa in homepage</div>
+        <div class="page-title">Collaboratori</div>
+        <div class="page-subtitle">{rows.length} account{rows.length === 1 ? '' : ''} — tu (titolare) hai sempre accesso completo, non conti in questo elenco</div>
       </div>
-      <a href="/admin/sedi/nuova" class="btn-add">+ Aggiungi Sede</a>
+      <a href="/admin/impostazioni/nuovo" class="btn-add">+ Nuovo Collaboratore</a>
     </div>
 
-    <div class="info-box">
-      La mappa e la lista sedi nel footer compaiono solo se c'è almeno una sede <strong>visibile</strong> qui sotto. Nascondendole tutte, quelle sezioni spariscono dal sito automaticamente.
+    <div class="owner-card">
+      Disattivare un account blocca subito l'accesso (senza eliminarlo). Puoi riattivarlo quando vuoi. I permessi decidono quali sezioni dell'admin quella persona può vedere — se non selezioni nulla, vede solo la dashboard generale.
     </div>
 
     {rows.length === 0
-      ? <div class="empty">Nessuna sede ancora. Aggiungi la prima!</div>
+      ? <div class="empty">Nessun collaboratore ancora. Aggiungi il primo!</div>
       : (
         <div class="row-grid">
-          {rows.map(o => {
-            const c = getCountryByCode(o.country_code);
-            const title = [o.city || o.province, c?.it ?? o.country_code].filter(Boolean).join(' — ');
-            return (
-              <div class="item-row">
-                <span class="order-badge">{o.display_order}</span>
-                <div class="item-info">
-                  <div class="item-title">{title}</div>
-                  <div class="item-meta">
-                    <span>
-                      {o.published
-                        ? <><span class="status-dot on"></span>Visibile</>
-                        : <><span class="status-dot off"></span>Nascosta</>
-                      }
-                    </span>
-                    {o.street && <span style="color:rgba(255,255,255,.25)">{o.street}</span>}
-                  </div>
+          {rows.map(u => (
+            <div class="item-row">
+              <div class="item-info">
+                <div class="item-title">{u.name || u.email}</div>
+                <div class="item-meta">
+                  {u.email}
+                  <span>
+                    {' · '}
+                    {u.active
+                      ? <><span class="status-dot on"></span>Attivo</>
+                      : <><span class="status-dot off"></span>Disattivato</>
+                    }
+                  </span>
                 </div>
-                <div class="item-actions">
-                  <form method="POST" style="display:inline">
-                    <input type="hidden" name="id" value={o.id}/>
-                    <input type="hidden" name="action" value="toggle"/>
-                    <button type="submit" class={`btn-eye${o.published ? '' : ' is-hidden'}`} title={o.published ? 'Nascondi dal sito' : 'Rendi visibile sul sito'}>
-                      {o.published ? '👁' : '🚫'}
-                    </button>
-                  </form>
-                  <a href={`/admin/sedi/${o.id}`} class="btn-edit">Modifica</a>
-                  <form method="POST" style="display:inline" onsubmit={`return confirm('Eliminare la sede «${title.replace(/'/g, "\\'")}»?')`}>
-                    <input type="hidden" name="id" value={o.id}/>
-                    <button type="submit" class="btn-del">Elimina</button>
-                  </form>
+                <div class="perm-pills">
+                  {u.permissions.length === 0
+                    ? <span class="perm-pill" style="background:rgba(255,255,255,.06);color:rgba(255,255,255,.4)">Nessun permesso</span>
+                    : u.permissions.map(p => <span class="perm-pill">{permLabel(p)}</span>)
+                  }
                 </div>
               </div>
-            );
-          })}
+              <div class="item-actions">
+                <form method="POST" style="display:inline">
+                  <input type="hidden" name="id" value={u.id}/>
+                  <input type="hidden" name="action" value="toggle"/>
+                  <button type="submit" class={`btn-eye${u.active ? '' : ' is-hidden'}`} title={u.active ? 'Disattiva accesso' : 'Riattiva accesso'}>
+                    {u.active ? '👁' : '🚫'}
+                  </button>
+                </form>
+                <a href={`/admin/impostazioni/${u.id}`} class="btn-edit">Modifica</a>
+                <form method="POST" style="display:inline" onsubmit={`return confirm('Eliminare l\\'account di «${(u.name || u.email).replace(/'/g, "\\'")}»?')`}>
+                  <input type="hidden" name="id" value={u.id}/>
+                  <button type="submit" class="btn-del">Elimina</button>
+                </form>
+              </div>
+            </div>
+          ))}
         </div>
       )
     }

@@ -1,21 +1,16 @@
 export const prerender = false;
 
 import type { APIRoute } from 'astro';
-import { createHash } from 'node:crypto';
 import { getPool, initDB } from '../../../lib/db';
+import { hasAnyPermission } from '../../../lib/adminAuth';
 
-function sessionToken(pwd: string) {
-  return createHash('sha256').update(`ed-admin-session:${pwd}`).digest('hex');
-}
-function isAuth(cookies: Parameters<APIRoute>[0]['cookies']): boolean {
-  const a = cookies.get('ed-admin');
-  const s = process.env.ADMIN_PASSWORD ?? '';
-  return !!(s && a?.value === sessionToken(s));
+function isAuth(locals: App.Locals): boolean {
+  return hasAnyPermission(locals.adminUser, ['richieste', 'email']);
 }
 
 // PATCH: archive or unarchive a submission
-export const PATCH: APIRoute = async ({ request, cookies }) => {
-  if (!isAuth(cookies)) return json({ error: 'Non autorizzato' }, 401);
+export const PATCH: APIRoute = async ({ request, locals }) => {
+  if (!isAuth(locals)) return json({ error: 'Non autorizzato' }, 401);
 
   let body: { id: number; archive: boolean };
   try { body = await request.json(); } catch { return json({ error: 'Richiesta non valida' }, 400); }
@@ -34,8 +29,8 @@ export const PATCH: APIRoute = async ({ request, cookies }) => {
 };
 
 // DELETE: permanently delete a submission
-export const DELETE: APIRoute = async ({ request, cookies }) => {
-  if (!isAuth(cookies)) return json({ error: 'Non autorizzato' }, 401);
+export const DELETE: APIRoute = async ({ request, locals }) => {
+  if (!isAuth(locals)) return json({ error: 'Non autorizzato' }, 401);
 
   let body: { id: number };
   try { body = await request.json(); } catch { return json({ error: 'Richiesta non valida' }, 400); }

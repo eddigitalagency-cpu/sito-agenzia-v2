@@ -1,0 +1,102 @@
+---
+export const prerender = false;
+import { getPool, initDB } from '../../../lib/db';
+// Auth + "email" permission already enforced by src/middleware.ts
+
+await initDB();
+const db = getPool();
+
+type SubRow = {
+  id: number; name: string; email: string; phone: string; company: string;
+  service: string; message: string; created_at: string;
+  replied_at: string | null; reply_text: string | null;
+};
+const rows = (await db.query<SubRow>(
+  'SELECT * FROM form_submissions ORDER BY created_at DESC LIMIT 200'
+)).rows;
+
+function fmt(d: string) {
+  return new Date(d).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+}
+---
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Email — Admin</title>
+  <meta name="robots" content="noindex,nofollow"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#080808;color:#fff;font-family:system-ui,sans-serif;min-height:100vh;}
+    a{color:inherit;text-decoration:none;}
+    .topbar{display:flex;align-items:center;gap:16px;padding:0 28px;border-bottom:1px solid rgba(255,255,255,.07);background:#0d0d0d;position:sticky;top:0;z-index:20;height:56px;}
+    .brand{font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.4);}
+    .badge{background:#FF6A00;color:#000;font-size:10px;font-weight:800;padding:3px 8px;border-radius:99px;letter-spacing:.08em;text-transform:uppercase;}
+    .btn-back{padding:7px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.45);font-size:12px;cursor:pointer;white-space:nowrap;text-decoration:none;margin-left:auto;}
+    .btn-back:hover{color:#fff;border-color:rgba(255,255,255,.25);}
+    .wrap{max-width:900px;margin:0 auto;padding:32px 24px;}
+    .page-title{font-size:22px;font-weight:800;}
+    .page-subtitle{font-size:13px;color:rgba(255,255,255,.35);margin-top:4px;margin-bottom:20px;}
+    .info-box{background:rgba(255,106,0,.06);border:1px solid rgba(255,106,0,.18);border-radius:12px;padding:14px 18px;font-size:12px;color:rgba(255,255,255,.55);line-height:1.6;margin-bottom:24px;}
+    .row-grid{display:flex;flex-direction:column;gap:10px;}
+    .item-row{background:#111;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:16px 18px;}
+    .item-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px;}
+    .item-name{font-weight:700;font-size:14px;}
+    .item-date{font-size:11px;color:rgba(255,255,255,.3);}
+    .item-meta{font-size:12px;color:rgba(255,255,255,.4);margin-bottom:8px;}
+    .item-msg{font-size:13px;color:rgba(255,255,255,.65);line-height:1.5;background:rgba(255,255,255,.03);padding:10px 12px;border-radius:8px;}
+    .reply-box{margin-top:10px;padding:10px 12px;border-radius:8px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.15);font-size:12px;color:rgba(255,255,255,.55);}
+    .reply-label{color:#4ade80;font-weight:700;text-transform:uppercase;font-size:10px;letter-spacing:.05em;margin-bottom:4px;}
+    .status-pill{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:2px 9px;border-radius:99px;}
+    .status-pill.replied{background:rgba(34,197,94,.12);color:#4ade80;}
+    .status-pill.pending{background:rgba(255,106,0,.12);color:#FF6A00;}
+    .empty{text-align:center;padding:60px 24px;color:rgba(255,255,255,.25);font-size:14px;}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <span class="brand">ED Digital</span>
+    <span class="badge">Admin</span>
+    <a href="/admin" class="btn-back">← Dashboard</a>
+  </div>
+
+  <div class="wrap">
+    <div class="page-title">Email</div>
+    <div class="page-subtitle">{rows.length} richiest{rows.length === 1 ? 'a' : 'e'} ricevute dal modulo di contatto</div>
+
+    <div class="info-box">
+      Questa sezione mostra oggi le richieste arrivate dal sito e le risposte già inviate. Il collegamento con le caselle email vere (invio e ricezione diretta dalla dashboard) arriva in un secondo passaggio, appena definito il provider di posta.
+    </div>
+
+    {rows.length === 0
+      ? <div class="empty">Nessuna richiesta ancora.</div>
+      : (
+        <div class="row-grid">
+          {rows.map(r => (
+            <div class="item-row">
+              <div class="item-head">
+                <span class="item-name">{r.name}</span>
+                <span class={`status-pill ${r.replied_at ? 'replied' : 'pending'}`}>{r.replied_at ? 'Risposto' : 'Da rispondere'}</span>
+              </div>
+              <div class="item-meta">
+                <a href={`mailto:${r.email}`} style="color:#FF6A00">{r.email}</a>
+                {r.company && ` · ${r.company}`}
+                {r.service && ` · ${r.service}`}
+                <span class="item-date"> · {fmt(r.created_at)}</span>
+              </div>
+              {r.message && <div class="item-msg">{r.message}</div>}
+              {r.reply_text && (
+                <div class="reply-box">
+                  <div class="reply-label">Risposta inviata</div>
+                  {r.reply_text}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )
+    }
+  </div>
+</body>
+</html>

@@ -1,18 +1,12 @@
 export const prerender = false;
 
 import type { APIRoute } from 'astro';
-import { createHash } from 'node:crypto';
 import { getPool, initDB } from '../../../lib/db';
 import { Resend } from 'resend';
+import { hasAnyPermission } from '../../../lib/adminAuth';
 
-function sessionToken(pwd: string) {
-  return createHash('sha256').update(`ed-admin-session:${pwd}`).digest('hex');
-}
-
-export const POST: APIRoute = async ({ request, cookies }) => {
-  const auth   = cookies.get('ed-admin');
-  const stored = process.env.ADMIN_PASSWORD ?? '';
-  if (!stored || auth?.value !== sessionToken(stored)) {
+export const POST: APIRoute = async ({ request, locals }) => {
+  if (!hasAnyPermission(locals.adminUser, ['richieste', 'email'])) {
     return json({ error: 'Non autorizzato' }, 401);
   }
 

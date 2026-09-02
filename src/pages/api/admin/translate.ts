@@ -1,12 +1,8 @@
 export const prerender = false;
 
 import type { APIRoute } from 'astro';
-import { createHash } from 'node:crypto';
 import { rateLimit } from '../../../lib/rateLimit';
-
-function sessionToken(pwd: string) {
-  return createHash('sha256').update(`ed-admin-session:${pwd}`).digest('hex');
-}
+import { hasAnyPermission } from '../../../lib/adminAuth';
 
 function json(d: unknown, s = 200) {
   return new Response(JSON.stringify(d), { status: s, headers: { 'Content-Type': 'application/json' } });
@@ -14,10 +10,8 @@ function json(d: unknown, s = 200) {
 
 const LANG_NAME: Record<string, string> = { en: 'English', de: 'German (formal "Sie" register — never "du", this is a B2B site)' };
 
-export const POST: APIRoute = async ({ request, cookies, clientAddress }) => {
-  const auth   = cookies.get('ed-admin');
-  const stored = process.env.ADMIN_PASSWORD ?? '';
-  if (!stored || auth?.value !== sessionToken(stored)) return json({ error: 'Non autorizzato' }, 401);
+export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
+  if (!hasAnyPermission(locals.adminUser, ['blog', 'progetti'])) return json({ error: 'Non autorizzato' }, 401);
   if (!rateLimit(`ai:${clientAddress ?? 'unknown'}`, 20, 60 * 60 * 1000)) return json({ error: 'Troppe richieste. Riprova tra qualche minuto.' }, 429);
 
   let body: {

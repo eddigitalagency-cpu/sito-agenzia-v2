@@ -1,9 +1,14 @@
 ---
 export const prerender = false;
-const auth  = Astro.cookies.get('ed-admin');
-const stored = process.env.ADMIN_PASSWORD ?? '';
-if (stored && auth?.value === stored) return Astro.redirect('/admin');
-const err = Astro.url.searchParams.get('err'); // '1' = wrong pwd, '2' = rate limited
+import { initDB } from '../../lib/db';
+import { getSessionUser } from '../../lib/adminAuth';
+
+const existing = Astro.cookies.get('ed-admin')?.value;
+if (existing) {
+  await initDB();
+  if (await getSessionUser(existing)) return Astro.redirect('/admin');
+}
+const err = Astro.url.searchParams.get('err'); // '1' = wrong credentials, '2' = rate limited
 ---
 <!doctype html>
 <html lang="it">
@@ -31,10 +36,12 @@ const err = Astro.url.searchParams.get('err'); // '1' = wrong pwd, '2' = rate li
   <div class="card">
     <div class="logo">ED Digital Agency</div>
     <h1>Admin Panel</h1>
-    <p>Inserisci la password per accedere</p>
-    {err === '1' && <div class="err">Password errata. Riprova.</div>}
+    <p>Titolare: solo password. Collaboratore: email e password.</p>
+    {err === '1' && <div class="err">Credenziali errate. Riprova.</div>}
     {err === '2' && <div class="err">Troppi tentativi. Riprova tra 15 minuti.</div>}
     <form method="POST" action="/api/admin/login">
+      <label for="email">Email <span style="text-transform:none;opacity:.6">(vuoto se sei il titolare)</span></label>
+      <input id="email" name="email" type="email" placeholder="collaboratore@eddigitalagency.it" style="margin-bottom:16px" />
       <label for="pwd">Password</label>
       <input id="pwd" name="password" type="password" placeholder="••••••••" autofocus required />
       <button type="submit">Accedi →</button>

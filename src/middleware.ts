@@ -1,37 +1,37 @@
 import { defineMiddleware } from 'astro:middleware';
-import { createHash, timingSafeEqual } from 'node:crypto';
+import { initDB } from './lib/db';
+import { getSessionUser, hasPermission, type PermissionKey } from './lib/adminAuth';
 
-// ── Admin session expiry (defense-in-depth, centralized) ──────────────────
-// The main `ed-admin` cookie is a fixed hash of the password with no time
-// component, so on its own it never expires server-side. `ed-admin-exp`
-// carries a signed expiry set at login (see /api/admin/login) — verified
-// here for every /admin and /api/admin request so a leaked cookie can't be
-// replayed forever.
-function isSessionExpired(expCookie: string | undefined, adminPassword: string): boolean {
-  if (!adminPassword) return true;
-  if (!expCookie) return true;
-  const [expStr, sig] = expCookie.split('.');
-  const expiresAt = Number(expStr);
-  if (!expiresAt || !sig) return true;
-  const expected = createHash('sha256').update(`ed-admin-exp:${expiresAt}:${adminPassword}`).digest('hex');
-  const a = Buffer.from(sig);
-  const b = Buffer.from(expected);
-  if (a.length !== b.length || !timingSafeEqual(a, b)) return true;
-  return Date.now() > expiresAt;
-}
+// Section → permission required. Anything under /admin or /api/admin not
+// listed here just needs a valid session (no extra permission check) — e.g.
+// the dashboard overview itself, or /admin/seed-translations (owner tool,
+// gated separately below).
+const SECTION_PERMISSION: { prefix: string; key: PermissionKey }[] = [
+  { prefix: '/admin/email', key: 'email' },
+  { prefix: '/admin/blog', key: 'blog' },
+  { prefix: '/admin/progetti', key: 'progetti' },
+  { prefix: '/admin/partners', key: 'partners' },
+  { prefix: '/admin/sedi', key: 'sedi' },
+];
 
 export const onRequest = defineMiddleware(async (ctx, next) => {
   const path = ctx.url.pathname.replace(/\/$/, '') || '/';
-  // /api/admin/login and /logout must stay reachable even with an expired/missing
-  // session — otherwise nobody could ever renew or clear a stale session.
+  // /api/admin/login and /logout must stay reachable even with no/expired
+  // session — otherwise nobody could ever log in or clear a stale session.
   const EXEMPT_API = ['/api/admin/login', '/api/admin/logout'];
   const isAdminApi  = path.startsWith('/api/admin/') && !EXEMPT_API.includes(path);
   const isAdminPage = path.startsWith('/admin') && path !== '/admin/login';
 
   if (isAdminApi || isAdminPage) {
-    const stored = process.env.ADMIN_PASSWORD ?? '';
-    const expCookie = ctx.cookies.get('ed-admin-exp')?.value;
-    if (isSessionExpired(expCookie, stored)) {
+    let user = null;
+    try {
+      await initDB();
+      user = await getSessionUser(ctx.cookies.get('ed-admin')?.value);
+    } catch {
+      user = null;
+    }
+
+    if (!user) {
       if (isAdminApi) {
         return new Response(JSON.stringify({ error: 'Sessione scaduta' }), {
           status: 401,
@@ -40,6 +40,24 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
       }
       return ctx.redirect('/admin/login');
     }
+
+    // Owner-only tools
+    if ((path === '/admin/impostazioni' || path.startsWith('/admin/impostazioni/') || path.startsWith('/api/admin/users')
+      || path === '/admin/seed-translations') && !user.isOwner) {
+      return isAdminApi
+        ? new Response(JSON.stringify({ error: 'Non autorizzato' }), { status: 403, headers: { 'Content-Type': 'application/json' } })
+        : ctx.redirect('/admin');
+    }
+
+    // Section-level permission gate
+    const section = SECTION_PERMISSION.find(s => path.startsWith(s.prefix) || path.startsWith(`/api${s.prefix}`));
+    if (section && !hasPermission(user, section.key)) {
+      return isAdminApi
+        ? new Response(JSON.stringify({ error: 'Non autorizzato' }), { status: 403, headers: { 'Content-Type': 'application/json' } })
+        : ctx.redirect('/admin');
+    }
+
+    ctx.locals.adminUser = user;
   }
 
   const response = await next();
@@ -71,16 +89,12 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
   // Cache-Control for static assets
   const url = ctx.url.pathname;
   if (/\.(woff2|woff|ttf|otf)$/.test(url)) {
-    // Fonts never change filename — cache forever
     h.set('Cache-Control', 'public, max-age=31536000, immutable');
   } else if (/\.(js|css)$/.test(url) && /\.[a-zA-Z0-9]{6,}\./.test(url)) {
-    // Hashed JS/CSS bundles — cache forever (hash changes on update)
     h.set('Cache-Control', 'public, max-age=31536000, immutable');
   } else if (/\.(jpg|jpeg|png|webp|avif|gif|svg|ico|mp4|webm)$/.test(url)) {
-    // Images — cache for 1 year
     h.set('Cache-Control', 'public, max-age=31536000');
   } else if (/\.(txt|xml|json)$/.test(url)) {
-    // Sitemaps, robots, llms — cache for 1 day
     h.set('Cache-Control', 'public, max-age=86400');
   }
 
