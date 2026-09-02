@@ -2,8 +2,12 @@ export const prerender = false;
 
 import type { APIRoute } from 'astro';
 import { getPool, initDB } from '../../lib/db';
+import { rateLimit } from '../../lib/rateLimit';
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, clientAddress }) => {
+  if (!rateLimit(`track:${clientAddress ?? 'unknown'}`, 120, 60_000)) {
+    return new Response(null, { status: 429 });
+  }
   try {
     const body = await request.json();
     const type      = String(body.type ?? 'pageview').slice(0, 20);

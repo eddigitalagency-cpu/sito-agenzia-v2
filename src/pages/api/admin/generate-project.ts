@@ -2,15 +2,17 @@ export const prerender = false;
 
 import type { APIRoute } from 'astro';
 import { createHash } from 'node:crypto';
+import { rateLimit } from '../../../lib/rateLimit';
 
 function sessionToken(pwd: string) {
   return createHash('sha256').update(`ed-admin-session:${pwd}`).digest('hex');
 }
 
-export const POST: APIRoute = async ({ request, cookies }) => {
+export const POST: APIRoute = async ({ request, cookies, clientAddress }) => {
   const auth   = cookies.get('ed-admin');
   const stored = process.env.ADMIN_PASSWORD ?? '';
   if (!stored || auth?.value !== sessionToken(stored)) return json({ error: 'Non autorizzato' }, 401);
+  if (!rateLimit(`ai:${clientAddress ?? 'unknown'}`, 20, 60 * 60 * 1000)) return json({ error: 'Troppe richieste. Riprova tra qualche minuto.' }, 429);
 
   let body: { title?: string; service?: string; q1?: string; q2?: string; q3?: string };
   try { body = await request.json(); } catch { return json({ error: 'Richiesta non valida' }, 400); }

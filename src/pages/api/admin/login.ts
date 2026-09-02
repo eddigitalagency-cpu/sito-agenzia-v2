@@ -27,11 +27,23 @@ export const POST: APIRoute = async ({ request, cookies, clientAddress }) => {
   if (stored && pwd === stored) {
     rec.count = 0;
     _attempts.set(ip, rec);
+    const maxAge = 60 * 60 * 24 * 7;
     cookies.set('ed-admin', sessionToken(stored), {
       httpOnly: true,
       secure: true,
       sameSite: 'strict',
-      maxAge: 60 * 60 * 24 * 7,
+      maxAge,
+      path: '/',
+    });
+    // Server-verified expiry — the cookie above never changes/expires on its own on the
+    // server side (it's a fixed hash), so without this a stolen value would work forever.
+    const expiresAt = Date.now() + maxAge * 1000;
+    const sig = createHash('sha256').update(`ed-admin-exp:${expiresAt}:${stored}`).digest('hex');
+    cookies.set('ed-admin-exp', `${expiresAt}.${sig}`, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge,
       path: '/',
     });
     return new Response(null, { status: 302, headers: { Location: '/admin' } });

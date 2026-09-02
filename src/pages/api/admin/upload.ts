@@ -22,6 +22,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
   const mimeType = file.type || 'image/jpeg';
   if (!mimeType.startsWith('image/')) return json({ error: 'Solo file immagine' }, 400);
+  if (mimeType === 'image/svg+xml') return json({ error: 'File SVG non supportati (possono contenere script). Usa JPG, PNG o WebP.' }, 400);
 
   const buffer = Buffer.from(await file.arrayBuffer());
   await initDB();
