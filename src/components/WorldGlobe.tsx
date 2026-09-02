@@ -37,11 +37,10 @@ export default function WorldGlobe({ offices }: Props) {
   const measure = useCallback(() => {
     const el = containerRef.current;
     if (!el) return;
-    // Square canvas — a sphere in a non-square box gets clipped top/bottom (or
-    // left/right) once zoomed in, since the frame runs out of room on the
-    // shorter side first.
-    const s = Math.min(el.clientWidth, 560);
-    setSize({ width: s, height: s });
+    const width = el.clientWidth;
+    // Wide frame like before, just a bit taller — combined with the zoom cap
+    // below, that keeps the globe from ever reaching the top/bottom edges.
+    setSize({ width, height: Math.min(width, 640) });
   }, []);
 
   useEffect(() => {
