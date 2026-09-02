@@ -24,14 +24,13 @@ export const POST: APIRoute = async ({ request, cookies, clientAddress }) => {
   await initDB();
 
   let token: string | null = null;
+  const stored = process.env.ADMIN_PASSWORD ?? '';
 
-  if (!email) {
-    // Owner login — same single password as before.
-    const stored = process.env.ADMIN_PASSWORD ?? '';
-    if (stored && pwd === stored) {
-      token = await createSession(null, true);
-    }
-  } else {
+  if (stored && pwd === stored) {
+    // Owner password always wins, no matter what ended up in the email field
+    // (e.g. browser autofill) — this must never lock the owner out.
+    token = await createSession(null, true);
+  } else if (email) {
     // Collaborator login — email + password against admin_users.
     const res = await getPool().query<{ id: number; password_hash: string; active: boolean }>(
       'SELECT id, password_hash, active FROM admin_users WHERE email=$1', [email],
