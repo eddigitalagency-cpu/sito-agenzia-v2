@@ -38,9 +38,11 @@ export default function WorldGlobe({ offices }: Props) {
     const el = containerRef.current;
     if (!el) return;
     const width = el.clientWidth;
-    // Wide frame like before, just a bit taller — combined with the zoom cap
-    // below, that keeps the globe from ever reaching the top/bottom edges.
-    setSize({ width, height: Math.min(width, 640) });
+    // Height as a fraction of width, not a fixed pixel cap — stays reliably
+    // wide/cinematic at any screen size instead of accidentally turning
+    // square when the container happens to be narrow.
+    const height = Math.min(Math.max(width * 0.42, 320), 620);
+    setSize({ width, height });
   }, []);
 
   useEffect(() => {
@@ -61,7 +63,7 @@ export default function WorldGlobe({ offices }: Props) {
     if (controls) {
       controls.autoRotate = true;
       controls.autoRotateSpeed = 0.5;
-      controls.minDistance = 145;
+      controls.minDistance = 220;
       controls.maxDistance = 500;
     }
     g.pointOfView({ altitude: 2.2 }, 0);
