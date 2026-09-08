@@ -424,6 +424,7 @@ const jsonLdGraph = {
               <li><a href={withLang('/', lang)} class="footer-link">{t.footer.home}</a></li>
               <li><a href={withLang('/servizi', lang)} class="footer-link">{t.footer.services}</a></li>
               <li><a href={withLang('/#casistudio', lang)} class="footer-link">{t.footer.projects}</a></li>
+              {lang === 'it' && <li><a href="/prodotti" class="footer-link">Prodotti</a></li>}
               <li><a href={withLang('/blog', lang)} class="footer-link">{t.footer.blog}</a></li>
               <li><a href={withLang('/contatti', lang)} class="footer-link">{t.footer.contact}</a></li>
             </ul>

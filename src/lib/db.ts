@@ -152,6 +152,23 @@ export async function initDB(): Promise<void> {
     );
     CREATE INDEX IF NOT EXISTS idx_admin_sessions_expires ON admin_sessions(expires_at);
 
+    CREATE TABLE IF NOT EXISTS products (
+      id            SERIAL       PRIMARY KEY,
+      slug          TEXT         UNIQUE NOT NULL,
+      name          TEXT         NOT NULL,
+      category      TEXT         NOT NULL DEFAULT '',
+      tagline       TEXT         NOT NULL DEFAULT '',
+      description   TEXT         NOT NULL DEFAULT '',
+      features      TEXT[]       NOT NULL DEFAULT '{}',
+      price_note    TEXT         NOT NULL DEFAULT '',
+      external_url  TEXT         NOT NULL DEFAULT '',
+      cover_img     TEXT         NOT NULL DEFAULT '',
+      display_order INT          NOT NULL DEFAULT 0,
+      published     BOOLEAN      NOT NULL DEFAULT true,
+      created_at    TIMESTAMPTZ  DEFAULT NOW(),
+      updated_at    TIMESTAMPTZ  DEFAULT NOW()
+    );
+
     CREATE TABLE IF NOT EXISTS offices (
       id            SERIAL       PRIMARY KEY,
       country_code  TEXT         NOT NULL,

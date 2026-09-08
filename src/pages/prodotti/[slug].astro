@@ -1,0 +1,68 @@
+---
+export const prerender = false;
+import Layout from '../../layouts/Layout.astro';
+import ProductDetailPage from '../../components/ProductDetailPage';
+import { initDB, getPool } from '../../lib/db';
+
+const { slug } = Astro.params;
+
+await initDB();
+type Row = {
+  slug: string; name: string; category: string; tagline: string; description: string;
+  features: string[]; price_note: string; external_url: string; cover_img: string;
+};
+const res = await getPool().query<Row>(
+  'SELECT slug,name,category,tagline,description,features,price_note,external_url,cover_img FROM products WHERE slug=$1 AND published=true',
+  [slug],
+);
+if (!res.rowCount) return Astro.redirect('/prodotti');
+const r = res.rows[0];
+const product = {
+  slug: r.slug, name: r.name, category: r.category, tagline: r.tagline, description: r.description,
+  features: Array.isArray(r.features) ? r.features : [], priceNote: r.price_note,
+  externalUrl: r.external_url, coverImg: r.cover_img,
+};
+
+const BASE = 'https://eddigitalagency.it';
+const canonicalURL = `${BASE}/prodotti/${product.slug}`;
+const coverAbs = product.coverImg
+  ? (product.coverImg.startsWith('http') ? product.coverImg : `${BASE}${product.coverImg}`)
+  : `${BASE}/Images/Logo_Bianco_ED.webp`;
+
+const productSchema = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "@id": `${canonicalURL}#product`,
+  "name": product.name,
+  "description": product.description || product.tagline,
+  "url": canonicalURL,
+  "image": coverAbs,
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Web",
+  "inLanguage": "it-IT",
+  "author": { "@id": `${BASE}/#organization` },
+  ...(product.priceNote ? { "offers": { "@type": "Offer", "priceCurrency": "EUR", "description": product.priceNote } } : {}),
+};
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home",     "item": `${BASE}/` },
+    { "@type": "ListItem", "position": 2, "name": "Prodotti", "item": `${BASE}/prodotti` },
+    { "@type": "ListItem", "position": 3, "name": product.name, "item": canonicalURL },
+  ],
+};
+---
+
+<Layout
+  title={`${product.name} — ${product.category || 'Software Gestionale'}`}
+  description={`${product.tagline || product.description.slice(0, 140)} — ED Digital Agency.`}
+  ogImage={product.coverImg || undefined}
+  pageKeywords={`${product.name}, ${product.category}, gestionale software, ED Digital Agency`}
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(productSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+  </Fragment>
+  <ProductDetailPage client:load product={product} />
+</Layout>

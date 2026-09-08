@@ -10,6 +10,7 @@ const SECTION_PERMISSION: { prefix: string; key: PermissionKey }[] = [
   { prefix: '/admin/email', key: 'email' },
   { prefix: '/admin/blog', key: 'blog' },
   { prefix: '/admin/progetti', key: 'progetti' },
+  { prefix: '/admin/prodotti', key: 'prodotti' },
   { prefix: '/admin/partners', key: 'partners' },
   { prefix: '/admin/sedi', key: 'sedi' },
 ];

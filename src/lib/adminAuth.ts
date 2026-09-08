@@ -8,6 +8,7 @@ export const PERMISSIONS = [
   { key: 'richieste',  label: 'Richieste (form contatti)' },
   { key: 'blog',       label: 'Blog' },
   { key: 'progetti',   label: 'Progetti' },
+  { key: 'prodotti',   label: 'Prodotti' },
   { key: 'partners',   label: 'Technology Partners' },
   { key: 'sedi',       label: 'Sedi' },
 ] as const;

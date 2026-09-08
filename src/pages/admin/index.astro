@@ -250,6 +250,7 @@ function shortSession(id: string) {
       <button class="tab-btn" data-tab="sessioni">Sessioni</button>
       {hasPermission(me, 'email')     && <a href="/admin/email" class="tab-btn" style="text-decoration:none">Email</a>}
       {hasPermission(me, 'progetti')  && <a href="/admin/progetti" class="tab-btn" style="text-decoration:none">Progetti</a>}
+      {hasPermission(me, 'prodotti')  && <a href="/admin/prodotti" class="tab-btn" style="text-decoration:none">Prodotti</a>}
       {hasPermission(me, 'blog')      && <a href="/admin/blog" class="tab-btn" style="text-decoration:none">Blog</a>}
       {hasPermission(me, 'partners')  && <a href="/admin/partners" class="tab-btn" style="text-decoration:none">Partners</a>}
       {hasPermission(me, 'sedi')      && <a href="/admin/sedi" class="tab-btn" style="text-decoration:none">Sedi</a>}
