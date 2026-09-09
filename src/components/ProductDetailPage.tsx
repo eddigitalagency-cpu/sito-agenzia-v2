@@ -2,6 +2,15 @@ import { motion } from 'framer-motion';
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
+function isSafeUrl(u: string): boolean {
+  try {
+    const parsed = new URL(u, 'https://eddigitalagency.it');
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 export interface ProductFull {
   slug: string;
   name: string;
@@ -110,7 +119,7 @@ export default function ProductDetailPage({ product }: { product: ProductFull })
               </div>
             )}
 
-            {product.externalUrl && (
+            {product.externalUrl && isSafeUrl(product.externalUrl) && (
               <a href={product.externalUrl} target="_blank" rel="noopener noreferrer"
                 className="block w-full text-center py-4 rounded-[1.75rem] font-bold text-sm uppercase tracking-widest transition-all duration-200 active:scale-[0.98]"
                 style={{ background: '#FF6A00', color: '#000' }}>
