@@ -11,11 +11,16 @@ const warnings = [];
 const fail = (m) => problems.push(m);
 const warn = (m) => warnings.push(m);
 
+const ORIGIN = new URL(BASE).origin;
+
+// Visita solo URL dello stesso dominio, anche dopo un redirect (niente SSRF da contenuti remoti).
 async function get(path) {
   const url = path.startsWith('http') ? path : BASE + path;
   const t0 = Date.now();
   try {
+    if (new URL(url).origin !== ORIGIN) return { url, status: 0, body: '', ms: 0, error: 'URL fuori dominio ignorato' };
     const res = await fetch(url, { redirect: 'follow', headers: { 'User-Agent': 'ED-SEO-Monitor/1.0' } });
+    if (new URL(res.url).origin !== ORIGIN) return { url, status: 0, body: '', ms: Date.now() - t0, error: `redirect fuori dominio (${res.url})` };
     const body = await res.text();
     return { url, status: res.status, body, ms: Date.now() - t0, headers: res.headers };
   } catch (e) {
@@ -72,7 +77,13 @@ for (const s of sitemaps) {
   const r = await get(s);
   if (r.status !== 200) { fail(`${s}: HTTP ${r.status}`); continue; }
   if (!/<(urlset|sitemapindex)/.test(r.body)) { fail(`${s}: XML non valido`); continue; }
-  for (const m of r.body.matchAll(/<loc>([^<]+)<\/loc>/g)) if (s !== '/sitemap-index.xml') urls.add(m[1]);
+  for (const m of r.body.matchAll(/<loc>([^<]+)<\/loc>/g)) {
+    if (s === '/sitemap-index.xml') continue;
+    let u;
+    try { u = new URL(m[1].trim()); } catch { warn(`${s}: URL non valido (${m[1]})`); continue; }
+    if (u.origin !== ORIGIN) { warn(`${s}: URL fuori dominio ignorato (${u.href})`); continue; }
+    urls.add(u.href);
+  }
 }
 if (!urls.size) fail('Sitemap: nessun URL trovato');
 
