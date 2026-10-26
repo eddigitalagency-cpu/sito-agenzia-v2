@@ -97,6 +97,9 @@ for (const u of urls) {
 // ── llms.txt (GEO) ──────────────────────────────────────────
 const llms = await get('/llms.txt');
 if (llms.status !== 200) fail(`llms.txt: HTTP ${llms.status}`);
+const llmsFull = await get('/llms-full.txt');
+if (llmsFull.status !== 200) fail(`llms-full.txt: HTTP ${llmsFull.status}`);
+else if (llmsFull.body.length < 2000) warn('llms-full.txt: contenuto troppo corto');
 
 // ── Report ──────────────────────────────────────────────────
 const stamp = new Date().toISOString().replace('T', ' ').slice(0, 16);
