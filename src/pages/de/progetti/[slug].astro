@@ -92,6 +92,7 @@ const breadcrumbSchema = {
   description={`${project.tagline} Erfahren Sie, wie ED Digital Agency das Projekt ${project.title} umgesetzt hat: ${project.description.slice(0, 120)}...`}
   pageKeywords={pageKeywords}
   ogImage={project.img}
+  noindex={!hasTranslation}
 >
   <Fragment slot="head">
     <script type="application/ld+json" set:html={JSON.stringify(creativeWorkSchema)} />

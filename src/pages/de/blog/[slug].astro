@@ -89,6 +89,7 @@ const breadcrumbSchema = {
   articleAuthor={post.author || 'ED Digital Agency'}
   articleSection={post.category}
   pageKeywords={postKeywords}
+  noindex={!post.has_translation}
 >
   <Fragment slot="head">
     <script type="application/ld+json" set:html={JSON.stringify(blogPostingSchema)} />

@@ -19,9 +19,16 @@ export default defineConfig({
     sitemap({
       i18n: {
         defaultLocale: 'it',
-        locales: { it: 'it-IT', en: 'en-US', de: 'de-AT' },
+        locales: { it: 'it', en: 'en', de: 'de' },
       },
       filter: (page) => !page.includes('/admin/'),
+      // Canonical URLs carry no trailing slash — keep the sitemap consistent
+      serialize(item) {
+        const strip = (u) => (u.replace(/\/+$/, '') === 'https://eddigitalagency.it' ? u : u.replace(/\/+$/, ''));
+        item.url = strip(item.url);
+        if (item.links) item.links = item.links.map((l) => ({ ...l, url: strip(l.url) }));
+        return item;
+      },
     }),
   ],
   security: {

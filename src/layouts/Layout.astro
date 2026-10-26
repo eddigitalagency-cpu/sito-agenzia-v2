@@ -17,6 +17,7 @@ interface Props {
   articleAuthor?: string;
   articleSection?: string;
   pageKeywords?: string;     // Overrides generic keywords when provided
+  noindex?: boolean;         // e.g. untranslated EN/DE fallback pages (duplicate content)
   lang?: Lang;
 }
 const {
@@ -29,6 +30,7 @@ const {
   articleAuthor,
   articleSection,
   pageKeywords,
+  noindex = false,
   lang = 'it',
 } = Astro.props;
 
@@ -42,14 +44,16 @@ try {
   // never break page render over the offices footer list
 }
 
-const canonicalURL  = new URL(Astro.url.pathname, 'https://eddigitalagency.it');
+// Canonical never carries a trailing slash (matches sitemap + internal links)
+const canonicalPath = Astro.url.pathname.length > 1 ? Astro.url.pathname.replace(/\/+$/, '') : Astro.url.pathname;
+const canonicalURL  = new URL(canonicalPath, 'https://eddigitalagency.it');
 const fullTitle     = `${title} — ED Digital Agency`;
 const ogImageAbs    = new URL(ogImage, 'https://eddigitalagency.it').toString();
 const pageDescription = description ?? t.seo.defaultDescription;
 const defaultKeywords = t.seo.defaultKeywords;
 
 // Hreflang alternates — same page across all three locales, plus x-default (IT)
-const basePath = stripLangPrefix(Astro.url.pathname);
+const basePath = stripLangPrefix(canonicalPath);
 const hreflangAlternates: { lang: string; href: string }[] = [
   { lang: 'it', href: new URL(basePath, 'https://eddigitalagency.it').toString() },
   { lang: 'en', href: new URL(withLang(basePath, 'en'), 'https://eddigitalagency.it').toString() },
@@ -73,7 +77,7 @@ const jsonLdGraph = {
       '@type': ['Organization', 'LocalBusiness', 'ProfessionalService'],
       '@id': 'https://eddigitalagency.it/#organization',
       name: 'ED Digital Agency',
-      alternateName: ['ED Digital', 'ED Digital Agency Treviso'],
+      alternateName: ['ED Digital', 'ED Digital Agency Treviso', 'ED Digital Agency Conegliano', 'ED Digital Agency Vittorio Veneto'],
       url: 'https://eddigitalagency.it',
       logo: { '@type': 'ImageObject', url: 'https://eddigitalagency.it/Images/Logo%20ED%20Digitla.png', width: 400, height: 400 },
       image: 'https://eddigitalagency.it/Images/Logo%20ED%20Digitla.png',
@@ -90,20 +94,28 @@ const jsonLdGraph = {
         addressCountry: 'IT',
       },
       geo: { '@type': 'GeoCoordinates', latitude: 45.9826, longitude: 12.3001 },
+      hasMap: 'https://www.google.com/maps/search/?api=1&query=Via+Carlo+Torres+17+31029+Vittorio+Veneto+TV',
       areaServed: [
-        { '@type': 'City', name: 'Vittorio Veneto' },
-        { '@type': 'City', name: 'Treviso' },
-        { '@type': 'City', name: 'Conegliano' },
+        { '@type': 'City', name: 'Vittorio Veneto', sameAs: 'https://it.wikipedia.org/wiki/Vittorio_Veneto' },
+        { '@type': 'City', name: 'Treviso', sameAs: 'https://it.wikipedia.org/wiki/Treviso' },
+        { '@type': 'City', name: 'Conegliano', sameAs: 'https://it.wikipedia.org/wiki/Conegliano' },
         { '@type': 'City', name: 'Pieve di Soligo' },
         { '@type': 'City', name: 'Montebelluna' },
         { '@type': 'City', name: 'Castelfranco Veneto' },
         { '@type': 'City', name: 'Oderzo' },
         { '@type': 'City', name: 'Valdobbiadene' },
         { '@type': 'City', name: 'Mogliano Veneto' },
+        { '@type': 'City', name: 'Susegana' },
+        { '@type': 'City', name: 'Sacile' },
+        { '@type': 'City', name: 'Belluno' },
+        { '@type': 'City', name: 'Pordenone' },
+        { '@type': 'City', name: 'Udine' },
         { '@type': 'City', name: 'Venezia' },
         { '@type': 'City', name: 'Padova' },
+        { '@type': 'City', name: 'Verona' },
+        { '@type': 'City', name: 'Vicenza' },
         { '@type': 'AdministrativeArea', name: 'Provincia di Treviso' },
-        { '@type': 'State', name: 'Veneto' },
+        { '@type': 'State', name: 'Veneto', sameAs: 'https://it.wikipedia.org/wiki/Veneto' },
         { '@type': 'Country', name: 'Italia' },
         { '@type': 'Country', name: 'Austria' },
         { '@type': 'City', name: 'Wien' },
@@ -159,14 +171,15 @@ const jsonLdGraph = {
       inLanguage: HTML_LANG[lang],
       speakable: { '@type': 'SpeakableSpecification', cssSelector: ['h1', 'h2', '.speakable'] },
     },
-    {
+    ...(basePath === '/' ? [{
       '@type': 'FAQPage',
+      '@id': `${canonicalURL}#faq`,
       mainEntity: t.seo.faq.map(f => ({
         '@type': 'Question',
         name: f.q,
         acceptedAnswer: { '@type': 'Answer', text: f.a },
       })),
-    },
+    }] : []),
   ],
 };
 ---
@@ -182,16 +195,19 @@ const jsonLdGraph = {
     <meta name="description" content={pageDescription} />
     <meta name="keywords" content={pageKeywords || defaultKeywords} />
     <meta name="author" content={articleAuthor || 'ED Digital Agency'} />
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="robots" content={noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'} />
     <link rel="canonical" href={canonicalURL} />
-    {hreflangAlternates.map(a => <link rel="alternate" hreflang={a.lang} href={a.href} />)}
+    {!basePath.startsWith('/prodotti') && hreflangAlternates.map(a => <link rel="alternate" hreflang={a.lang} href={a.href} />)}
+
+    <link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
+    <link rel="alternate" type="text/plain" href="/llms.txt" title="LLMs.txt" />
 
     <!-- ── Geo ─────────────────────────────────────────────── -->
     <meta name="geo.region" content="IT-TV" />
-    <meta name="geo.placename" content="Vittorio Veneto, Treviso, Conegliano, Veneto" />
+    <meta name="geo.placename" content="Vittorio Veneto, Conegliano, Treviso, Veneto" />
     <meta name="geo.position" content="45.9826;12.3001" />
     <meta name="ICBM" content="45.9826, 12.3001" />
-    <meta name="DC.coverage" content="Vittorio Veneto, Treviso, Conegliano, Montebelluna, Castelfranco Veneto, Oderzo, Veneto, Italia" />
+    <meta name="DC.coverage" content="Vittorio Veneto, Conegliano, Treviso, Pieve di Soligo, Montebelluna, Castelfranco Veneto, Oderzo, Belluno, Pordenone, Venezia, Padova, Veneto, Italia" />
 
     <!-- ── Open Graph ──────────────────────────────────────── -->
     <meta property="og:type" content={ogType} />

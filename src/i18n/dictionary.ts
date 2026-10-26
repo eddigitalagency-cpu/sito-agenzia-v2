@@ -121,9 +121,9 @@ const it = {
     text: 'Questo contenuto non è ancora disponibile in questa lingua — mostrato in italiano.',
   },
   seo: {
-    defaultTitle: 'Agenzia Digitale a Treviso e Vittorio Veneto',
+    defaultTitle: 'Agenzia Digitale a Treviso, Conegliano e Vittorio Veneto',
     defaultDescription: "ED Digital Agency è l'agenzia digitale di riferimento a Vittorio Veneto, in provincia di Treviso. Social media, advertising, siti web, e-commerce, visual identity e sviluppo di software gestionali e applicazioni su misura per PMI che vogliono crescere online.",
-    defaultKeywords: 'agenzia digitale Treviso, agenzia marketing Treviso, web agency Vittorio Veneto, social media management Treviso, siti web Treviso, advertising Meta Google Treviso, e-commerce Treviso, agenzia comunicazione Veneto, marketing PMI Treviso, software gestionale personalizzato, sviluppo applicazioni web su misura, ED Digital Agency',
+    defaultKeywords: 'agenzia digitale Treviso, agenzia digitale Conegliano, agenzia digitale Veneto, agenzia marketing Treviso, web agency Vittorio Veneto, web agency Conegliano, social media management Treviso, siti web Treviso, advertising Meta Google Treviso, e-commerce Treviso, agenzia comunicazione Veneto, marketing PMI Treviso, software gestionale personalizzato, sviluppo applicazioni web su misura, ED Digital Agency',
     orgDescription: "ED Digital Agency è l'agenzia digitale di riferimento a Vittorio Veneto e nella provincia di Treviso. Specializzata in social media marketing, advertising, siti web, e-commerce, visual identity, software gestionali su misura e automazioni per PMI italiane, con clienti anche in Austria e in tutta Europa.",
     websiteName: 'ED Digital Agency — Agenzia Digitale Treviso',
     websiteDescription: 'Agenzia digitale a Vittorio Veneto (Treviso). Social media, advertising, siti web, e-commerce, visual identity e software gestionali su misura per PMI italiane ed europee.',

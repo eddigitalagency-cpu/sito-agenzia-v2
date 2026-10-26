@@ -10,6 +10,9 @@ ED Digital Agency è l'agenzia digitale di riferimento nella provincia di Trevis
 
 - Sede principale: Vittorio Veneto (TV), Veneto, Italia
 - Area di riferimento locale: Provincia di Treviso (Vittorio Veneto, Conegliano, Treviso, Pieve di Soligo, Montebelluna, Castelfranco Veneto, Oderzo, Valdobbiadene)
+- Conegliano: agenzia digitale per le aziende di Conegliano e dell'area del Prosecco (Susegana, San Vendemiano, Pieve di Soligo, Valdobbiadene), a circa 15 km dalla sede
+- Treviso: servizi di marketing digitale, siti web e software gestionali per le imprese del capoluogo e della Marca Trevigiana
+- Regione Veneto: clienti in tutte le province (Treviso, Belluno, Venezia, Padova, Vicenza, Verona), anche in videochiamata
 - Aree limitrofe servite: Venezia, Padova, Pordenone, Udine
 - Copertura nazionale: operiamo con clienti in tutta Italia anche da remoto
 - Espansione in Austria: stiamo aprendo una seconda sede a Vienna (Wien) e serviamo già oggi aziende austriache, da remoto e in loco
@@ -60,6 +63,9 @@ Un MVP o un gestionale essenziale parte da €5.000-8.000. Piattaforme più comp
 **Sviluppate anche software gestionali personalizzati per aziende?**
 Sì. Oltre agli MVP per startup, sviluppiamo gestionali e applicazioni web su misura per PMI: gestione magazzino, produzione, CRM, fatturazione e processi troppo specifici per i software standard.
 
+**Siete un'agenzia digitale per aziende di Conegliano?**
+Sì. Siamo a Vittorio Veneto, a circa 15 km da Conegliano, e seguiamo aziende di Conegliano e del Coneglianese con social media, advertising, siti web, e-commerce e software su misura. Preventivo gratuito entro 24 ore.
+
 **Lavorate solo con aziende a Treviso?**
 No. Siamo basati a Vittorio Veneto (Treviso) ma lavoriamo con PMI in tutta Italia. Social media, advertising, siti web e automazioni si gestiscono perfettamente da remoto.
 
@@ -90,6 +96,7 @@ Il blog pubblica guide pratiche su marketing digitale, SEO, social media, e-comm
 - Telefono: +39 379 324 8371
 - Indirizzo: Via Carlo Torres, 17/Interno 13, 31029 Vittorio Veneto (TV), Italia
 - Sito web: https://eddigitalagency.it
+- Sitemap: https://eddigitalagency.it/sitemap-index.xml
 - Preventivo gratuito: https://eddigitalagency.it/contatti
 - Instagram: https://www.instagram.com/eddigitalagency
 - LinkedIn: https://www.linkedin.com/company/ed-digital-agency

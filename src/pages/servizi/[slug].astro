@@ -16,9 +16,9 @@ const related = getRelatedServices(service.related);
 const canonicalURL  = `https://eddigitalagency.it/servizi/${service.slug}`;
 const serviceImg    = new URL(service.heroImage || '/Images/Logo%20ED%20Digitla.png', 'https://eddigitalagency.it').toString();
 
-const pageTitle    = `${service.name} a Treviso e Vittorio Veneto`;
-const pageDesc     = `${service.description} ED Digital Agency, agenzia specializzata a Vittorio Veneto in provincia di Treviso. Preventivo gratuito entro 24 ore.`;
-const pageKeywords = [...service.keywords, 'preventivo gratuito Treviso', 'agenzia digitale Veneto', 'ED Digital Agency'].join(', ');
+const pageTitle    = `${service.name} a Treviso e Conegliano`;
+const pageDesc     = `${service.description} ED Digital Agency, agenzia specializzata a Vittorio Veneto, al servizio di Conegliano, Treviso e tutto il Veneto. Preventivo gratuito entro 24 ore.`;
+const pageKeywords = [...service.keywords, 'preventivo gratuito Treviso', `${service.name} Conegliano`, `${service.name} Veneto`, 'agenzia digitale Veneto', 'ED Digital Agency'].join(', ');
 
 const areaServed = [
   { "@type": "City", "name": "Vittorio Veneto" },

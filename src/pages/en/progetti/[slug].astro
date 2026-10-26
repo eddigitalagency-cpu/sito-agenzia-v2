@@ -92,6 +92,7 @@ const breadcrumbSchema = {
   description={`${project.tagline} See how ED Digital Agency delivered the ${project.title} project: ${project.description.slice(0, 120)}...`}
   pageKeywords={pageKeywords}
   ogImage={project.img}
+  noindex={!hasTranslation}
 >
   <Fragment slot="head">
     <script type="application/ld+json" set:html={JSON.stringify(creativeWorkSchema)} />
