@@ -6,14 +6,26 @@ import { projects as staticProjects } from '../data/projects';
 let _pool: PgPool | null = null;
 let _ready = false;
 
+/**
+ * TLS for the database connection. A local development DB (parsed hostname, not a substring match)
+ * runs without TLS. Otherwise TLS is on; set DATABASE_CA (PEM of the provider's CA) to also
+ * verify the server certificate — recommended whenever the DB is reached over the public network.
+ */
+function sslConfig(url: string): false | { rejectUnauthorized: boolean; ca?: string } {
+  let host = '';
+  try { host = new URL(url).hostname; } catch { /* malformed URL: stay on TLS */ }
+  if (host === 'localhost' || host === '127.0.0.1' || host === '::1') return false;
+  const ca = process.env.DATABASE_CA;
+  return ca ? { rejectUnauthorized: true, ca } : { rejectUnauthorized: false };
+}
+
 export function getPool(): PgPool {
   if (!_pool) {
     const url = process.env.DATABASE_URL;
     if (!url) throw new Error('DATABASE_URL non configurata');
     _pool = new Pool({
       connectionString: url,
-      // TLS everywhere except a local development database.
-      ssl: /@(localhost|127\.0\.0\.1)[:/]|^postgres(ql)?:\/\/(localhost|127\.0\.0\.1)[:/]/.test(url) ? false : { rejectUnauthorized: false },
+      ssl: sslConfig(url),
       max: 5,
       idleTimeoutMillis: 30_000,
     });

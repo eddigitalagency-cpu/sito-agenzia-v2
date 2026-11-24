@@ -28,7 +28,9 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
   // a state-changing request to the admin area must come from our own site. Browsers always
   // send Origin on cross-site POSTs, so a forged form on another domain is rejected here.
   if (isAdminArea && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(ctx.request.method)) {
-    const origin = ctx.request.headers.get('origin');
+    // Origin is set by the browser and can't be forged by a page on another site; if it's
+    // missing, fall back to Referer. (The admin cookie is also SameSite=Strict.)
+    const origin = ctx.request.headers.get('origin') ?? ctx.request.headers.get('referer');
     if (origin) {
       let originHost = '';
       try { originHost = new URL(origin).host; } catch { /* malformed → rejected below */ }

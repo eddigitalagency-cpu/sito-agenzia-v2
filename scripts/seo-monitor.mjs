@@ -66,7 +66,19 @@ for (const p of PAGES) {
 const robots = await get('/robots.txt');
 if (robots.status !== 200) fail(`robots.txt: HTTP ${robots.status}`);
 else {
-  if (/^User-agent:\s*\*\s*\n(?:.*\n)*?Disallow:\s*\/\s*$/m.test(robots.body)) fail('robots.txt: blocca tutto il sito (Disallow: /)');
+  // Si guarda solo il gruppo "User-agent: *" (i Disallow dei singoli bot non riguardano Google).
+  let inStar = false, starBlocksAll = false, lastWasUA = false;
+  for (const raw of robots.body.split('\n')) {
+    const line = raw.split('#')[0].trim();
+    if (!line) continue;
+    const m = line.match(/^([A-Za-z-]+)\s*:\s*(.*)$/);
+    if (!m) continue;
+    const key = m[1].toLowerCase(), val = m[2].trim();
+    if (key === 'user-agent') { if (!lastWasUA) inStar = false; if (val === '*') inStar = true; lastWasUA = true; continue; }
+    lastWasUA = false;
+    if (inStar && key === 'disallow' && val === '/') starBlocksAll = true;
+  }
+  if (starBlocksAll) fail('robots.txt: blocca tutto il sito per tutti i bot (Disallow: /)');
   if (!/Sitemap:/i.test(robots.body)) fail('robots.txt: nessuna Sitemap dichiarata');
 }
 

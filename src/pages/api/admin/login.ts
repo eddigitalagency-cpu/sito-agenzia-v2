@@ -3,14 +3,17 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { initDB, getPool } from '../../../lib/db';
 import { createSession, verifyPassword, verifyOwnerPassword } from '../../../lib/adminAuth';
-import { rateLimit, isLimited, resetLimit } from '../../../lib/rateLimit';
+import { rateLimit, isLimited, getCount, resetLimit } from '../../../lib/rateLimit';
 
 // Brute-force protection. The client IP can be spoofed through X-Forwarded-For, so besides
-// the per-IP limit there are also a per-account limit and a global cap on failed attempts.
+// the per-IP limit there is a per-account limit and a global failure counter. The global one
+// never locks the owner out on its own: past SLOW_GLOBAL failures every attempt is slowed
+// down heavily, and only an extreme flood (MAX_GLOBAL) is refused outright.
 const WINDOW = 15 * 60 * 1000;
 const MAX_PER_IP = 10;
 const MAX_PER_EMAIL = 10;
-const MAX_GLOBAL = 60;
+const SLOW_GLOBAL = 60;
+const MAX_GLOBAL = 600;
 
 const redirect = (to: string) => new Response(null, { status: 302, headers: { Location: to } });
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
@@ -26,6 +29,8 @@ export const POST: APIRoute = async ({ request, cookies, clientAddress }) => {
 
   const emailKey = `login:email:${email}`;
   if (email && isLimited(emailKey, MAX_PER_EMAIL)) return redirect('/admin/login?err=2');
+
+  if (getCount('login:global') >= SLOW_GLOBAL) await sleep(2500); // under attack: make guessing impractical
 
   await initDB();
 
