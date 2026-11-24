@@ -1,7 +1,7 @@
 ---
 export const prerender = false;
 import { getPool, initDB } from '../../../lib/db';
-import { hashPassword, PERMISSIONS } from '../../../lib/adminAuth';
+import { hashPassword, PERMISSIONS, passwordPolicyError } from '../../../lib/adminAuth';
 // Owner-only access already enforced by src/middleware.ts
 
 await initDB();
@@ -38,6 +38,8 @@ if (Astro.request.method === 'POST') {
     errorMsg = "L'email è obbligatoria.";
   } else if (isNew && !password) {
     errorMsg = 'La password è obbligatoria per un nuovo collaboratore.';
+  } else if (password && passwordPolicyError(password)) {
+    errorMsg = passwordPolicyError(password) as string;
   } else {
     try {
       if (isNew) {

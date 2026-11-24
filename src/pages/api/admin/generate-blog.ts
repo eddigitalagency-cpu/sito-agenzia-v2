@@ -3,33 +3,27 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { rateLimit } from '../../../lib/rateLimit';
 import { hasPermission } from '../../../lib/adminAuth';
+import { safeFetchText } from '../../../lib/safeFetch';
 
 function json(d: unknown, s = 200) {
   return new Response(JSON.stringify(d), { status: s, headers: { 'Content-Type': 'application/json' } });
 }
 
+// Il fetch passa da safeFetchText: blocca indirizzi interni/privati (SSRF), limita dimensione e redirect.
 async function fetchPageText(url: string): Promise<string> {
-  try {
-    const res = await fetch(url, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ED-Blog-Bot/1.0)' },
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!res.ok) return '';
-    const html = await res.text();
-    return html
-      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-      .replace(/<[^>]+>/g, ' ')
-      .replace(/&nbsp;/g, ' ')
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/\s{2,}/g, ' ')
-      .trim()
-      .slice(0, 4000);
-  } catch {
-    return '';
-  }
+  const html = await safeFetchText(url);
+  if (!html) return '';
+  return html
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/\s{2,}/g, ' ')
+    .trim()
+    .slice(0, 4000);
 }
 
 export const POST: APIRoute = async ({ request, locals, clientAddress }) => {

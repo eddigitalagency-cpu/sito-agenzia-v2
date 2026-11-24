@@ -1,5 +1,6 @@
 ---
 export const prerender = false;
+import { jsonForScript } from '../../../lib/jsonForScript';
 import { getPool, initDB } from '../../../lib/db';
 // Auth + "progetti" permission already enforced by src/middleware.ts
 
@@ -555,7 +556,10 @@ const pageTitle = isNew ? 'Nuovo Progetto' : `Modifica: ${p?.title ?? ''}`;
     });
   </script>
 
-  <script define:vars={{ isNew, initServices, initServiceSlugs }}>
+  <script type="application/json" id="page-data" set:html={jsonForScript({ isNew, initServices, initServiceSlugs })} />
+  <script is:inline>
+  {
+    const { isNew, initServices, initServiceSlugs } = JSON.parse(document.getElementById('page-data').textContent);
     // ── Auto-slug from title ───────────────────────────────
     const titleInput = document.getElementById('input-title');
     const slugInput  = document.getElementById('input-slug');
@@ -824,6 +828,7 @@ const pageTitle = isNew ? 'Nuovo Progetto' : `Modifica: ${p?.title ?? ''}`;
       }
       btnGenerate.disabled = false;
     });
+    }
   </script>
 </body>
 </html>

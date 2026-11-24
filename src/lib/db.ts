@@ -12,7 +12,8 @@ export function getPool(): PgPool {
     if (!url) throw new Error('DATABASE_URL non configurata');
     _pool = new Pool({
       connectionString: url,
-      ssl: { rejectUnauthorized: false },
+      // TLS everywhere except a local development database.
+      ssl: /@(localhost|127\.0\.0\.1)[:/]|^postgres(ql)?:\/\/(localhost|127\.0\.0\.1)[:/]/.test(url) ? false : { rejectUnauthorized: false },
       max: 5,
       idleTimeoutMillis: 30_000,
     });

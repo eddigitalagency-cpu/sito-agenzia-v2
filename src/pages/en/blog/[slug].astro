@@ -3,6 +3,7 @@ export const prerender = false;
 import Layout from '../../../layouts/Layout.astro';
 import BlogPostPage from '../../../components/BlogPostPage';
 import { getPool, initDB } from '../../../lib/db';
+import { sanitizeArticleHtml } from '../../../lib/sanitizeHtml';
 
 const lang = 'en' as const;
 const { slug } = Astro.params;
@@ -34,6 +35,8 @@ const res = await db.query<PostRow>(
 if (!res.rowCount) return Astro.redirect('/en/blog');
 
 const post = res.rows[0];
+// Article HTML is written by hand / AI-generated / AI-translated: sanitize before rendering.
+post.content = sanitizeArticleHtml(post.content);
 
 const BASE = 'https://eddigitalagency.it';
 const postUrl = `${BASE}/en/blog/${post.slug}`;

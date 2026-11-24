@@ -1,32 +1,31 @@
 import type { APIRoute } from 'astro';
 import { Resend } from 'resend';
 import { getPool, initDB } from '../../lib/db';
+import { rateLimit } from '../../lib/rateLimit';
+import { readJsonLimited } from '../../lib/requestBody';
 
 export const prerender = false;
-
-// Rate limiting: max 5 submissions per IP per hour
-const _rate = new Map<string, { count: number; resetAt: number }>();
 
 const LIMITS = { name: 100, email: 150, phone: 30, company: 100, service: 80, message: 5000 };
 const URL_RX = /https?:\/\//gi;
 
 export const POST: APIRoute = async ({ request, clientAddress }) => {
   // ── Rate limit ────────────────────────────────────────────
-  const ip  = clientAddress ?? 'unknown';
-  const now = Date.now();
-  const rec = _rate.get(ip) ?? { count: 0, resetAt: now + 60 * 60 * 1000 };
-  if (now > rec.resetAt) { rec.count = 0; rec.resetAt = now + 60 * 60 * 1000; }
-  if (rec.count >= 5) return json({ error: 'Troppi messaggi. Riprova tra un\'ora.' }, 429);
-  rec.count++;
-  _rate.set(ip, rec);
+  // Per IP (5/h) plus a global cap: the IP comes from X-Forwarded-For and can be spoofed,
+  // so the cap keeps a bot from flooding the inbox / burning the email quota.
+  const ip = clientAddress ?? 'unknown';
+  if (!rateLimit(`contact:ip:${ip}`, 5, 60 * 60 * 1000) || !rateLimit('contact:global', 40, 60 * 60 * 1000)) {
+    return json({ error: 'Troppi messaggi. Riprova tra un\'ora.' }, 429);
+  }
 
-  // ── Parse body ────────────────────────────────────────────
+  // ── Parse body (max 20 KB) ────────────────────────────────
   let body: Record<string, string>;
   try {
-    body = await request.json();
+    body = await readJsonLimited(request, 20_000);
   } catch {
     return json({ error: 'Richiesta non valida.' }, 400);
   }
+  if (!body || typeof body !== 'object') return json({ error: 'Richiesta non valida.' }, 400);
 
   // ── Honeypot: bots fill this, humans leave it empty ───────
   if (body.website?.trim()) return json({ ok: true }); // silent fake success

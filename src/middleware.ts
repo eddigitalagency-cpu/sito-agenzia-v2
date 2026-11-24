@@ -22,6 +22,32 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
   const EXEMPT_API = ['/api/admin/login', '/api/admin/logout'];
   const isAdminApi  = path.startsWith('/api/admin/') && !EXEMPT_API.includes(path);
   const isAdminPage = path.startsWith('/admin') && path !== '/admin/login';
+  const isAdminArea = path.startsWith('/admin') || path.startsWith('/api/admin');
+
+  // CSRF defence in depth (Astro's own checkOrigin is off because of the reverse proxy):
+  // a state-changing request to the admin area must come from our own site. Browsers always
+  // send Origin on cross-site POSTs, so a forged form on another domain is rejected here.
+  if (isAdminArea && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(ctx.request.method)) {
+    const origin = ctx.request.headers.get('origin');
+    if (origin) {
+      let originHost = '';
+      try { originHost = new URL(origin).host; } catch { /* malformed → rejected below */ }
+      const own = new Set<string>([
+        ctx.url.host,
+        ctx.request.headers.get('host') ?? '',
+        (ctx.request.headers.get('x-forwarded-host') ?? '').split(',')[0].trim(),
+        'eddigitalagency.it',
+        'www.eddigitalagency.it',
+      ]);
+      own.delete('');
+      if (!originHost || !own.has(originHost)) {
+        return new Response(JSON.stringify({ error: 'Origine non consentita' }), {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+    }
+  }
 
   if (isAdminApi || isAdminPage) {
     let user = null;
@@ -69,9 +95,11 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
   h.set('X-Content-Type-Options', 'nosniff');
   h.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   h.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
-  h.set('X-XSS-Protection', '1; mode=block');
+  h.set('X-XSS-Protection', '0'); // legacy auditor is itself exploitable; CSP is the real protection
+  h.set('Cross-Origin-Opener-Policy', 'same-origin');
   h.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
-  h.set(
+  // Routes may set a stricter CSP of their own (e.g. /api/img): never loosen it.
+  if (!h.has('Content-Security-Policy')) h.set(
     'Content-Security-Policy',
     [
       "default-src 'self'",
@@ -84,8 +112,15 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
       "base-uri 'self'",
       "form-action 'self'",
       "frame-ancestors 'none'",
+      'upgrade-insecure-requests',
     ].join('; '),
   );
+
+  // Admin pages and admin APIs: never cached by browsers/proxies, never indexed.
+  if (isAdminArea) {
+    h.set('Cache-Control', 'no-store');
+    h.set('X-Robots-Tag', 'noindex, nofollow');
+  }
 
   // Cache-Control for static assets
   const url = ctx.url.pathname;

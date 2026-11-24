@@ -1,5 +1,6 @@
 ---
 export const prerender = false;
+import { jsonForScript } from '../../../lib/jsonForScript';
 import { getPool, initDB } from '../../../lib/db';
 // Auth + "blog" permission already enforced by src/middleware.ts
 
@@ -559,7 +560,10 @@ Esempi:
     });
   </script>
 
-  <script define:vars={{ isNew, initialStato, scheduledAtValue }}>
+  <script type="application/json" id="page-data" set:html={jsonForScript({ isNew, initialStato, scheduledAtValue })} />
+  <script is:inline>
+  {
+    const { isNew, initialStato, scheduledAtValue } = JSON.parse(document.getElementById('page-data').textContent);
     // ── Stato pubblicazione (Bozza / Pubblica ora / Programma) ──
     const btnDraft    = document.getElementById('btn-stato-draft');
     const btnPublish  = document.getElementById('btn-stato-publish');
@@ -858,6 +862,7 @@ Esempi:
       if (coverVal) coverVal.value=url;
       if (url && imgPreview) { imgPreview.src=url; imgPreview.classList.add('has-img'); }
     });
+    }
   </script>
 </body>
 </html>
