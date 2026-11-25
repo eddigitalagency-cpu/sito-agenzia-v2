@@ -18,7 +18,29 @@ const MAX_GLOBAL = 600;
 const redirect = (to: string) => new Response(null, { status: 302, headers: { Location: to } });
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
-export const POST: APIRoute = async ({ request, cookies, clientAddress }) => {
+// Under attack (many global failures) attempts are processed ONE AT A TIME, 2.5 s apart, so
+// parallel requests can't multiply the guessing rate. The queue is bounded: beyond MAX_QUEUE
+// waiting attempts new ones are refused, which keeps the server itself from being tied up.
+const MAX_QUEUE = 8;
+let queueTail: Promise<void> = Promise.resolve();
+let queued = 0;
+async function throttled<T>(fn: () => Promise<T>): Promise<T | null> {
+  if (queued >= MAX_QUEUE) return null;
+  queued++;
+  const prev = queueTail;
+  let release!: () => void;
+  queueTail = new Promise<void>(r => (release = r));
+  try {
+    await prev;
+    return await fn();
+  } finally {
+    await sleep(2500);
+    queued--;
+    release();
+  }
+}
+
+const handle = async ({ request, cookies, clientAddress }: Parameters<APIRoute>[0]): Promise<Response> => {
   const ip = `login:ip:${clientAddress ?? 'unknown'}`;
   if (isLimited(ip, MAX_PER_IP) || isLimited('login:global', MAX_GLOBAL)) return redirect('/admin/login?err=2');
 
@@ -29,8 +51,6 @@ export const POST: APIRoute = async ({ request, cookies, clientAddress }) => {
 
   const emailKey = `login:email:${email}`;
   if (email && isLimited(emailKey, MAX_PER_EMAIL)) return redirect('/admin/login?err=2');
-
-  if (getCount('login:global') >= SLOW_GLOBAL) await sleep(2500); // under attack: make guessing impractical
 
   await initDB();
 
@@ -69,4 +89,11 @@ export const POST: APIRoute = async ({ request, cookies, clientAddress }) => {
   if (email) rateLimit(emailKey, MAX_PER_EMAIL, WINDOW);
   await sleep(400); // slows automated guessing
   return redirect('/admin/login?err=1');
+};
+
+export const POST: APIRoute = async (ctx) => {
+  if (getCount('login:global') >= SLOW_GLOBAL) {
+    return (await throttled(() => handle(ctx))) ?? redirect('/admin/login?err=2');
+  }
+  return handle(ctx);
 };
