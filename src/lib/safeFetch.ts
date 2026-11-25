@@ -10,30 +10,25 @@ import net from 'node:net';
  * anche dopo ogni redirect. Il corpo è limitato in dimensione.
  */
 
-function isPrivateIPv4(ip: string): boolean {
-  const [a, b] = ip.split('.').map(Number);
-  return (
-    a === 0 || a === 10 || a === 127 ||
-    (a === 100 && b >= 64 && b <= 127) ||   // CGNAT
-    (a === 169 && b === 254) ||             // link-local / metadata cloud
-    (a === 172 && b >= 16 && b <= 31) ||
-    (a === 192 && b === 168) ||
-    (a === 192 && b === 0) ||
-    (a === 198 && (b === 18 || b === 19)) ||
-    a >= 224                                 // multicast / riservati
-  );
-}
+// Intervalli non pubblici. net.BlockList normalizza da solo le varianti equivalenti
+// (es. ::ffff:127.0.0.1 scritto anche come ::ffff:7f00:1), a differenza di un controllo a regex.
+const blocked = new net.BlockList();
+for (const [addr, prefix] of [
+  ['0.0.0.0', 8], ['10.0.0.0', 8], ['100.64.0.0', 10], ['127.0.0.0', 8], ['169.254.0.0', 16],
+  ['172.16.0.0', 12], ['192.0.0.0', 24], ['192.0.2.0', 24], ['192.168.0.0', 16], ['198.18.0.0', 15],
+  ['198.51.100.0', 24], ['203.0.113.0', 24], ['224.0.0.0', 4], ['240.0.0.0', 4],
+] as [string, number][]) blocked.addSubnet(addr, prefix, 'ipv4');
+for (const [addr, prefix] of [
+  ['::', 128], ['::1', 128], ['64:ff9b::', 96], ['64:ff9b:1::', 48],
+  ['100::', 64], ['2001::', 32], ['2001:db8::', 32], ['2002::', 16], ['fc00::', 7], ['fe80::', 10], ['ff00::', 8],
+] as [string, number][]) blocked.addSubnet(addr, prefix, 'ipv6');
 
 function isPrivateIP(ip: string): boolean {
-  if (net.isIPv4(ip)) return isPrivateIPv4(ip);
-  if (net.isIPv6(ip)) {
-    const l = ip.toLowerCase();
-    if (l === '::1' || l === '::') return true;
-    const mapped = l.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/);
-    if (mapped) return isPrivateIPv4(mapped[1]);
-    return /^f[cd]/.test(l) || /^fe[89ab]/.test(l) || l.startsWith('ff'); // ULA, link-local, multicast
-  }
-  return true;
+  const family = net.isIPv4(ip) ? 'ipv4' : net.isIPv6(ip) ? 'ipv6' : null;
+  if (!family) return true; // non è un IP valido: nel dubbio blocca
+  // IPv4-mapped (::ffff:a.b.c.d / ::ffff:hhhh:hhhh) è controllato da BlockList contro le regole IPv4;
+  // NAT64, 6to4 e Teredo sono esclusi in blocco dalle regole IPv6 sopra.
+  return blocked.check(ip, family);
 }
 
 const safeLookup: net.LookupFunction = (hostname, options, callback) => {
